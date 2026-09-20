@@ -1,0 +1,74 @@
+<script setup>
+import { computed, onMounted, ref } from 'vue';
+import Questionnaire from './Questionnaire.vue';
+import { bugTemplate, fieldTypes, choiceTypes, statuses } from './shared.js';
+const logged = ref(false), checking = ref(true), password = ref(''), busy = ref(false), error = ref(''), notice = ref('');
+const forms = ref([]), draft = ref(null), original = ref(''), view = ref('forms'), preview = ref(false);
+const responseForm = ref(null), responses = ref([]), total = ref(0), page = ref(1), filter = ref(''), selected = ref(null);
+const clone = value => JSON.parse(JSON.stringify(value));
+const stateLabels = { draft: '草稿', published: '收集中', closed: '已关闭' };
+const dirty = computed(() => draft.value && JSON.stringify(draft.value) !== original.value);
+const count = computed(() => forms.value.reduce((sum, f) => sum + (f.responseCount || 0), 0));
+const formUrl = computed(() => draft.value ? `${window.location.origin}/f/${draft.value.slug}` : '');
+async function api(url, options = {}) {
+  const res = await fetch('/api' + url, { ...options, headers: { 'Content-Type': 'application/json', ...options.headers } });
+  const data = await res.json();
+  if (!res.ok) { if (res.status === 401) logged.value = false; throw new Error(data.error || '操作失败'); }
+  return data;
+}
+async function run(action) { busy.value = true; error.value = ''; notice.value = ''; try { await action(); } catch (e) { error.value = e.message; } finally { busy.value = false; } }
+async function loadForms() { forms.value = await api('/admin/forms'); }
+onMounted(async () => { try { await api('/admin/session'); logged.value = true; await loadForms(); } catch (e) { if (logged.value) error.value = e.message; } finally { checking.value = false; } });
+window.addEventListener('beforeunload', e => { if (dirty.value) { e.preventDefault(); e.returnValue = ''; } });
+function mayLeave() { return !dirty.value || window.confirm('还有未保存的修改，确定离开吗？'); }
+function back() { if (!mayLeave()) return; view.value = 'forms'; draft.value = null; error.value = ''; notice.value = ''; run(loadForms); }
+async function login() { await run(async () => { await api('/admin/login', { method: 'POST', body: JSON.stringify({ password: password.value }) }); logged.value = true; password.value = ''; await loadForms(); }); }
+async function logout() { if (!mayLeave()) return; await run(async () => { await api('/admin/logout', { method: 'POST', body: '{}' }); logged.value = false; draft.value = null; selected.value = null; view.value = 'forms'; }); }
+function edit(form) { draft.value = clone(form); original.value = JSON.stringify(draft.value); preview.value = false; view.value = 'editor'; error.value = ''; notice.value = ''; }
+function create(template = false) { const base = template ? bugTemplate() : { title: '未命名问卷', description: '', thanks: '谢谢，你的答卷已收到！', fields: [] }; edit({ ...base, slug: `survey-${crypto.randomUUID().slice(0, 8)}`, state: 'draft' }); original.value = ''; }
+function addField(type) { draft.value.fields.push({ id: crypto.randomUUID(), type, label: `新的${fieldTypes[type]}题`, description: '', required: false, options: choiceTypes.includes(type) ? ['选项一', '选项二'] : [] }); }
+function changeType(field) { if (choiceTypes.includes(field.type) && !field.options.length) field.options = ['选项一', '选项二']; }
+function move(index, delta) { const fields = draft.value.fields; const [f] = fields.splice(index, 1); fields.splice(index + delta, 0, f); }
+function remove(index) { if (window.confirm('移除这道题目？已收到的答卷仍会保留原题目和回答。')) draft.value.fields.splice(index, 1); }
+async function save() { await run(async () => { const value = await api(draft.value.id ? `/admin/forms/${draft.value.id}` : '/admin/forms', { method: draft.value.id ? 'PUT' : 'POST', body: JSON.stringify(draft.value) }); draft.value = value; original.value = JSON.stringify(value); await loadForms(); notice.value = value.state === 'published' ? '已保存并发布，可以分享填写链接了。' : '修改已保存。'; }); }
+async function copyLink(slug) { await run(async () => { const link = `${window.location.origin}/f/${slug}`; await navigator.clipboard.writeText(link); notice.value = '填写链接已复制'; }); }
+async function loadResponses() { const data = await api(`/admin/forms/${responseForm.value.id}/responses?page=${page.value}&status=${encodeURIComponent(filter.value)}`); responses.value = data.items; total.value = data.total; }
+async function openResponses(form) { responseForm.value = form; selected.value = null; page.value = 1; filter.value = ''; view.value = 'responses'; await run(loadResponses); }
+async function changePage(delta) { page.value += delta; selected.value = null; await run(loadResponses); }
+async function saveResponse() { await run(async () => { await api(`/admin/responses/${selected.value.id}`, { method: 'PATCH', body: JSON.stringify({ status: selected.value.status, note: selected.value.note }) }); await loadResponses(); notice.value = '处理状态与内部备注已保存'; }); }
+function formatDate(v) { return new Date(v).toLocaleString('zh-CN'); }
+function summary(item) { return item.snapshot.fields.filter(f => f.type !== 'file').map(f => Array.isArray(item.answers[f.id]) ? item.answers[f.id].join('、') : item.answers[f.id]).filter(Boolean).slice(0, 2).join(' · ') || '仅包含附件'; }
+function answer(item, field) { const value = item.answers[field.id]; return Array.isArray(value) ? value.join('、') || '未填写' : value || '未填写'; }
+</script>
+<template>
+  <div class="admin-shell">
+    <header class="admin-header"><a class="brand" href="/"><span class="brand-mark">Q</span><span>Quesuwa<span class="brand-divider">/</span><span class="brand-sub">管理工作台</span></span></a><button v-if="logged" class="text-button" @click="logout" :disabled="busy">退出登录 ↗</button></header>
+    <div v-if="checking" class="state-card">正在加载…</div>
+    <main v-else-if="!logged" class="login-wrap"><form class="login-card" @submit.prevent="login"><div class="eyebrow">管理入口</div><h1>欢迎回来。</h1><p class="muted">管理问卷，收集反馈，让改变发生。</p><label class="stack-label">管理密码<input type="password" v-model="password" autocomplete="current-password" required placeholder="输入管理密码" /></label><p v-if="error" class="error" role="alert">{{ error }}</p><button class="button primary" :disabled="busy">{{ busy ? '正在登录…' : '进入工作台 ↗' }}</button><a href="/" class="muted small">我来填写问卷 →</a></form></main>
+    <main v-else class="admin-main">
+      <div class="notice error" role="alert" v-if="error">{{ error }}</div><div class="notice positive" role="status" v-if="notice">{{ notice }}</div>
+      <template v-if="view === 'forms'">
+        <div class="page-heading"><div><div class="eyebrow">QUESTIONNAIRES</div><h1>你的问卷</h1><p class="muted">从一个问题开始，听见真实的声音。</p></div><div class="actions"><button class="button" @click="create(true)">使用 Bug 反馈模板</button><button class="button primary" @click="create()">＋ 新建问卷</button></div></div>
+        <div class="stat-grid"><div class="stat-card"><span>全部问卷</span><strong>{{ forms.length }}</strong></div><div class="stat-card"><span>正在收集</span><strong>{{ forms.filter(f => f.state === 'published').length }}</strong></div><div class="stat-card"><span>收到答卷</span><strong>{{ count }}</strong></div></div>
+        <div v-if="!forms.length" class="state-card">还没有问卷，创建第一份吧。</div>
+        <div class="form-grid"><article v-for="form in forms" :key="form.id" class="admin-form-card"><div class="card-top"><span class="badge" :class="form.state">{{ stateLabels[form.state] }}</span><span class="muted small">{{ form.fields.length }} 道题目</span></div><h2>{{ form.title }}</h2><p class="card-description">{{ form.description || '还没有添加问卷说明' }}</p><div class="response-count"><strong>{{ form.responseCount }}</strong> 份答卷</div><div class="card-actions"><button @click="edit(form)" class="button">编辑问卷</button><button @click="openResponses(form)" class="button">查看答卷</button><button v-if="form.state === 'published'" @click="copyLink(form.slug)" class="text-button">复制链接 ↗</button></div></article></div>
+      </template>
+      <template v-else-if="view === 'editor'">
+        <div class="editor-toolbar"><button class="text-button" @click="back">← 全部问卷</button><div class="actions"><span class="muted small">{{ dirty ? '有未保存的修改' : '已保存' }}</span><button class="button" @click="preview = !preview">{{ preview ? '继续编辑' : '预览问卷' }}</button><button class="button primary" :disabled="busy" @click="save">{{ busy ? '保存中…' : '保存问卷' }}</button></div></div>
+        <div v-if="preview" class="preview-container"><Questionnaire :form="draft" preview /></div>
+        <div v-else class="editor-layout">
+          <section class="editor-content">
+            <div class="panel"><div class="eyebrow">问卷信息</div><label class="stack-label">问卷标题<input v-model="draft.title" maxlength="120" /></label><label class="stack-label">问卷说明<textarea v-model="draft.description" rows="3" maxlength="3000" placeholder="说明填写目的、所需时间，或者想对填写者说的话"></textarea></label><label class="stack-label">提交成功提示<textarea v-model="draft.thanks" rows="2" maxlength="1000"></textarea></label></div>
+            <div v-if="!draft.fields.length" class="empty-fields"><span>＋</span><h2>你的第一道题是什么？</h2><p>从右侧选择题型开始，也可以使用 Bug 反馈模板。</p></div>
+            <article v-for="(field, i) in draft.fields" :key="field.id" class="panel field-editor"><div class="field-toolbar"><span class="question-number">{{ String(i + 1).padStart(2, '0') }}</span><select v-model="field.type" @change="changeType(field)" aria-label="题型"><option v-for="(name, type) in fieldTypes" :key="type" :value="type">{{ name }}</option></select><label class="required-toggle"><input type="checkbox" v-model="field.required" />必填</label><div class="actions compact"><button class="icon-button" :disabled="i === 0" @click="move(i, -1)" aria-label="上移题目">↑</button><button class="icon-button" :disabled="i === draft.fields.length - 1" @click="move(i, 1)" aria-label="下移题目">↓</button><button class="icon-button danger" @click="remove(i)" aria-label="移除题目">×</button></div></div><label class="stack-label">题目标题<input v-model="field.label" maxlength="200" /></label><label class="stack-label">补充说明 <span class="muted">选填</span><textarea v-model="field.description" rows="2" maxlength="1000" placeholder="给一个例子，或者告诉用户怎么填写"></textarea></label><div v-if="choiceTypes.includes(field.type)" class="option-editor"><label class="stack-label">选项</label><div v-for="(_, j) in field.options" :key="j" class="option-row"><span class="option-bullet"></span><input v-model="field.options[j]" :aria-label="`选项 ${j + 1}`" maxlength="200" /><button class="icon-button" @click="field.options.splice(j, 1)" :disabled="field.options.length <= 2" aria-label="移除选项">×</button></div><button class="text-button" :disabled="field.options.length >= 30" @click="field.options.push(`选项 ${field.options.length + 1}`)">＋ 添加选项</button></div><p v-if="field.type === 'file'" class="hint">免登录上传，支持图片、PDF、TXT 和 LOG。每题最多 3 个文件，每个不超过 10 MB；每份问卷最多 2 道上传题。附件仅管理员可下载。</p></article>
+          </section>
+          <aside class="editor-sidebar"><div class="panel"><h3>添加题目</h3><div class="type-grid"><button v-for="(name, type) in fieldTypes" :key="type" class="type-button" :disabled="draft.fields.length >= 30 || (type === 'file' && draft.fields.filter(f => f.type === 'file').length >= 2)" @click="addField(type)"><span>{{ { short: 'Aa', long: '☰', single: '◉', multi: '☑', select: '▾', file: '↥' }[type] }}</span>{{ name }}</button></div></div><div class="panel"><h3>发布与分享</h3><label class="stack-label">问卷状态<select v-model="draft.state"><option value="draft">草稿 · 仅后台可见</option><option value="published">发布 · 开放填写</option><option value="closed">关闭 · 停止收集</option></select></label><label class="stack-label">链接标识<input v-model="draft.slug" maxlength="64" pattern="[a-z0-9-]+" /></label><p class="hint">小写字母、数字或短横线。发布后尽量不要修改，旧链接会失效。</p><div class="share-url">{{ formUrl }}</div><button class="button full-width" :disabled="!draft.id || dirty || draft.state !== 'published'" @click="copyLink(draft.slug)">复制填写链接 ↗</button><p class="hint">切换状态后记得保存。修改题目不会覆盖已收到的答卷。</p></div></aside>
+        </div>
+      </template>
+      <template v-else-if="view === 'responses'">
+        <button class="text-button" @click="back">← 全部问卷</button><div class="page-heading"><div><div class="eyebrow">RESPONSES</div><h1>{{ responseForm.title }}</h1><p class="muted">共 {{ total }} 份{{ filter ? `「${filter}」` : '' }}答卷</p></div><div class="actions"><select v-model="filter" aria-label="筛选处理状态" @change="page = 1; selected = null; run(loadResponses)"><option value="">全部状态</option><option v-for="status in statuses" :key="status">{{ status }}</option></select><a class="button" :href="`/api/admin/forms/${responseForm.id}/export`">导出全部 CSV ↓</a></div></div>
+        <div class="responses-layout"><section><div v-if="!responses.length" class="panel muted">{{ busy ? '正在加载…' : '暂时没有符合条件的答卷。' }}</div><button v-for="item in responses" :key="item.id" class="response-row" :class="{ active: selected?.id === item.id }" @click="selected = clone(item)"><div class="card-top"><span class="badge">{{ item.status }}</span><span class="small muted">{{ formatDate(item.createdAt) }}</span></div><p>{{ summary(item) }}</p><div class="small muted">#{{ item.id.slice(0, 8).toUpperCase() }} <span v-if="item.attachments.length">· {{ item.attachments.length }} 个附件</span></div></button><div class="pagination"><button class="button" :disabled="page <= 1 || busy" @click="changePage(-1)">上一页</button><span>{{ page }} / {{ Math.max(1, Math.ceil(total / 30)) }}</span><button class="button" :disabled="page * 30 >= total || busy" @click="changePage(1)">下一页</button></div></section><section class="panel response-detail" v-if="selected"><div class="eyebrow">答卷 #{{ selected.id.slice(0, 8).toUpperCase() }}</div><h2>{{ selected.snapshot.title }}</h2><p class="small muted">{{ formatDate(selected.createdAt) }} · 问卷版本 {{ selected.snapshot.version }}</p><dl><template v-for="field in selected.snapshot.fields" :key="field.id"><dt>{{ field.label }}</dt><dd v-if="field.type !== 'file'" class="preserve">{{ answer(selected, field) }}</dd><dd v-else><a v-for="attachment in selected.attachments.filter(a => a.fieldId === field.id)" :key="attachment.id" class="attachment-link" :href="`/api/admin/responses/${selected.id}/files/${attachment.id}`">↓ {{ attachment.name }} <small>{{ (attachment.size / 1024).toFixed(1) }} KB</small></a><span v-if="!selected.attachments.some(a => a.fieldId === field.id)" class="muted">未上传</span></dd></template></dl><div class="review-controls"><label class="stack-label">处理状态<select v-model="selected.status"><option v-for="status in statuses" :key="status">{{ status }}</option></select></label><label class="stack-label">内部备注<textarea v-model="selected.note" rows="3" maxlength="10000" placeholder="仅管理员可见"></textarea></label><button class="button primary" :disabled="busy" @click="saveResponse">保存处理结果</button></div></section><section v-else class="panel detail-placeholder">选择一份答卷，查看完整内容与附件。</section></div>
+      </template>
+    </main>
+  </div>
+</template>

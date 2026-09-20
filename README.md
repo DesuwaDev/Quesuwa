@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="public/hazuki.png" alt="Quesuwa" width="160" />
+</p>
+
 # Quesuwa
 
 独立部署的自定义问卷与反馈系统，由 DesuwaDev 维护。

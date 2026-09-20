@@ -956,12 +956,22 @@ function answer(item, field) {
           <div class="modal-body">
             <p>{{ modal.message }}</p>
             <div v-if="modal.prompt" class="modal-prompt-wrap">
-              <input
-                v-model="modal.promptValue"
-                :placeholder="t('manage.confirmInputPlaceholder')"
-                autofocus
-                @keydown.enter.prevent="confirmModalSubmit"
-              />
+              <div class="modal-prompt-row">
+                <input
+                  v-model="modal.promptValue"
+                  :placeholder="t('manage.confirmInputPlaceholder')"
+                  autofocus
+                  @keydown.enter.prevent="confirmModalSubmit"
+                />
+                <button
+                  v-if="modal.expected"
+                  type="button"
+                  class="button autofill-button"
+                  @click="modal.promptValue = modal.expected"
+                >
+                  {{ t('manage.autofill') }}
+                </button>
+              </div>
             </div>
           </div>
           <div class="modal-actions">

@@ -257,6 +257,7 @@
   "manage.deleteConfirm": "Move “{title}” to trash? Its public link will stop working. Responses and files will be retained.",
   "manage.purgeConfirm": "Permanently delete this questionnaire, all responses and attachments. This cannot be undone. Type its title to confirm: {title}",
   "manage.confirmInputPlaceholder": "Type questionnaire title to confirm",
+  "manage.autofill": "Auto-fill",
   "manage.done": "Done",
   "manage.noMatches": "No matching questionnaires",
   "manage.import": "Import questionnaire",

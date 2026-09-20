@@ -257,6 +257,7 @@
   "manage.deleteConfirm": "将“{title}”移入回收站？填写链接将立即停用，答卷和附件会保留。",
   "manage.purgeConfirm": "永久删除问卷及所有答卷和附件，无法恢复。请输入问卷标题确认：{title}",
   "manage.confirmInputPlaceholder": "请输入问卷标题确认",
+  "manage.autofill": "一键填写",
   "manage.done": "操作完成",
   "manage.noMatches": "没有符合条件的问卷",
   "manage.import": "导入问卷",

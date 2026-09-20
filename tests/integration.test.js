@@ -10,7 +10,7 @@ const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR
 
 test('custom questionnaires: authentication, uploads, snapshots, export and persistence', async t => {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'quesuwa-test-'));
-  let instance = createApp({ dataDir, password, seed: false });
+  let instance = createApp({ dataDir, password });
   let server = instance.app.listen(0, '127.0.0.1');
   await new Promise(resolve => server.once('listening', resolve));
   let base = `http://127.0.0.1:${server.address().port}`, cookie = '';
@@ -75,7 +75,7 @@ test('custom questionnaires: authentication, uploads, snapshots, export and pers
   assert.equal((await request('/forms/test-survey')).status, 410); assert.equal((await submit(form)).status, 404);
   assert.equal((await request('/admin/logout', 'POST', {})).status, 200); assert.equal((await request('/admin/forms')).status, 401);
   await new Promise(resolve => server.close(resolve)); instance.close();
-  instance = createApp({ dataDir, password, seed: false }); server = instance.app.listen(0, '127.0.0.1'); await new Promise(resolve => server.once('listening', resolve)); base = `http://127.0.0.1:${server.address().port}`; cookie = '';
+  instance = createApp({ dataDir, password }); server = instance.app.listen(0, '127.0.0.1'); await new Promise(resolve => server.once('listening', resolve)); base = `http://127.0.0.1:${server.address().port}`; cookie = '';
   res = await request('/admin/login', 'POST', { password }); cookie = res.headers.get('set-cookie').split(';')[0];
   const persisted = await (await request(`/admin/forms/${form.id}/responses`)).json(); assert.equal(persisted.total, 1); assert.equal(persisted.items[0].note, '内部备注');
 });

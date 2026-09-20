@@ -15,7 +15,7 @@ function collect(dir) {
   }
 }
 for (const dir of ['src', 'server', 'public']) collect(dir);
-files.push('scripts/setup.js', 'i18n/core.js', 'index.html', 'vite.config.js');
+files.push('scripts/reset-password.js', 'scripts/setup.js', 'i18n/core.js', 'index.html', 'vite.config.js');
 const errors = validateCatalogs(catalogs);
 for (const file of files) {
   const result = auditSource(file, read(file), catalogs['zh-CN'], exceptions);

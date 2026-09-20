@@ -2,7 +2,6 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { catalogs, negotiateLocale, normalizeLocale, translate } from '../i18n/core.js';
 import { auditSource, validateCatalogs } from '../scripts/lib/i18n-audit.js';
-import { bugTemplate } from '../src/shared.js';
 
 test('locale negotiation respects quality, regional tags and unsupported languages', () => {
   assert.equal(normalizeLocale('en-US'), 'en');
@@ -19,8 +18,6 @@ test('catalogs agree and translation uses plain text interpolation', () => {
   assert.equal(translate('en', 'form.removeFile', { name: '<img onerror=alert(1)>' }), 'Remove <img onerror=alert(1)>');
   assert.throws(() => translate('en', 'missing.key'), /Unknown translation/);
   assert.throws(() => translate('en', 'form.progress'), /Missing translation/);
-  assert.equal(bugTemplate('en').title, 'Report a product issue');
-  assert.equal(bugTemplate('zh-CN').title, '产品问题反馈');
   const broken = structuredClone(catalogs);
   delete broken.en['form.submit'];
   broken.en['form.progress'] = 'Completed {wrong}';

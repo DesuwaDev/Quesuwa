@@ -14,7 +14,8 @@
     "setup": "node scripts/setup.js",
     "check:i18n": "node scripts/check-i18n.js",
     "prebuild": "npm run check:i18n",
-    "pretest": "npm run check:i18n"
+    "pretest": "npm run check:i18n",
+    "reset-password": "node scripts/reset-password.js"
   },
   "dependencies": {
     "dotenv": "^17.0.0",

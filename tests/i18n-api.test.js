@@ -8,15 +8,15 @@ import { createApp } from '../server/app.js';
 
 test('API language, CSV, stable status IDs and legacy migration preserve answers', async t => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'quesuwa-i18n-'));
-  let instance = createApp({ dataDir: dir, password: 'i18n-test-password-12345', seed: false });
+  let instance = createApp({ dataDir: dir, password: 'i18n-test-password-12345' });
   const database = new DatabaseSync(path.join(dir, 'report.sqlite'));
   const snapshot = { id: 'form', title: '用户自定义标题', fields: [{ id: 'answer', type: 'short', label: '用户题目' }] };
   const now = new Date().toISOString();
-  database.prepare('INSERT INTO forms VALUES (?,?,?,?,?,?,?)').run('form', 'locale-test', 'published', 1, JSON.stringify({ ...snapshot, slug: 'locale-test', state: 'published' }), now, now);
+  database.prepare('INSERT INTO forms(id,slug,state,version,definition,created_at,updated_at) VALUES (?,?,?,?,?,?,?)').run('form', 'locale-test', 'published', 1, JSON.stringify({ ...snapshot, slug: 'locale-test', state: 'published' }), now, now);
   const insert = database.prepare('INSERT INTO responses (id,form_id,snapshot,answers,attachments,created_at,status) VALUES (?,?,?,?,?,?,?)');
   for (const [index, status] of ['待处理', '排查中', '已解决', '需要补充'].entries()) insert.run(`response-${index}`, 'form', JSON.stringify(snapshot), JSON.stringify({ answer: '保留原始答卷内容' }), '[]', now, status);
   database.close(); instance.close();
-  instance = createApp({ dataDir: dir, password: 'i18n-test-password-12345', seed: false });
+  instance = createApp({ dataDir: dir, password: 'i18n-test-password-12345' });
   const server = instance.app.listen(0, '127.0.0.1');
   await new Promise(resolve => server.once('listening', resolve));
   const base = `http://127.0.0.1:${server.address().port}`;

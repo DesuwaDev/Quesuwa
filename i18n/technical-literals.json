@@ -82,11 +82,6 @@
         "reason": "Language-neutral stored status identifier; UI uses translated status keys."
       },
       {
-        "kind": "template",
-        "value": "/admin/forms/${}/responses?page=${}&status=${}",
-        "reason": "Route, file path, MIME type, selector or generated internal identifier."
-      },
-      {
         "kind": "literal",
         "value": "responses",
         "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
@@ -115,6 +110,136 @@
         "kind": "template",
         "value": "/api/admin/responses/${}/files/${}",
         "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "popstate",
+        "reason": "Browser history event name for admin navigation."
+      },
+      {
+        "kind": "literal",
+        "value": "updated",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "pending",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "created",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "template",
+        "value": "/admin/forms?trash=${}",
+        "reason": "Internal API route, not displayed as interface copy."
+      },
+      {
+        "kind": "literal",
+        "value": "long",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "image",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "pdf",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "text",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "template",
+        "value": "/admin/forms/${}/duplicate",
+        "reason": "Internal API route, not displayed as interface copy."
+      },
+      {
+        "kind": "template",
+        "value": "/admin/forms/${}?permanent=${}",
+        "reason": "Internal API route, not displayed as interface copy."
+      },
+      {
+        "kind": "literal",
+        "value": "DELETE",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "template",
+        "value": "/admin/forms/${}/restore",
+        "reason": "Internal API route, not displayed as interface copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/admin/system",
+        "reason": "Internal API route, not displayed as interface copy."
+      },
+      {
+        "kind": "literal",
+        "value": "system",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "trash",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "purge",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "template",
+        "value": "/admin/forms/${}/responses/batch",
+        "reason": "Internal API route, not displayed as interface copy."
+      },
+      {
+        "kind": "template",
+        "value": "/admin/forms/${}/responses?page=${}&status=${}&q=${}&trash=${}",
+        "reason": "Internal API route, not displayed as interface copy."
+      },
+      {
+        "kind": "template",
+        "value": "/admin/forms/${}/statistics",
+        "reason": "Internal API route, not displayed as interface copy."
+      },
+      {
+        "kind": "template",
+        "value": "/api/admin/forms/${}/definition",
+        "reason": "Internal API route, not displayed as interface copy."
+      },
+      {
+        "kind": "literal",
+        "value": "status",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "restore",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "questions",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "/admin/sessions",
+        "reason": "Internal API route, not displayed as interface copy."
+      },
+      {
+        "kind": "literal",
+        "value": "settings",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
       }
     ],
     "dynamicKeys": [
@@ -145,6 +270,10 @@
       {
         "expression": "statusKeys[item.status]",
         "reason": "Key originates from validated API codes, the translation helper, or explicit translation-key maps."
+      },
+      {
+        "expression": "key",
+        "reason": "Key from the fixed stateKeys map."
       }
     ]
   },
@@ -161,14 +290,19 @@
         "reason": "Route, file path, MIME type, selector or generated internal identifier."
       },
       {
-        "kind": "literal",
-        "value": "/api/forms",
-        "reason": "Route, file path, MIME type, selector or generated internal identifier."
-      },
-      {
         "kind": "template",
         "value": "/f/${}",
         "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "popstate",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/forms",
+        "reason": "Internal API route, not displayed as interface copy."
       }
     ],
     "dynamicKeys": [
@@ -199,6 +333,46 @@
         "kind": "literal",
         "value": "string",
         "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "quesuwa.theme",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "auto",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "light",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "dark",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "data-theme",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "(prefers-color-scheme: dark)",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "change",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "theme-transitioning",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
       }
     ],
     "dynamicKeys": [
@@ -213,7 +387,33 @@
     ]
   },
   "src/LanguageSwitcher.vue": {
-    "literals": [],
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "zh-CN",
+        "reason": "Locale identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "en",
+        "reason": "Locale identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "auto",
+        "reason": "Theme mode identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "light",
+        "reason": "Theme mode identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "dark",
+        "reason": "Theme mode identifier; not user-facing copy."
+      }
+    ],
     "dynamicKeys": []
   },
   "src/main.js": {
@@ -270,11 +470,6 @@
       },
       {
         "kind": "literal",
-        "value": "short",
-        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
-      },
-      {
-        "kind": "literal",
         "value": "long",
         "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
       },
@@ -292,6 +487,46 @@
         "kind": "literal",
         "value": "select",
         "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "image",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "pdf",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "text",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": ".png,.jpg,.jpeg,.webp,.gif",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": ".pdf",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": ".txt,.log",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "consent",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "rating",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
       }
     ],
     "dynamicKeys": [
@@ -337,64 +572,9 @@
         "kind": "literal",
         "value": "select",
         "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
-      },
-      {
-        "kind": "literal",
-        "value": "category",
-        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
-      },
-      {
-        "kind": "literal",
-        "value": "description",
-        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
-      },
-      {
-        "kind": "literal",
-        "value": "long",
-        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
-      },
-      {
-        "kind": "literal",
-        "value": "device",
-        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
-      },
-      {
-        "kind": "literal",
-        "value": "short",
-        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
-      },
-      {
-        "kind": "literal",
-        "value": "frequency",
-        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
-      },
-      {
-        "kind": "literal",
-        "value": "clues",
-        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
-      },
-      {
-        "kind": "literal",
-        "value": "attachment",
-        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
-      },
-      {
-        "kind": "literal",
-        "value": "file",
-        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
-      },
-      {
-        "kind": "literal",
-        "value": "contact",
-        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
       }
     ],
-    "dynamicKeys": [
-      {
-        "expression": "key",
-        "reason": "Key originates from validated API codes, the translation helper, or explicit translation-key maps."
-      }
-    ]
+    "dynamicKeys": []
   },
   "src/style.css": {
     "literals": [],
@@ -480,21 +660,6 @@
       {
         "kind": "literal",
         "value": "UPDATE responses SET status=? WHERE status=?",
-        "reason": "Parameterized SQLite query/schema; persisted statuses use language-neutral codes."
-      },
-      {
-        "kind": "literal",
-        "value": "SELECT count(*) AS n FROM forms",
-        "reason": "Parameterized SQLite query/schema; persisted statuses use language-neutral codes."
-      },
-      {
-        "kind": "literal",
-        "value": "bug-report",
-        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
-      },
-      {
-        "kind": "literal",
-        "value": "INSERT INTO forms VALUES (?, ?, ?, 1, ?, ?, ?)",
         "reason": "Parameterized SQLite query/schema; persisted statuses use language-neutral codes."
       },
       {
@@ -624,11 +789,6 @@
       },
       {
         "kind": "literal",
-        "value": "SELECT f.*, (SELECT COUNT(*) FROM responses r WHERE r.form_id = f.id) AS response_count FROM forms f ORDER BY created_at DESC",
-        "reason": "Parameterized SQLite query/schema; persisted statuses use language-neutral codes."
-      },
-      {
-        "kind": "literal",
         "value": "SELECT id FROM forms WHERE slug = ?",
         "reason": "Parameterized SQLite query/schema; persisted statuses use language-neutral codes."
       },
@@ -654,11 +814,6 @@
       },
       {
         "kind": "literal",
-        "value": "SELECT * FROM forms WHERE state='published' ORDER BY created_at DESC",
-        "reason": "Parameterized SQLite query/schema; persisted statuses use language-neutral codes."
-      },
-      {
-        "kind": "literal",
         "value": "/api/forms/:slug",
         "reason": "Route, file path, MIME type, selector or generated internal identifier."
       },
@@ -676,11 +831,6 @@
         "kind": "literal",
         "value": "multipart/form-data",
         "reason": "Route, file path, MIME type, selector or generated internal identifier."
-      },
-      {
-        "kind": "literal",
-        "value": "SELECT * FROM forms WHERE slug=? AND state='published'",
-        "reason": "Parameterized SQLite query/schema; persisted statuses use language-neutral codes."
       },
       {
         "kind": "literal",
@@ -744,11 +894,6 @@
       },
       {
         "kind": "literal",
-        "value": "form_id=?",
-        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
-      },
-      {
-        "kind": "literal",
         "value": " AND status=?",
         "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
       },
@@ -766,11 +911,6 @@
         "kind": "literal",
         "value": "/api/admin/responses/:id",
         "reason": "Route, file path, MIME type, selector or generated internal identifier."
-      },
-      {
-        "kind": "literal",
-        "value": "UPDATE responses SET status=?, note=? WHERE id=?",
-        "reason": "Parameterized SQLite query/schema; persisted statuses use language-neutral codes."
       },
       {
         "kind": "literal",
@@ -801,11 +941,6 @@
         "kind": "literal",
         "value": "responses.csv",
         "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
-      },
-      {
-        "kind": "literal",
-        "value": "SELECT * FROM responses WHERE form_id=? ORDER BY created_at DESC",
-        "reason": "Parameterized SQLite query/schema; persisted statuses use language-neutral codes."
       },
       {
         "kind": "literal",
@@ -841,6 +976,181 @@
         "kind": "literal",
         "value": "errors.",
         "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "PRAGMA busy_timeout=5000;",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "INSERT INTO forms(id,slug,state,version,definition,created_at,updated_at) VALUES (?, ?, ?, 1, ?, ?, ?)",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT f.*, (SELECT COUNT(*) FROM responses r WHERE r.form_id = f.id AND r.deleted_at IS NULL) AS response_count FROM forms f WHERE ",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "true",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "deleted_at IS NOT NULL",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "deleted_at IS NULL",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": " ORDER BY created_at DESC",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "createForm",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "updateForm",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT count(*) AS n FROM responses WHERE form_id=?",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT * FROM forms WHERE state='published' AND deleted_at IS NULL ORDER BY created_at DESC",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "finish",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "close",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT * FROM forms WHERE slug=? AND state='published' AND deleted_at IS NULL",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "image/",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "image",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "pdf",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "form_id=? AND deleted_at IS ",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "NOT NULL",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "NULL",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": " AND (instr(answers,?)>0 OR instr(note,?)>0 OR instr(id,?)>0)",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "UPDATE responses SET status=?, note=? WHERE id=? AND deleted_at IS NULL",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT * FROM responses WHERE form_id=? AND deleted_at IS NULL ORDER BY created_at DESC",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/admin/sessions",
+        "reason": "Internal API route, not displayed as interface copy."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT token,created_at AS createdAt,expires_at AS expiresAt FROM admin_sessions WHERE expires_at>? ORDER BY created_at DESC",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/admin/sessions/revoke",
+        "reason": "Internal API route, not displayed as interface copy."
+      },
+      {
+        "kind": "literal",
+        "value": "DELETE FROM admin_sessions WHERE token<>?",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/admin/password",
+        "reason": "Internal API route, not displayed as interface copy."
+      },
+      {
+        "kind": "literal",
+        "value": "BEGIN IMMEDIATE",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "COMMIT",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "ROLLBACK",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "https:",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT COALESCE(SUM(json_extract(a.value,'$.size')),0) AS bytes FROM responses r, json_each(r.attachments) a",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/health",
+        "reason": "Internal API route, not displayed as interface copy."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT 1",
+        "reason": "SQLite statement or query clause; values are bound separately."
       }
     ],
     "dynamicKeys": [
@@ -851,6 +1161,10 @@
       {
         "expression": "code",
         "reason": "Key originates from validated API codes, the translation helper, or explicit translation-key maps."
+      },
+      {
+        "expression": "invalid",
+        "reason": "Error key returned by the shared answerError validator."
       }
     ]
   },
@@ -1028,6 +1342,661 @@
         "kind": "literal",
         "value": "http://127.0.0.1:3100",
         "reason": "Build-time HTML placeholder, plugin identifier or development proxy address."
+      }
+    ],
+    "dynamicKeys": []
+  },
+  "src/AdminInsights.vue": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "rating",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "number",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      }
+    ],
+    "dynamicKeys": [
+      {
+        "expression": "statusKeys[status]",
+        "reason": "Status from server aggregation, resolved by the fixed statusKeys map."
+      }
+    ]
+  },
+  "src/FieldSettings.vue": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "short",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "long",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "email",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "url",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "number",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "date",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "rating",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "file",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      }
+    ],
+    "dynamicKeys": [
+      {
+        "expression": "fileKindKeys[kind]",
+        "reason": "Key from the fixed file kind label map."
+      }
+    ]
+  },
+  "src/form-rules.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "text",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "email",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "url",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "number",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "date",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "image",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "pdf",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "object",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "listed",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "showProgress",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "boolean",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "startsAt",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "endsAt",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "string",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "submitLabel",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "consentText",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "long",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "min",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "max",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "single",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "multi",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "select",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "http:",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "https:",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "rating",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      }
+    ],
+    "dynamicKeys": []
+  },
+  "src/SurveySettings.vue": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "startsAt",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "endsAt",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      }
+    ],
+    "dynamicKeys": []
+  },
+  "src/SystemPanel.vue": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "passwordChanged",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "refresh",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "/admin/password",
+        "reason": "Internal API route, not displayed as interface copy."
+      },
+      {
+        "kind": "literal",
+        "value": "POST",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "/admin/sessions/revoke",
+        "reason": "Internal API route, not displayed as interface copy."
+      }
+    ],
+    "dynamicKeys": [
+      {
+        "expression": "actions[event.action]",
+        "reason": "Action resolved through the fixed audit label map."
+      }
+    ]
+  },
+  "server/management.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "forms",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "responses",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "template",
+        "value": "PRAGMA table_info(${})",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "deleted_at",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "template",
+        "value": "ALTER TABLE ${} ADD COLUMN deleted_at TEXT",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "template",
+        "value": "CREATE TABLE IF NOT EXISTS audit (id INTEGER PRIMARY KEY, action TEXT NOT NULL, target TEXT NOT NULL, created_at TEXT NOT NULL);\n    CREATE TABLE IF NOT EXISTS file_cleanup (id TEXT PRIMARY KEY);\n    CREATE INDEX IF NOT EXISTS responses_active ON responses(form_id, deleted_at, created_at);",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "INSERT INTO audit(action,target,created_at) VALUES (?,?,?)",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "DELETE FROM audit WHERE id NOT IN (SELECT id FROM audit ORDER BY id DESC LIMIT 1000)",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "BEGIN IMMEDIATE",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "COMMIT",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "ROLLBACK",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT id FROM file_cleanup",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "uploads",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "DELETE FROM file_cleanup WHERE id=?",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "INSERT OR IGNORE INTO file_cleanup(id) VALUES (?)",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/admin/forms/:id/duplicate",
+        "reason": "Internal API route, not displayed as interface copy."
+      },
+      {
+        "kind": "literal",
+        "value": "draft",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "template",
+        "value": "survey-${}",
+        "reason": "Machine generated questionnaire URL identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "INSERT INTO forms(id,slug,state,version,definition,created_at,updated_at) VALUES (?,?,?,1,?,?,?)",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "duplicate",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/admin/forms/:id",
+        "reason": "Internal API route, not displayed as interface copy."
+      },
+      {
+        "kind": "literal",
+        "value": "true",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT attachments FROM responses WHERE form_id=?",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "DELETE FROM responses WHERE form_id=?",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "DELETE FROM forms WHERE id=?",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "purgeForm",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "UPDATE forms SET deleted_at=?, version=version+1, updated_at=? WHERE id=? AND deleted_at IS NULL",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "trashForm",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/admin/forms/:id/restore",
+        "reason": "Internal API route, not displayed as interface copy."
+      },
+      {
+        "kind": "literal",
+        "value": "UPDATE forms SET deleted_at=NULL,state='draft',definition=?,version=version+1,updated_at=? WHERE id=?",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "restoreForm",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/admin/forms/:id/responses/batch",
+        "reason": "Internal API route, not displayed as interface copy."
+      },
+      {
+        "kind": "literal",
+        "value": "string",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "status",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "trash",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "restore",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "purge",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT * FROM responses WHERE id=? AND form_id=?",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "UPDATE responses SET status=? WHERE id=?",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "UPDATE responses SET deleted_at=? WHERE id=?",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "UPDATE responses SET deleted_at=NULL WHERE id=?",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "DELETE FROM responses WHERE id=?",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/admin/forms/:id/statistics",
+        "reason": "Internal API route, not displayed as interface copy."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT answers,snapshot,created_at,status FROM responses WHERE form_id=? AND deleted_at IS NULL ORDER BY created_at",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "single",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "multi",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "select",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "rating",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "number",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/admin/forms/:id/definition",
+        "reason": "Internal API route, not displayed as interface copy."
+      },
+      {
+        "kind": "literal",
+        "value": "questionnaire.json",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/admin/system",
+        "reason": "Internal API route, not displayed as interface copy."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT attachments FROM responses",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT count(*) AS n FROM forms WHERE deleted_at IS NULL",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT count(*) AS n FROM responses WHERE deleted_at IS NULL",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "report.sqlite",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT count(*) AS n FROM file_cleanup",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT action,target,created_at AS createdAt FROM audit ORDER BY id DESC LIMIT 100",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      }
+    ],
+    "dynamicKeys": []
+  },
+  "server/auth.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "sha256",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "hex",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "template",
+        "value": "CREATE TABLE IF NOT EXISTS admin_credential (id INTEGER PRIMARY KEY CHECK(id=1), salt TEXT NOT NULL, hash TEXT NOT NULL);\n    CREATE TABLE IF NOT EXISTS admin_sessions (token TEXT PRIMARY KEY, created_at TEXT NOT NULL, expires_at INTEGER NOT NULL);\n    CREATE INDEX IF NOT EXISTS session_expiry ON admin_sessions(expires_at);",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "INSERT OR REPLACE INTO admin_credential(id,salt,hash) VALUES (1,?,?)",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT id FROM admin_credential WHERE id=1",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT expires_at FROM admin_sessions WHERE token=?",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "DELETE FROM admin_sessions WHERE token=?",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "DELETE FROM admin_sessions",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "INSERT INTO admin_sessions(token,created_at,expires_at) VALUES (?,?,?)",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "DELETE FROM admin_sessions WHERE expires_at <= ?",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "DELETE FROM admin_sessions WHERE token NOT IN (SELECT token FROM admin_sessions ORDER BY created_at DESC LIMIT 99)",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "string",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT salt,hash FROM admin_credential WHERE id=1",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT hash FROM admin_credential WHERE id=1",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      }
+    ],
+    "dynamicKeys": []
+  },
+  "scripts/reset-password.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "./data",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "report.sqlite",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "hex",
+        "reason": "Reviewed protocol, field type, schema property, storage filename or state identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "BEGIN IMMEDIATE",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "UPDATE admin_credential SET salt=?,hash=? WHERE id=1",
+        "reason": "SQLite statement or query clause; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "DELETE FROM admin_sessions; COMMIT;",
+        "reason": "SQLite statement or query clause; values are bound separately."
       }
     ],
     "dynamicKeys": []

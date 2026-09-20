@@ -1,0 +1,6 @@
+{
+  "待处理": "pending",
+  "排查中": "inProgress",
+  "已解决": "resolved",
+  "需要补充": "needsInfo"
+}

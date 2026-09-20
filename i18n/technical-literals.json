@@ -1,0 +1,1035 @@
+{
+  "src/Admin.vue": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "forms",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "${}/f/${}",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "/api",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "application/json",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "/admin/forms",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "/admin/session",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "beforeunload",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/admin/login",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "POST",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/admin/logout",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "editor",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "survey-${}",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "draft",
+        "reason": "Language-neutral stored status identifier; UI uses translated status keys."
+      },
+      {
+        "kind": "template",
+        "value": "/admin/forms/${}",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "PUT",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "published",
+        "reason": "Language-neutral stored status identifier; UI uses translated status keys."
+      },
+      {
+        "kind": "template",
+        "value": "/admin/forms/${}/responses?page=${}&status=${}",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "responses",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "/admin/responses/${}",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "PATCH",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "file",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "/api/admin/forms/${}/export?lang=${}",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "template",
+        "value": "/api/admin/responses/${}/files/${}",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      }
+    ],
+    "dynamicKeys": [
+      {
+        "expression": "fieldTypes[type]",
+        "reason": "Key originates from validated API codes, the translation helper, or explicit translation-key maps."
+      },
+      {
+        "expression": "notice",
+        "reason": "Key originates from validated API codes, the translation helper, or explicit translation-key maps."
+      },
+      {
+        "expression": "stateKeys[form.state]",
+        "reason": "Key originates from validated API codes, the translation helper, or explicit translation-key maps."
+      },
+      {
+        "expression": "name",
+        "reason": "Key originates from validated API codes, the translation helper, or explicit translation-key maps."
+      },
+      {
+        "expression": "statusKeys[filter]",
+        "reason": "Key originates from validated API codes, the translation helper, or explicit translation-key maps."
+      },
+      {
+        "expression": "statusKeys[status]",
+        "reason": "Key originates from validated API codes, the translation helper, or explicit translation-key maps."
+      },
+      {
+        "expression": "statusKeys[item.status]",
+        "reason": "Key originates from validated API codes, the translation helper, or explicit translation-key maps."
+      }
+    ]
+  },
+  "src/App.vue": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "/admin",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "template",
+        "value": "/api/forms/${}",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/forms",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "template",
+        "value": "/f/${}",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      }
+    ],
+    "dynamicKeys": [
+      {
+        "expression": "success.thanksKey",
+        "reason": "Key originates from validated API codes, the translation helper, or explicit translation-key maps."
+      }
+    ]
+  },
+  "src/i18n.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "quesuwa.locale",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "meta[name=\"description\"]",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "content",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "string",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      }
+    ],
+    "dynamicKeys": [
+      {
+        "expression": "key",
+        "reason": "Key originates from validated API codes, the translation helper, or explicit translation-key maps."
+      },
+      {
+        "expression": "error.code || 'errors.network'",
+        "reason": "Key originates from validated API codes, the translation helper, or explicit translation-key maps."
+      }
+    ]
+  },
+  "src/LanguageSwitcher.vue": {
+    "literals": [],
+    "dynamicKeys": []
+  },
+  "src/main.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "#app",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      }
+    ],
+    "dynamicKeys": []
+  },
+  "src/Questionnaire.vue": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "submitted",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "file",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "answers",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "version",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "website",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "/api/forms/${}/responses",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "POST",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "hint-${}",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "short",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "long",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "single",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "multi",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "select",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      }
+    ],
+    "dynamicKeys": [
+      {
+        "expression": "errors[field.id]",
+        "reason": "Key originates from validated API codes, the translation helper, or explicit translation-key maps."
+      }
+    ]
+  },
+  "src/shared.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "pending",
+        "reason": "Language-neutral stored status identifier; UI uses translated status keys."
+      },
+      {
+        "kind": "literal",
+        "value": "inProgress",
+        "reason": "Language-neutral stored status identifier; UI uses translated status keys."
+      },
+      {
+        "kind": "literal",
+        "value": "resolved",
+        "reason": "Language-neutral stored status identifier; UI uses translated status keys."
+      },
+      {
+        "kind": "literal",
+        "value": "needsInfo",
+        "reason": "Language-neutral stored status identifier; UI uses translated status keys."
+      },
+      {
+        "kind": "literal",
+        "value": "single",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "multi",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "select",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "category",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "description",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "long",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "device",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "short",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "frequency",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "clues",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "attachment",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "file",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "contact",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      }
+    ],
+    "dynamicKeys": [
+      {
+        "expression": "key",
+        "reason": "Key originates from validated API codes, the translation helper, or explicit translation-key maps."
+      }
+    ]
+  },
+  "src/style.css": {
+    "literals": [],
+    "dynamicKeys": []
+  },
+  "server/app.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "utf-8",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "latin1",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "attachment",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "string",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "object",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "draft",
+        "reason": "Language-neutral stored status identifier; UI uses translated status keys."
+      },
+      {
+        "kind": "literal",
+        "value": "published",
+        "reason": "Language-neutral stored status identifier; UI uses translated status keys."
+      },
+      {
+        "kind": "literal",
+        "value": "closed",
+        "reason": "Language-neutral stored status identifier; UI uses translated status keys."
+      },
+      {
+        "kind": "literal",
+        "value": "__proto__",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "constructor",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "prototype",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "file",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "uploads",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "report.sqlite",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;\n    CREATE TABLE IF NOT EXISTS forms (id TEXT PRIMARY KEY, slug TEXT NOT NULL UNIQUE, state TEXT NOT NULL, version INTEGER NOT NULL, definition TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);\n    CREATE TABLE IF NOT EXISTS responses (id TEXT PRIMARY KEY, form_id TEXT NOT NULL REFERENCES forms(id), snapshot TEXT NOT NULL, answers TEXT NOT NULL, attachments TEXT NOT NULL, created_at TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'pending', note TEXT NOT NULL DEFAULT '');\n    CREATE INDEX IF NOT EXISTS responses_form ON responses(form_id, created_at);",
+        "reason": "Parameterized SQLite query/schema; persisted statuses use language-neutral codes."
+      },
+      {
+        "kind": "literal",
+        "value": "UPDATE responses SET status=? WHERE status=?",
+        "reason": "Parameterized SQLite query/schema; persisted statuses use language-neutral codes."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT count(*) AS n FROM forms",
+        "reason": "Parameterized SQLite query/schema; persisted statuses use language-neutral codes."
+      },
+      {
+        "kind": "literal",
+        "value": "bug-report",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "INSERT INTO forms VALUES (?, ?, ?, 1, ?, ?, ?)",
+        "reason": "Parameterized SQLite query/schema; persisted statuses use language-neutral codes."
+      },
+      {
+        "kind": "literal",
+        "value": "x-powered-by",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "trust proxy",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "'self'",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "blob:",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "data:",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "'none'",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/api",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "Cache-Control",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "no-store",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "256kb",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "origin",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "host",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "GET",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "HEAD",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "OPTIONS",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "draft-8",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "strict",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/admin",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/admin/login",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "hex",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "quesuwa_session",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/admin/session",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/admin/logout",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT * FROM forms WHERE id = ?",
+        "reason": "Parameterized SQLite query/schema; persisted statuses use language-neutral codes."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/admin/forms",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT f.*, (SELECT COUNT(*) FROM responses r WHERE r.form_id = f.id) AS response_count FROM forms f ORDER BY created_at DESC",
+        "reason": "Parameterized SQLite query/schema; persisted statuses use language-neutral codes."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT id FROM forms WHERE slug = ?",
+        "reason": "Parameterized SQLite query/schema; persisted statuses use language-neutral codes."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/admin/forms/:id",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT id FROM forms WHERE slug = ? AND id != ?",
+        "reason": "Parameterized SQLite query/schema; persisted statuses use language-neutral codes."
+      },
+      {
+        "kind": "literal",
+        "value": "UPDATE forms SET slug=?, state=?, version=version+1, definition=?, updated_at=? WHERE id=? AND version=?",
+        "reason": "Parameterized SQLite query/schema; persisted statuses use language-neutral codes."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/forms",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT * FROM forms WHERE state='published' ORDER BY created_at DESC",
+        "reason": "Parameterized SQLite query/schema; persisted statuses use language-neutral codes."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/forms/:slug",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT * FROM forms WHERE slug=?",
+        "reason": "Parameterized SQLite query/schema; persisted statuses use language-neutral codes."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/forms/:slug/responses",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "multipart/form-data",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT * FROM forms WHERE slug=? AND state='published'",
+        "reason": "Parameterized SQLite query/schema; persisted statuses use language-neutral codes."
+      },
+      {
+        "kind": "literal",
+        "value": "multi",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "long",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "image/png",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "image/jpeg",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "image/webp",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "image/gif",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "application/pdf",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "text/plain",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "wx",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "INSERT INTO responses (id, form_id, snapshot, answers, attachments, created_at, status) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        "reason": "Parameterized SQLite query/schema; persisted statuses use language-neutral codes."
+      },
+      {
+        "kind": "literal",
+        "value": "pending",
+        "reason": "Language-neutral stored status identifier; UI uses translated status keys."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/admin/forms/:id/responses",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "form_id=?",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": " AND status=?",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "SELECT count(*) AS n FROM responses WHERE ${}",
+        "reason": "Parameterized SQLite query/schema; persisted statuses use language-neutral codes."
+      },
+      {
+        "kind": "template",
+        "value": "SELECT * FROM responses WHERE ${} ORDER BY created_at DESC LIMIT 30 OFFSET ?",
+        "reason": "Parameterized SQLite query/schema; persisted statuses use language-neutral codes."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/admin/responses/:id",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "UPDATE responses SET status=?, note=? WHERE id=?",
+        "reason": "Parameterized SQLite query/schema; persisted statuses use language-neutral codes."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/admin/responses/:id/files/:fileId",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT attachments FROM responses WHERE id=?",
+        "reason": "Parameterized SQLite query/schema; persisted statuses use language-neutral codes."
+      },
+      {
+        "kind": "literal",
+        "value": "Content-Type",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/admin/forms/:id/export",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "text/csv; charset=utf-8",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "responses.csv",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT * FROM responses WHERE form_id=? ORDER BY created_at DESC",
+        "reason": "Parameterized SQLite query/schema; persisted statuses use language-neutral codes."
+      },
+      {
+        "kind": "literal",
+        "value": "dist",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/admin",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "/f/:slug",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "index.html",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "text",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "LIMIT_FILE_SIZE",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "errors.",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      }
+    ],
+    "dynamicKeys": [
+      {
+        "expression": "statusKeys[r.status]",
+        "reason": "Key originates from validated API codes, the translation helper, or explicit translation-key maps."
+      },
+      {
+        "expression": "code",
+        "reason": "Key originates from validated API codes, the translation helper, or explicit translation-key maps."
+      }
+    ]
+  },
+  "server/i18n.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "accept-language",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "Content-Language",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "Accept-Language",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      }
+    ],
+    "dynamicKeys": [
+      {
+        "expression": "key",
+        "reason": "Key originates from validated API codes, the translation helper, or explicit translation-key maps."
+      }
+    ]
+  },
+  "server/index.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "./data",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "production",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "http://${}:${}",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "SIGTERM",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "SIGINT",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      }
+    ],
+    "dynamicKeys": []
+  },
+  "public/favicon.svg": {
+    "literals": [],
+    "dynamicKeys": []
+  },
+  "scripts/setup.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "../.env",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "../.env.example",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "utf8",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "ADMIN_PASSWORD=${}",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "base64url",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "wx",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      }
+    ],
+    "dynamicKeys": []
+  },
+  "i18n/core.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "zh-CN",
+        "reason": "Locale-negotiation token or JavaScript type identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "string",
+        "reason": "Locale-negotiation token or JavaScript type identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "zh",
+        "reason": "Locale-negotiation token or JavaScript type identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "zh-",
+        "reason": "Locale-negotiation token or JavaScript type identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "en",
+        "reason": "Locale-negotiation token or JavaScript type identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "en-",
+        "reason": "Locale-negotiation token or JavaScript type identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "q=",
+        "reason": "Locale-negotiation token or JavaScript type identifier."
+      },
+      {
+        "kind": "template",
+        "value": "Unknown translation key: ${}",
+        "reason": "Developer-only exception from the translation engine, not a rendered application message."
+      },
+      {
+        "kind": "template",
+        "value": "Missing translation parameter: ${}.${}",
+        "reason": "Developer-only exception from the translation engine, not a rendered application message."
+      }
+    ],
+    "dynamicKeys": []
+  },
+  "index.html": {
+    "literals": [],
+    "dynamicKeys": []
+  },
+  "vite.config.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "localized-html",
+        "reason": "Build-time HTML placeholder, plugin identifier or development proxy address."
+      },
+      {
+        "kind": "literal",
+        "value": "%QUESUWA_LOCALE%",
+        "reason": "Build-time HTML placeholder, plugin identifier or development proxy address."
+      },
+      {
+        "kind": "literal",
+        "value": "%QUESUWA_TITLE%",
+        "reason": "Build-time HTML placeholder, plugin identifier or development proxy address."
+      },
+      {
+        "kind": "literal",
+        "value": "%QUESUWA_DESCRIPTION%",
+        "reason": "Build-time HTML placeholder, plugin identifier or development proxy address."
+      },
+      {
+        "kind": "literal",
+        "value": "http://127.0.0.1:3100",
+        "reason": "Build-time HTML placeholder, plugin identifier or development proxy address."
+      }
+    ],
+    "dynamicKeys": []
+  }
+}

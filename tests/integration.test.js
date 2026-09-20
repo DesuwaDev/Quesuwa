@@ -63,11 +63,11 @@ test('custom questionnaires: authentication, uploads, snapshots, export and pers
   const fileUrl = `/admin/responses/${record.id}/files/${record.attachments[0].id}`;
   res = await fetch(base + '/api' + fileUrl); assert.equal(res.status, 401);
   res = await request(fileUrl); assert.equal(res.status, 200); assert.deepEqual(Buffer.from(await res.arrayBuffer()), png); assert.match(res.headers.get('content-disposition'), /attachment/);
-  assert.equal((await request(`/admin/responses/${record.id}`, 'PATCH', { status: '排查中', note: '内部备注' }, { headers: { Origin: 'https://evil.example' } })).status, 403);
-  assert.equal((await request(`/admin/responses/${record.id}`, 'PATCH', { status: '排查中', note: '内部备注' })).status, 200);
+  assert.equal((await request(`/admin/responses/${record.id}`, 'PATCH', { status: 'inProgress', note: '内部备注' }, { headers: { Origin: 'https://evil.example' } })).status, 403);
+  assert.equal((await request(`/admin/responses/${record.id}`, 'PATCH', { status: 'inProgress', note: '内部备注' })).status, 200);
   const updated = { ...form, fields: form.fields.map(f => ({ ...f, label: '修改后的题目' })) };
   res = await request(`/admin/forms/${form.id}`, 'PUT', updated); assert.equal(res.status, 200); form = await res.json();
-  const saved = (await (await request(`/admin/forms/${form.id}/responses?status=${encodeURIComponent('排查中')}`)).json()).items[0];
+  const saved = (await (await request(`/admin/forms/${form.id}/responses?status=${encodeURIComponent('inProgress')}`)).json()).items[0];
   assert.equal(saved.snapshot.fields[0].label, '问题描述'); assert.equal(saved.note, '内部备注');
   res = await request(`/admin/forms/${form.id}/export`); assert.equal(res.status, 200);
   const csv = await res.text(); assert.match(csv, /问题描述/); assert.match(csv, /'=FORMULA\(\)/);

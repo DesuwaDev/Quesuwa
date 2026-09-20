@@ -14,5 +14,7 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - name: Strict i18n gate
+        run: npm run check:i18n
       - run: npm test
       - run: npm run build

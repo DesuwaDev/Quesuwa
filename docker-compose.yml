@@ -1,0 +1,20 @@
+services:
+  quesuwa:
+    image: ghcr.io/desuwadev/quesuwa:${QUESUWA_VERSION:-0.0.1-beta.2}
+    container_name: quesuwa
+    restart: unless-stopped
+    env_file: .env
+    # These override .env: inside the container the app must listen on all
+    # interfaces and keep its data in the mounted volume.
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3100
+      DATA_DIR: /app/data
+    ports:
+      # Only reachable from this machine; put an HTTPS reverse proxy in front.
+      - "127.0.0.1:3100:3100"
+    volumes:
+      - quesuwa-data:/app/data
+
+volumes:
+  quesuwa-data:

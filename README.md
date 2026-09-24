@@ -203,6 +203,15 @@ tag 中的版本号会在构建时注入：页面底部、登录页与工作台�
 docker run -d --name quesuwa --restart unless-stopped   --env-file .env -e NODE_ENV=production   -e PUBLIC_ORIGIN=https://feedback.example.com   -p 127.0.0.1:3100:3100 -v quesuwa-data:/app/data   ghcr.io/desuwadev/quesuwa:latest
 ```
 
+或使用仓库自带的 `docker-compose.yml`（端口默认只绑定 `127.0.0.1:3100`，版本可用 `QUESUWA_VERSION` 指定）：
+
+```sh
+npm run setup   # 或手动创建 .env，至少设置 ADMIN_PASSWORD
+docker compose up -d
+```
+
+生产环境在 `.env` 中设置 `NODE_ENV=production` 与 `PUBLIC_ORIGIN`，并在前面配置 HTTPS 反向代理。
+
 也可以本地自行构建：`docker build --build-arg APP_VERSION=1.2.0 -t quesuwa .`。
 
 容器内忘记密码时（镜像不含 npm，直接用 node 运行脚本）：

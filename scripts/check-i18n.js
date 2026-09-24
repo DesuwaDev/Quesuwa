@@ -14,7 +14,7 @@ function collect(dir) {
     else if (/\.(vue|[cm]?[jt]sx?|html|svg|css|json)$/.test(file)) files.push(file);
   }
 }
-for (const dir of ['src', 'server', 'public']) collect(dir);
+for (const dir of ['src', 'server', 'shared', 'public']) collect(dir);
 files.push('scripts/reset-password.js', 'scripts/setup.js', 'i18n/core.js', 'index.html', 'vite.config.js');
 const errors = validateCatalogs(catalogs);
 for (const file of files) {

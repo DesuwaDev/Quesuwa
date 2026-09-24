@@ -14,7 +14,7 @@ test('locale negotiation respects quality, regional tags and unsupported languag
 
 test('catalogs agree and translation uses plain text interpolation', () => {
   assert.deepEqual(validateCatalogs(catalogs), []);
-  assert.equal(translate('en', 'form.progress', { completed: 1, required: 2 }), 'Required questions completed: 1 / 2');
+  assert.equal(translate('en', 'form.progress', { percent: 50 }), '50% complete');
   assert.equal(translate('en', 'form.removeFile', { name: '<img onerror=alert(1)>' }), 'Remove <img onerror=alert(1)>');
   assert.throws(() => translate('en', 'missing.key'), /Unknown translation/);
   assert.throws(() => translate('en', 'form.progress'), /Missing translation/);

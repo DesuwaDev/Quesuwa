@@ -69,8 +69,9 @@ test('custom questionnaires: authentication, uploads, snapshots, export and pers
   res = await request(`/admin/forms/${form.id}`, 'PUT', updated); assert.equal(res.status, 200); form = await res.json();
   const saved = (await (await request(`/admin/forms/${form.id}/responses?status=${encodeURIComponent('inProgress')}`)).json()).items[0];
   assert.equal(saved.snapshot.fields[0].label, '问题描述'); assert.equal(saved.note, '内部备注');
-  res = await request(`/admin/forms/${form.id}/export`); assert.equal(res.status, 200);
+  res = await request(`/admin/forms/${form.id}/export?format=long`); assert.equal(res.status, 200);
   const csv = await res.text(); assert.match(csv, /问题描述/); assert.match(csv, /'=FORMULA\(\)/);
+  const wide = await (await request(`/admin/forms/${form.id}/export`)).text(); assert.match(wide, /修改后的题目/); assert.match(wide, /'=FORMULA\(\)/);
   res = await request(`/admin/forms/${form.id}`, 'PUT', { ...form, state: 'closed' }); assert.equal(res.status, 200);
   assert.equal((await request('/forms/test-survey')).status, 410); assert.equal((await submit(form)).status, 404);
   assert.equal((await request('/admin/logout', 'POST', {})).status, 200); assert.equal((await request('/admin/forms')).status, 401);

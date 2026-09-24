@@ -38,8 +38,8 @@ test('API language, CSV, stable status IDs and legacy migration preserve answers
   assert.match(english, /Response ID/); assert.match(english, /In progress/); assert.match(english, /用户题目/); assert.match(english, /保留原始答卷内容/); assert.doesNotMatch(english, /待处理/);
   res = await fetch(base + '/api/admin/forms/form/export?lang=zh-CN', { headers: { Cookie: cookie } });
   assert.match(await res.text(), /待处理/);
-  res = await fetch(base + '/api/admin/forms', { method: 'POST', headers: { Cookie: cookie, Origin: base, 'Content-Type': 'application/json', 'Accept-Language': 'en' }, body: '{}' });
-  assert.equal(res.status, 400); const validation = await res.json(); assert.equal(validation.code, 'errors.textInvalid'); assert.match(validation.error, /Link slug/);
+  res = await fetch(base + '/api/admin/forms', { method: 'POST', headers: { Cookie: cookie, Origin: base, 'Content-Type': 'application/json', 'Accept-Language': 'en' }, body: JSON.stringify({ slug: 'Bad Slug', state: 'draft', title: 'x', fields: [] }) });
+  assert.equal(res.status, 400); const validation = await res.json(); assert.equal(validation.code, 'errors.slugInvalid'); assert.match(validation.error, /link ID/);
   for (let i = 0; i < 10; i++) res = await fetch(base + '/api/admin/login', { method: 'POST', headers: { Origin: base, 'Content-Type': 'application/json', 'Accept-Language': 'en' }, body: '{"password":"wrong"}' });
   assert.equal(res.status, 429); assert.equal((await res.json()).error, 'Too many attempts. Please try again later.');
 });

@@ -1,0 +1,12 @@
+/* Printing a response or an analytics report. */
+@media print {
+  :root { --bg: #fff; --surface: #fff; }
+  body { background: #fff; }
+  .admin-sidebar, .admin-topbar, .toolbar, .tabs, .workspace-actions, .back-link, .save-dock, .list-meta, .batch-bar, .response-list, .detail-head .icon-button, .detail-foot, .review-actions, .toast-region, .public-header, .public-footer, .page-actions { display: none !important; }
+  .admin-main { margin: 0 !important; }
+  .page { padding: 0 !important; max-width: none; }
+  .responses-split { display: block; }
+  .response-detail { position: static !important; max-height: none !important; overflow: visible !important; border: 0; box-shadow: none; }
+  .card, .question-stat { break-inside: avoid; box-shadow: none; }
+  .question-stats-grid, .analytics-grid, .dashboard-grid { grid-template-columns: 1fr 1fr; }
+}

@@ -4,7 +4,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { createApp } from '../server/app.js';
-import { normalizeSettings, normalizeRules, visibleFields, answerError } from '../src/form-rules.js';
+import { normalizeSettings, normalizeField } from '../shared/schema.js';
+import { visibleFields, checkAnswer } from '../shared/answers.js';
 
 async function setup(t) {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'quesuwa-management-'));
@@ -63,7 +64,7 @@ test('management lifecycle enforces auth, soft deletion, restoration and attachm
   assert.equal((await request(`/admin/forms/${form.id}?permanent=true`, 'DELETE', { confirmation: form.title })).status, 200);
   assert.equal(fs.readdirSync(path.join(dataDir, 'uploads')).length, 0);
   assert.equal((await request(`/admin/forms/${form.id}/responses`)).status, 404);
-  assert.ok((await (await request('/admin/system')).json()).events.some(event => event.action === 'purgeForm'));
+  assert.ok((await (await request('/admin/system')).json()).events.items.some(event => event.action === 'purgeForm'));
 });
 
 test('collection settings, conditions and typed answers are enforced on the server', async t => {
@@ -81,12 +82,12 @@ test('collection settings, conditions and typed answers are enforced on the serv
   assert.equal((await request('/forms/rules-form')).status, 410);
   assert.equal((await submit(form, { choice: 'No' })).status, 410);
   assert.throws(() => normalizeSettings({ startsAt: '2030-02-02T00:00:00Z', endsAt: '2030-01-01T00:00:00Z' }));
-  assert.throws(() => normalizeRules({ type: 'file', fileKinds: ['executable'] }, []));
-  assert.throws(() => normalizeRules({ type: 'short', condition: { fieldId: 'missing', value: 'Yes' } }, []));
+  assert.throws(() => normalizeField({ id: 'f', type: 'file', label: 'f', fileKinds: ['executable'] }, 0, []));
+  assert.throws(() => normalizeField({ id: 's', type: 'short', label: 's', condition: { fieldId: 'missing', value: 'Yes' } }, 0, []));
   assert.equal(visibleFields(form.fields, { choice: 'No' }).length, 2);
-  assert.equal(answerError({ type: 'url' }, 'javascript:alert(1)'), 'errors.url');
-  assert.equal(answerError({ type: 'date' }, '2026-02-30'), 'errors.date');
-  assert.equal(answerError({ type: 'number', min: 2 }, '1'), 'errors.numberRange');
+  assert.equal(checkAnswer({ type: 'url' }, 'javascript:alert(1)').error, 'errors.url');
+  assert.equal(checkAnswer({ type: 'date' }, '2026-02-30').error, 'errors.date');
+  assert.equal(checkAnswer({ type: 'number', min: 2 }, '1').error, 'errors.numberMin');
 });
 
 

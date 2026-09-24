@@ -22,7 +22,9 @@ export function negotiateLocale(header, fallback = defaultLocale) {
 export function translate(locale, key, params = {}) {
   const catalog = catalogs[normalizeLocale(locale) || defaultLocale];
   if (!Object.hasOwn(catalog, key)) throw new Error(`Unknown translation key: ${key}`);
-  return catalog[key].replace(/\{([A-Za-z][A-Za-z0-9_]*)\}/g, (_, name) => {
+  // Optional singular variant: "<key>.one" is used when params.count is exactly 1.
+  const template = Number(params.count) === 1 && Object.hasOwn(catalog, key + '.one') ? catalog[key + '.one'] : catalog[key];
+  return template.replace(/\{([A-Za-z][A-Za-z0-9_]*)\}/g, (_, name) => {
     if (!Object.hasOwn(params, name)) throw new Error(`Missing translation parameter: ${key}.${name}`);
     return String(params[name]);
   });

@@ -25,11 +25,11 @@ export function overviewRoutes({ db }) {
     });
     const top = db.prepare(`SELECT f.id, f.definition, f.state, count(r.id) AS n FROM forms f JOIN responses r ON r.form_id=f.id AND r.deleted_at IS NULL AND r.created_at>=?
       WHERE f.deleted_at IS NULL GROUP BY f.id ORDER BY n DESC LIMIT 5`).all(since).map(row => ({ id: row.id, title: JSON.parse(row.definition).title, state: row.state, count: row.n }));
-    const totals = db.prepare(`SELECT count(*) AS total, SUM(CASE WHEN r.status='pending' THEN 1 ELSE 0 END) AS pending, SUM(CASE WHEN r.starred=1 THEN 1 ELSE 0 END) AS starred
+    const totals = db.prepare(`SELECT count(*) AS total, SUM(CASE WHEN r.status='pending' THEN 1 ELSE 0 END) AS pending, SUM(CASE WHEN r.starred=1 THEN 1 ELSE 0 END) AS starred, SUM(CASE WHEN r.unread=1 THEN 1 ELSE 0 END) AS unread
       FROM responses r JOIN forms f ON f.id=r.form_id WHERE r.deleted_at IS NULL AND f.deleted_at IS NULL`).get();
     res.json({
       forms: { total: Object.values(states).reduce((a, b) => a + b, 0), draft: states.draft || 0, published: states.published || 0, closed: states.closed || 0 },
-      responses: { total: totals.total || 0, pending: totals.pending || 0, starred: totals.starred || 0, today: counts.get(today) || 0, week: trend.slice(-7).reduce((sum, day) => sum + day.count, 0), month: trend.reduce((sum, day) => sum + day.count, 0) },
+      responses: { total: totals.total || 0, pending: totals.pending || 0, starred: totals.starred || 0, unread: totals.unread || 0, today: counts.get(today) || 0, week: trend.slice(-7).reduce((sum, day) => sum + day.count, 0), month: trend.reduce((sum, day) => sum + day.count, 0) },
       trend,
       recent,
       top

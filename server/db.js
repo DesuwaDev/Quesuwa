@@ -51,6 +51,15 @@ const migrations = [
   },
   db => {
     db.exec('CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)');
+  },
+  db => {
+    // Ticket mode: respondents follow up through a private link and exchange messages with staff.
+    addColumn(db, 'responses', 'access_hash', 'TEXT');
+    addColumn(db, 'responses', 'unread', 'INTEGER NOT NULL DEFAULT 0');
+    addColumn(db, 'responses', 'last_activity_at', 'TEXT');
+    db.exec(`CREATE TABLE IF NOT EXISTS messages (id TEXT PRIMARY KEY, response_id TEXT NOT NULL, author TEXT NOT NULL, user_id TEXT, author_name TEXT NOT NULL DEFAULT '', body TEXT NOT NULL, created_at TEXT NOT NULL);
+      CREATE INDEX IF NOT EXISTS messages_response ON messages(response_id, created_at);
+      CREATE INDEX IF NOT EXISTS responses_unread ON responses(form_id, unread);`);
   }
 ];
 

@@ -19,6 +19,8 @@ import { responseRoutes } from './routes/responses.js';
 import { publicRoutes } from './routes/public.js';
 import { overviewRoutes, systemRoutes } from './routes/system.js';
 import { createSettings } from './services/settings.js';
+import { createTickets } from './services/tickets.js';
+import { ticketRoutes } from './routes/tickets.js';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 
@@ -68,11 +70,13 @@ export function createApp({ dataDir, password, username = 'admin', production = 
   const storage = createStorage(db, { dataDir, quotaMB: () => settings.values().maxStorageMB });
   const forms = createFormStore(db);
   const webhooks = createWebhooks(db);
+  const tickets = createTickets(db);
   const cookieOptions = req => ({ httpOnly: true, sameSite: 'strict', secure: secureCookie(req), path: '/api/admin' });
-  const context = { db, auth, audit, storage, forms, webhooks, limiter, cookieOptions, originAllowed, secureCookie, settings, publicOrigin };
+  const context = { db, auth, audit, storage, forms, webhooks, tickets, limiter, cookieOptions, originAllowed, secureCookie, settings, publicOrigin };
   if (auth.setupNeeded()) console.log(t('cli.setupCode', { code: auth.setupCode() }));
 
   app.use('/api/forms', publicRoutes(context));
+  app.use('/api/tickets', ticketRoutes(context));
   app.use('/api/admin', publicAccountRoutes(context));
   app.use('/api/admin', auth.requireUser, (req, _res, next) => {
     // Every authenticated state change must come from this site.
@@ -90,7 +94,9 @@ export function createApp({ dataDir, password, username = 'admin', production = 
 
   const dist = path.join(root, 'dist');
   app.use(express.static(dist, { index: false }));
-  app.get(['/', '/admin', '/admin/*rest', '/f/:slug'], (_req, res) => {
+  // Private follow-up pages must never be indexed.
+  app.use('/t/', (_req, res, next) => { res.set('X-Robots-Tag', 'noindex, nofollow'); next(); });
+  app.get(['/', '/admin', '/admin/*rest', '/f/:slug', '/t/:id'], (_req, res) => {
     if (!fs.existsSync(path.join(dist, 'index.html'))) return res.status(503).type('text').send(t('errors.frontendMissing'));
     res.sendFile(path.join(dist, 'index.html'));
   });

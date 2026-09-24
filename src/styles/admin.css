@@ -426,3 +426,8 @@
 }
 .page > .banner { margin-bottom: var(--space-4); }
 .system-settings { margin-bottom: var(--space-4); }
+
+.ticket-admin { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-4); border-radius: var(--radius); border: 1px solid var(--info-soft); background: color-mix(in srgb, var(--info-soft) 35%, transparent); }
+.ticket-admin-head { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 8px; color: var(--info); }
+.ticket-admin-head .muted { color: var(--text-3); }
+.unread-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }

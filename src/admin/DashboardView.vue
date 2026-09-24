@@ -21,6 +21,7 @@ const tiles = computed(() => data.value ? [
   { key: 'dashboard.today', value: data.value.responses.today, icon: 'inbox' },
   { key: 'dashboard.week', value: data.value.responses.week, icon: 'trend' },
   { key: 'dashboard.pending', value: data.value.responses.pending, icon: 'clock' },
+  ...(data.value.responses.unread ? [{ key: 'ticket.awaiting', value: data.value.responses.unread, icon: 'message' }] : []),
   { key: 'dashboard.collecting', value: data.value.forms.published, icon: 'forms' }
 ] : []);
 

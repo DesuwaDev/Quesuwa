@@ -10,7 +10,7 @@ import { writeZip, ZIP_MAX_BYTES, ZIP_MAX_ENTRIES } from '../lib/zip.js';
 
 const exportName = (form, extension) => `${form.slug}-${new Date().toISOString().slice(0, 10)}.${extension}`;
 
-export function responseRoutes({ db, forms, storage, audit, auth }) {
+export function responseRoutes({ db, forms, storage, audit, auth, tickets, webhooks }) {
   const router = Router();
   const write = auth.allow('responses.write');
   const findResponse = id => {
@@ -26,14 +26,31 @@ export function responseRoutes({ db, forms, storage, audit, auth }) {
     const filter = responseFilter(req.params.id, req.query);
     const order = req.query.sort === 'oldest' ? 'ASC' : 'DESC';
     const total = db.prepare(`SELECT count(*) AS n FROM responses WHERE ${filter.where}`).get(...filter.params).n;
-    const items = db.prepare(`SELECT * FROM responses WHERE ${filter.where} ORDER BY created_at ${order}, id ${order} LIMIT ? OFFSET ?`).all(...filter.params, pageSize, (page - 1) * pageSize).map(parseResponse);
+    const sortColumn = req.query.sort === 'activity' ? 'COALESCE(last_activity_at, created_at) DESC' : `created_at ${order}`;
+    const items = db.prepare(`SELECT *, (SELECT count(*) FROM messages m WHERE m.response_id=responses.id) AS message_count FROM responses WHERE ${filter.where} ORDER BY ${sortColumn}, id ${order} LIMIT ? OFFSET ?`).all(...filter.params, pageSize, (page - 1) * pageSize).map(parseResponse);
     res.json({ items, total, page, pageSize });
   });
 
   router.get('/responses/:id', (req, res) => {
     const response = parseResponse(findResponse(req.params.id));
     const form = forms.get(response.formId);
-    res.json({ ...response, formTitle: form?.title || response.snapshot.title });
+    res.json({ ...response, formTitle: form?.title || response.snapshot.title, messages: response.ticket ? tickets.messages(response.id) : [] });
+  });
+
+  router.post('/responses/:id/read', (req, res) => {
+    db.prepare('UPDATE responses SET unread=0 WHERE id=?').run(findResponse(req.params.id).id);
+    res.json({ ok: true });
+  });
+
+  // Staff reply in a ticket, optionally changing the status in the same step.
+  router.post('/responses/:id/messages', write, (req, res) => {
+    const row = findResponse(req.params.id);
+    if (row.deleted_at || !row.access_hash) throw fail(404, 'errors.ticketNotFound');
+    const status = req.body?.status;
+    if (status !== undefined && !statuses.includes(status)) throw fail(400, 'errors.statusInvalid');
+    const message = tickets.add(row.id, { author: 'staff', userId: req.user.id, authorName: req.user.displayName || req.user.username, body: req.body?.body });
+    db.prepare('UPDATE responses SET unread=0, last_activity_at=?, status=COALESCE(?, status) WHERE id=?').run(message.createdAt, status ?? null, row.id);
+    res.status(201).json({ message, response: parseResponse(findResponse(row.id)) });
   });
 
   router.patch('/responses/:id', write, (req, res) => {
@@ -66,7 +83,7 @@ export function responseRoutes({ db, forms, storage, audit, auth }) {
         if (action === 'star' || action === 'unstar') db.prepare('UPDATE responses SET starred=? WHERE id=?').run(action === 'star' ? 1 : 0, row.id);
         if (action === 'trash') db.prepare('UPDATE responses SET deleted_at=? WHERE id=? AND deleted_at IS NULL').run(now, row.id);
         if (action === 'restore') db.prepare('UPDATE responses SET deleted_at=NULL WHERE id=?').run(row.id);
-        if (action === 'purge') { storage.queue([row]); db.prepare('DELETE FROM responses WHERE id=?').run(row.id); }
+        if (action === 'purge') { storage.queue([row]); tickets.removeFor([row.id]); db.prepare('DELETE FROM responses WHERE id=?').run(row.id); }
       }
     });
     storage.cleanup();

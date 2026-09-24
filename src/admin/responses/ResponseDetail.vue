@@ -5,7 +5,7 @@ import { api, allowed } from '../../lib/api.js';
 import { notify, notifyError, confirmDialog } from '../../lib/feedback.js';
 import { copyText } from '../../lib/clipboard.js';
 import { formatDate, formatDuration, formatBytes, shortId } from '../../lib/format.js';
-import { statuses } from '../../../shared/constants.js';
+import { statuses, statusKeys } from '../../../shared/constants.js';
 import { answerable } from '../../../shared/schema.js';
 import { isAnswered, isOtherValue } from '../../../shared/answers.js';
 import AppIcon from '../../components/AppIcon.vue';
@@ -15,6 +15,7 @@ import { answerText } from './format.js';
 const props = defineProps({ responseId: String, form: Object, hasPrevious: Boolean, hasNext: Boolean, writable: Boolean });
 const emit = defineEmits(['close', 'previous', 'next', 'updated', 'removed']);
 const response = ref(null), error = ref(null), note = ref(''), savingNote = ref(false);
+const reply = ref(''), replyStatus = ref(''), sendingReply = ref(false);
 const fields = computed(() => response.value?.snapshot.fields.filter(answerable) || []);
 const noteDirty = computed(() => response.value && note.value.trim() !== response.value.note);
 const files = fieldId => response.value.attachments.filter(file => file.fieldId === fieldId);
@@ -27,6 +28,11 @@ async function load() {
   try {
     response.value = await api('/admin/responses/' + props.responseId);
     note.value = response.value.note;
+    if (response.value.unread) {
+      await api('/admin/responses/' + props.responseId + '/read', { method: 'POST', body: {} });
+      response.value.unread = false;
+      emit('updated', { id: response.value.id, unread: false });
+    }
   } catch (reason) { error.value = reason; }
 }
 
@@ -46,6 +52,23 @@ async function saveNote() {
   await patch({ note: note.value }, 'responses.noteSaved');
   savingNote.value = false;
 }
+
+async function sendReply() {
+  if (!reply.value.trim()) return;
+  sendingReply.value = true;
+  try {
+    const data = await api('/admin/responses/' + response.value.id + '/messages', { method: 'POST', body: { body: reply.value, ...(replyStatus.value ? { status: replyStatus.value } : {}) } });
+    response.value.messages.push(data.message);
+    response.value.status = data.response.status;
+    response.value.lastActivityAt = data.response.lastActivityAt;
+    emit('updated', { id: response.value.id, status: data.response.status, unread: false, messageCount: response.value.messages.length });
+    reply.value = '';
+    replyStatus.value = '';
+    notify('ticket.replySent');
+  } catch (reason) { notifyError(reason); }
+  finally { sendingReply.value = false; }
+}
+const replyKeys = event => { if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') sendReply(); };
 
 async function trash() {
   if (!(await confirmDialog({ titleKey: 'responses.trashTitle', messageKey: 'responses.trashConfirm', params: { count: 1 }, danger: true, confirmKey: 'responses.trash' }))) return;
@@ -102,6 +125,28 @@ onBeforeUnmount(() => window.removeEventListener('keydown', keys));
         <span><AppIcon name="layers" :size="14" />{{ t('responses.version', { version: response.snapshot.version }) }}</span>
         <span v-if="response.deletedAt" class="badge muted">{{ t('responses.inTrash') }}</span>
       </div>
+
+      <section v-if="response.ticket" class="ticket-admin">
+        <header class="ticket-admin-head"><AppIcon name="message" :size="16" /><strong>{{ t('ticket.conversation') }}</strong><span class="muted small">{{ t('ticket.adminHint') }}</span></header>
+        <div class="ticket-thread compact">
+          <p v-if="!response.messages.length" class="muted small">{{ t('ticket.adminEmpty') }}</p>
+          <div v-for="message in response.messages" :key="message.id" class="bubble" :class="message.author === 'staff' ? 'from-me' : 'from-staff'">
+            <span class="bubble-author">{{ message.author === 'staff' ? message.authorName : t('ticket.respondent') }}</span>
+            <p class="preserve">{{ message.body }}</p>
+            <time class="bubble-time" :datetime="message.createdAt" :title="formatDate(message.createdAt)">{{ formatDate(message.createdAt) }}</time>
+          </div>
+        </div>
+        <form v-if="writable" class="ticket-composer" @submit.prevent="sendReply">
+          <textarea v-model="reply" class="input textarea autosize" rows="2" maxlength="5000" :placeholder="t('ticket.adminPlaceholder')" :aria-label="t('ticket.adminPlaceholder')" @keydown="replyKeys"></textarea>
+          <div class="ticket-composer-foot">
+            <select v-model="replyStatus" class="input select compact" :aria-label="t('ticket.statusAfter')">
+              <option value="">{{ t('ticket.keepStatus') }}</option>
+              <option v-for="status in statuses" :key="status" :value="status">{{ t('ticket.setStatus', { status: t(statusKeys[status]) }) }}</option>
+            </select>
+            <button type="submit" class="button primary small" :disabled="sendingReply || !reply.trim()"><AppIcon name="send" :size="14" />{{ t('ticket.send') }}</button>
+          </div>
+        </form>
+      </section>
 
       <div class="review-panel">
         <div class="review-row">

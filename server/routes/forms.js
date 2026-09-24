@@ -6,7 +6,7 @@ import { transaction } from '../db.js';
 
 const hideSecrets = (form, role) => role === 'viewer' && form?.settings ? { ...form, settings: { ...form.settings, webhookSecret: '' } } : form;
 
-export function formRoutes({ db, forms, storage, audit, auth, webhooks }) {
+export function formRoutes({ db, forms, storage, audit, auth, webhooks, tickets }) {
   const router = Router();
   const write = auth.allow('forms.write');
   const slugTaken = (slug, exceptId = '') => Boolean(db.prepare('SELECT id FROM forms WHERE slug=? AND id<>?').get(slug, exceptId));
@@ -75,6 +75,7 @@ export function formRoutes({ db, forms, storage, audit, auth, webhooks }) {
       if (!form.deletedAt || req.body?.confirmation !== form.title) throw fail(400, 'errors.deleteConfirm');
       transaction(db, () => {
         storage.queue(db.prepare('SELECT attachments FROM responses WHERE form_id=?').all(form.id));
+        tickets.removeFor(db.prepare('SELECT id FROM responses WHERE form_id=?').all(form.id).map(row => row.id));
         db.prepare('DELETE FROM responses WHERE form_id=?').run(form.id);
         db.prepare('DELETE FROM webhook_deliveries WHERE form_id=?').run(form.id);
         db.prepare('DELETE FROM forms WHERE id=?').run(form.id);

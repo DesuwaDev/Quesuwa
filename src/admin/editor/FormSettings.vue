@@ -104,6 +104,7 @@ onMounted(loadDeliveries);
           </label>
         </div>
       </div>
+      <ToggleSwitch v-model="settings.ticketMode" :label="t('settings.ticketMode')" :hint="t('settings.ticketModeHint')" :disabled="readonly" />
       <ToggleSwitch v-model="settings.showProgress" :label="t('settings.showProgress')" :disabled="readonly" />
       <ToggleSwitch v-model="settings.showNumbers" :label="t('settings.showNumbers')" :disabled="readonly" />
       <ToggleSwitch v-model="settings.saveProgress" :label="t('settings.saveProgress')" :hint="t('settings.saveProgressHint')" :disabled="readonly" />

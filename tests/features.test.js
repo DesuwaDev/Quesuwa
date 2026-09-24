@@ -152,3 +152,38 @@ test('first-run setup in the web UI and runtime settings', async t => {
   const error = await (await fetch(base + '/api/admin/forms')).json();
   assert.equal(error.error, 'Please sign in to the admin workspace.');
 });
+
+test('ticket mode lets respondents and staff exchange messages', async t => {
+  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'quesuwa-tickets-'));
+  const password = 'ticket-owner-password-1';
+  const instance = createApp({ dataDir, password });
+  const server = instance.app.listen(0, '127.0.0.1');
+  await new Promise(resolve => server.once('listening', resolve));
+  t.after(async () => { await new Promise(resolve => server.close(resolve)); instance.close(); fs.rmSync(dataDir, { recursive: true, force: true }); });
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const login = await fetch(base + '/api/admin/login', { method: 'POST', headers: { Origin: base, 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
+  const Cookie = login.headers.get('set-cookie').split(';')[0];
+  const admin = (url, method = 'GET', body) => fetch(base + '/api/admin' + url, { method, headers: { Origin: base, 'Content-Type': 'application/json', Cookie }, body: body && JSON.stringify(body) });
+  const form = await (await admin('/forms', 'POST', { title: 'Support', slug: 'support', state: 'published', settings: { ticketMode: true }, fields: [{ id: 'q', type: 'long', label: 'Issue', required: true }] })).json();
+  const body = new FormData();
+  body.set('answers', JSON.stringify({ q: 'Help me' }));
+  body.set('version', String(form.version));
+  const submitted = await (await fetch(base + '/api/forms/support/responses', { method: 'POST', body })).json();
+  assert.ok(submitted.ticket.key);
+  const ticket = (method = 'GET', payload, key = submitted.ticket.key) => fetch(`${base}/api/tickets/${submitted.id}${method === 'POST' ? '/messages' : ''}`, { method, headers: { Origin: base, 'Content-Type': 'application/json', 'X-Ticket-Key': key }, body: payload && JSON.stringify(payload) });
+  assert.equal((await ticket('GET', undefined, 'wrong')).status, 404);
+  assert.equal((await (await ticket()).json()).fields[0].value, 'Help me');
+  assert.equal((await admin(`/responses/${submitted.id}/messages`, 'POST', { body: 'Please send logs', status: 'needsInfo' })).status, 201);
+  const view = await (await ticket('POST', { body: 'Here they are' })).json();
+  assert.equal(view.status, 'pending');
+  assert.deepEqual(view.messages.map(message => message.author), ['staff', 'respondent']);
+  assert.equal((await (await admin(`/forms/${form.id}/responses?unread=true`)).json()).total, 1);
+  await admin(`/responses/${submitted.id}/read`, 'POST', {});
+  assert.equal((await (await admin(`/forms/${form.id}/responses?unread=true`)).json()).total, 0);
+  assert.equal((await ticket('POST', { body: '   ' })).status, 400);
+  assert.equal((await fetch(`${base}/t/${submitted.id}`)).headers.get('x-robots-tag'), 'noindex, nofollow');
+  // Turning ticket mode off stops replies but keeps the history readable.
+  await admin(`/forms/${form.id}`, 'PUT', { ...form, settings: { ...form.settings, ticketMode: false } });
+  assert.equal((await ticket('POST', { body: 'More' })).status, 410);
+  assert.equal((await (await ticket()).json()).messages.length, 2);
+});

@@ -3,13 +3,15 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { t } from '../i18n.js';
 import { api } from '../lib/api.js';
 import { navigate, linkHandler } from '../lib/router.js';
-import { formatDate } from '../lib/format.js';
+import { formatDate, shortId } from '../lib/format.js';
 import AppIcon from '../components/AppIcon.vue';
 import EmptyState from '../components/EmptyState.vue';
 import PaginationBar from '../components/PaginationBar.vue';
+import { savedTickets } from '../lib/tickets.js';
 
 const forms = ref([]), loading = ref(true), failed = ref(false), direct = ref(''), search = ref(''), page = ref(1);
 const pageSize = 9;
+const myTickets = ref(savedTickets());
 const filtered = computed(() => {
   const term = search.value.trim().toLocaleLowerCase();
   return term ? forms.value.filter(form => (form.title + ' ' + form.description).toLocaleLowerCase().includes(term)) : forms.value;
@@ -49,6 +51,18 @@ function openDirect() {
         <li><AppIcon name="phone" :size="16" />{{ t('portal.pointDevices') }}</li>
         <li><AppIcon name="clock" :size="16" />{{ t('portal.pointDraft') }}</li>
       </ul>
+    </section>
+
+    <section v-if="myTickets.length" class="portal-list">
+      <div class="section-heading"><h2>{{ t('ticket.mine') }}</h2></div>
+      <div class="ticket-links">
+        <a v-for="item in myTickets" :key="item.id" class="ticket-link" :href="'/t/' + item.id + '#k=' + encodeURIComponent(item.key)" @click="linkHandler('/t/' + item.id + '#k=' + encodeURIComponent(item.key))($event)">
+          <AppIcon name="message" :size="16" />
+          <span class="clamp-1">{{ item.title || t('common.untitled') }}</span>
+          <span class="mono muted small">#{{ shortId(item.id) }}</span>
+          <time class="muted small">{{ formatDate(item.createdAt, { time: false }) }}</time>
+        </a>
+      </div>
     </section>
 
     <section class="portal-list" :aria-busy="loading">

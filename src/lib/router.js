@@ -34,7 +34,7 @@ export async function navigate(to, { replace = false, force = false } = {}) {
   const target = new URL(to, window.location.origin);
   const samePath = target.pathname.replace(/\/+$/, '') === route.path;
   if (!force && !samePath && !(await allowLeave(target.pathname.replace(/\/+$/, '') || '/'))) return false;
-  window.history[replace ? 'replaceState' : 'pushState']({}, '', target.pathname + target.search);
+  window.history[replace ? 'replaceState' : 'pushState']({}, '', target.pathname + target.search + target.hash);
   apply({ scroll: !samePath });
   return true;
 }

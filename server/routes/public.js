@@ -12,7 +12,7 @@ const digest = value => createHash('sha256').update(String(value)).digest();
 const codeMatches = (expected, given) => typeof given === 'string' && given.length <= 64 && timingSafeEqual(digest(expected), digest(given));
 const deviceCookie = formId => 'quesuwa_done_' + formId.replaceAll('-', '').slice(0, 16);
 
-export function publicRoutes({ db, forms, storage, webhooks, limiter, secureCookie }) {
+export function publicRoutes({ db, forms, storage, webhooks, tickets, limiter, secureCookie }) {
   const router = Router();
   const alreadySubmitted = (req, form) => normalizeSettings(form.settings).onePerDevice && new RegExp(`(?:^|;\\s*)${deviceCookie(form.id)}=1(?:;|$)`).test(req.headers.cookie || '');
 
@@ -112,16 +112,17 @@ export function publicRoutes({ db, forms, storage, webhooks, limiter, secureCook
     storage.ensureCapacity(files.reduce((sum, file) => sum + file.size, 0));
     const duration = Number.parseInt(req.body.duration, 10);
     const response = { id: randomUUID(), createdAt: new Date().toISOString(), answers, attachments };
+    const ticket = settings.ticketMode ? tickets.issueKey() : null;
     const rollback = storage.write(attachments, files.map(file => file.buffer));
     try {
-      db.prepare('INSERT INTO responses (id, form_id, snapshot, answers, attachments, created_at, status, duration_ms, locale) VALUES (?,?,?,?,?,?,?,?,?)').run(
+      db.prepare('INSERT INTO responses (id, form_id, snapshot, answers, attachments, created_at, status, duration_ms, locale, access_hash, last_activity_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)').run(
         response.id, form.id, JSON.stringify({ id: form.id, slug: form.slug, title: form.title, version: form.version, fields: form.fields }), JSON.stringify(answers), JSON.stringify(attachments), response.createdAt, 'pending',
         Number.isInteger(duration) && duration > 0 && duration < 7 * 24 * 3600_000 ? duration : null,
-        normalizeLocale(req.body.locale) || '');
+        normalizeLocale(req.body.locale) || '', ticket?.hash ?? null, response.createdAt);
     } catch (error) { rollback(); throw error; }
     if (settings.onePerDevice) res.cookie(deviceCookie(form.id), '1', { httpOnly: true, sameSite: 'lax', secure: secureCookie(req), path: '/api/forms', maxAge: 365 * 24 * 3600_000 });
     webhooks.responseCreated(form, response);
-    res.status(201).json({ id: response.id, thanks: form.thanks || t('common.thanks'), thanksKey: form.thanks ? null : 'common.thanks' });
+    res.status(201).json({ id: response.id, thanks: form.thanks || t('common.thanks'), thanksKey: form.thanks ? null : 'common.thanks', ...(ticket ? { ticket: { id: response.id, key: ticket.key } } : {}) });
   });
 
   return router;

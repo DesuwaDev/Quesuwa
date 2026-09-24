@@ -306,6 +306,11 @@
       },
       {
         "kind": "literal",
+        "value": "message",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "forms",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
@@ -1408,7 +1413,27 @@
       },
       {
         "kind": "literal",
+        "value": "/read",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "POST",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "PATCH",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/messages",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "Enter",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
@@ -1420,11 +1445,6 @@
         "kind": "literal",
         "value": "/responses/batch",
         "reason": "Route, URL, file path or query string fragment."
-      },
-      {
-        "kind": "literal",
-        "value": "POST",
-        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
         "kind": "literal",
@@ -1488,6 +1508,21 @@
       },
       {
         "kind": "literal",
+        "value": "staff",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "from-me",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "from-staff",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "file",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
@@ -1544,6 +1579,10 @@
       },
       {
         "expression": "languageKey(response.locale)",
+        "reason": "Key resolved from a fixed translation-key map, a reviewed key prefix or a validated API error code."
+      },
+      {
+        "expression": "statusKeys[status]",
         "reason": "Key resolved from a fixed translation-key map, a reviewed key prefix or a validated API error code."
       }
     ]
@@ -3380,6 +3419,25 @@
       }
     ]
   },
+  "src/lib/tickets.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "quesuwa.tickets",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "${}/t/${}#k=${}",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "string",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      }
+    ]
+  },
   "src/main.js": {
     "literals": [
       {
@@ -3659,6 +3717,16 @@
       },
       {
         "kind": "literal",
+        "value": "/t/",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "#k=",
+        "reason": "DOM selector or media query."
+      },
+      {
+        "kind": "literal",
         "value": "accent-",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       }
@@ -3917,6 +3985,70 @@
       }
     ]
   },
+  "src/public/TicketPage.vue": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "smooth",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/tickets/",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "/messages",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "POST",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "error",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "Enter",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "visible",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "visibilitychange",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "file",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "staff",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "from-staff",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "from-me",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      }
+    ]
+  },
   "server/app.js": {
     "literals": [
       {
@@ -4026,6 +4158,11 @@
       },
       {
         "kind": "literal",
+        "value": "/api/tickets",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
         "value": "/api/admin/users",
         "reason": "Route, URL, file path or query string fragment."
       },
@@ -4066,6 +4203,21 @@
       },
       {
         "kind": "literal",
+        "value": "/t/",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "X-Robots-Tag",
+        "reason": "HTTP header name, MIME type or protocol value."
+      },
+      {
+        "kind": "literal",
+        "value": "noindex, nofollow",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "/admin",
         "reason": "Route, file path, MIME type, selector or generated internal identifier."
       },
@@ -4078,6 +4230,11 @@
         "kind": "literal",
         "value": "/f/:slug",
         "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "/t/:id",
+        "reason": "Route, URL, file path or query string fragment."
       },
       {
         "kind": "literal",
@@ -4350,6 +4507,26 @@
       {
         "kind": "literal",
         "value": "CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "access_hash",
+        "reason": "SQLite table or column name used by schema migrations."
+      },
+      {
+        "kind": "literal",
+        "value": "unread",
+        "reason": "SQLite table or column name used by schema migrations."
+      },
+      {
+        "kind": "literal",
+        "value": "last_activity_at",
+        "reason": "SQLite table or column name used by schema migrations."
+      },
+      {
+        "kind": "template",
+        "value": "CREATE TABLE IF NOT EXISTS messages (id TEXT PRIMARY KEY, response_id TEXT NOT NULL, author TEXT NOT NULL, user_id TEXT, author_name TEXT NOT NULL DEFAULT '', body TEXT NOT NULL, created_at TEXT NOT NULL);\n      CREATE INDEX IF NOT EXISTS messages_response ON messages(response_id, created_at);\n      CREATE INDEX IF NOT EXISTS responses_unread ON responses(form_id, unread);",
         "reason": "SQLite statement, clause or column definition; values are bound separately."
       },
       {
@@ -4750,6 +4927,11 @@
       },
       {
         "kind": "literal",
+        "value": "SELECT id FROM responses WHERE form_id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
         "value": "DELETE FROM responses WHERE form_id=?",
         "reason": "SQLite statement, clause or column definition; values are bound separately."
       },
@@ -4909,7 +5091,7 @@
       },
       {
         "kind": "literal",
-        "value": "INSERT INTO responses (id, form_id, snapshot, answers, attachments, created_at, status, duration_ms, locale) VALUES (?,?,?,?,?,?,?,?,?)",
+        "value": "INSERT INTO responses (id, form_id, snapshot, answers, attachments, created_at, status, duration_ms, locale, access_hash, last_activity_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
         "reason": "SQLite statement, clause or column definition; values are bound separately."
       },
       {
@@ -4973,14 +5155,54 @@
         "reason": "SQLite statement, clause or column definition; values are bound separately."
       },
       {
+        "kind": "literal",
+        "value": "activity",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "COALESCE(last_activity_at, created_at) DESC",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
         "kind": "template",
-        "value": "SELECT * FROM responses WHERE ${} ORDER BY created_at ${}, id ${} LIMIT ? OFFSET ?",
+        "value": "created_at ${}",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "SELECT *, (SELECT count(*) FROM messages m WHERE m.response_id=responses.id) AS message_count FROM responses WHERE ${} ORDER BY ${}, id ${} LIMIT ? OFFSET ?",
         "reason": "SQLite statement, clause or column definition; values are bound separately."
       },
       {
         "kind": "literal",
         "value": "/responses/:id",
         "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "/responses/:id/read",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "UPDATE responses SET unread=0 WHERE id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "/responses/:id/messages",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "staff",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "UPDATE responses SET unread=0, last_activity_at=?, status=COALESCE(?, status) WHERE id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
       },
       {
         "kind": "literal",
@@ -5208,7 +5430,7 @@
       },
       {
         "kind": "template",
-        "value": "SELECT count(*) AS total, SUM(CASE WHEN r.status='pending' THEN 1 ELSE 0 END) AS pending, SUM(CASE WHEN r.starred=1 THEN 1 ELSE 0 END) AS starred\n      FROM responses r JOIN forms f ON f.id=r.form_id WHERE r.deleted_at IS NULL AND f.deleted_at IS NULL",
+        "value": "SELECT count(*) AS total, SUM(CASE WHEN r.status='pending' THEN 1 ELSE 0 END) AS pending, SUM(CASE WHEN r.starred=1 THEN 1 ELSE 0 END) AS starred, SUM(CASE WHEN r.unread=1 THEN 1 ELSE 0 END) AS unread\n      FROM responses r JOIN forms f ON f.id=r.form_id WHERE r.deleted_at IS NULL AND f.deleted_at IS NULL",
         "reason": "SQLite statement, clause or column definition; values are bound separately."
       },
       {
@@ -5260,6 +5482,55 @@
         "kind": "literal",
         "value": "system",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      }
+    ]
+  },
+  "server/routes/tickets.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "x-ticket-key",
+        "reason": "HTTP header name, MIME type or protocol value."
+      },
+      {
+        "kind": "literal",
+        "value": "file",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "staff",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/:id",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "/:id/messages",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "respondent",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "UPDATE responses SET unread=1, last_activity_at=?, status=CASE WHEN status IN ('resolved','needsInfo') THEN 'pending' ELSE status END WHERE id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "message.created",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT * FROM responses WHERE id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
       }
     ]
   },
@@ -5497,6 +5768,11 @@
         "kind": "literal",
         "value": "starred=1",
         "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "unread=1",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
         "kind": "literal",
@@ -5764,6 +6040,50 @@
         "kind": "literal",
         "value": "wx",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      }
+    ]
+  },
+  "server/services/tickets.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "sha256",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "base64url",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "hex",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "string",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT * FROM responses WHERE id=? AND deleted_at IS NULL AND access_hash IS NOT NULL",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT id, author, author_name AS authorName, body, created_at AS createdAt FROM messages WHERE response_id=? ORDER BY created_at, rowid",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "INSERT INTO messages(id,response_id,author,user_id,author_name,body,created_at) VALUES (?,?,?,?,?,?,?)",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "DELETE FROM messages WHERE response_id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
       }
     ]
   },
@@ -6294,6 +6614,11 @@
       {
         "kind": "literal",
         "value": "onePerDevice",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "ticketMode",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {

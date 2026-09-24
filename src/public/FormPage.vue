@@ -8,6 +8,7 @@ import { copyText } from '../lib/clipboard.js';
 import { notify } from '../lib/feedback.js';
 import AppIcon from '../components/AppIcon.vue';
 import QuestionnaireForm from './QuestionnaireForm.vue';
+import { rememberTicket, ticketLink } from '../lib/tickets.js';
 
 const props = defineProps({ slug: { type: String, required: true } });
 const state = ref('loading'), form = ref(null), locked = ref(null), error = ref(null), success = ref(null);
@@ -44,6 +45,7 @@ async function unlock() {
 
 function submitted(data) {
   success.value = data;
+  if (data.ticket) rememberTicket({ id: data.ticket.id, key: data.ticket.key, title: form.value.title });
   state.value = 'success';
   window.scrollTo({ top: 0 });
 }
@@ -52,6 +54,12 @@ function again() {
   success.value = null;
   attempt.value++;
   state.value = 'form';
+}
+
+const followUp = computed(() => success.value?.ticket ? ticketLink(success.value.ticket.id, success.value.ticket.key) : '');
+const followUpPath = computed(() => followUp.value ? followUp.value.slice(window.location.origin.length) : '');
+async function copyFollowUp() {
+  if (await copyText(followUp.value)) notify('ticket.linkCopied');
 }
 
 async function copyReceipt() {
@@ -102,7 +110,16 @@ onMounted(load);
         <strong class="mono">{{ shortId(success.id) }}</strong>
         <button type="button" class="icon-button ghost small" :aria-label="t('common.copy')" @click="copyReceipt"><AppIcon name="copy" :size="16" /></button>
       </div>
-      <small class="muted">{{ t('public.receiptHint') }}</small>
+      <small v-if="!followUp" class="muted">{{ t('public.receiptHint') }}</small>
+      <div v-else class="follow-up">
+        <strong><AppIcon name="message" :size="16" />{{ t('ticket.followTitle') }}</strong>
+        <p>{{ t('ticket.followHint') }}</p>
+        <div class="share-url">
+          <input class="input mono" :value="followUp" readonly :aria-label="t('ticket.linkLabel')" @focus="$event.target.select()" />
+          <button type="button" class="button" @click="copyFollowUp"><AppIcon name="copy" :size="16" />{{ t('common.copy') }}</button>
+        </div>
+        <a class="button primary" :href="followUpPath" @click="linkHandler(followUpPath)($event)"><AppIcon name="arrowRight" :size="16" />{{ t('ticket.openTicket') }}</a>
+      </div>
       <div class="state-actions">
         <a class="button" href="/" @click="linkHandler('/')($event)">{{ t('public.backHome') }}</a>
         <button v-if="!form.settings.onePerDevice" type="button" class="button primary" @click="again">{{ t('public.again') }}</button>

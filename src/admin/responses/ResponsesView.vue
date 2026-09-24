@@ -18,16 +18,16 @@ import { summarizeResponse } from './format.js';
 const props = defineProps({ form: { type: Object, required: true } });
 const emit = defineEmits(['count']);
 const items = ref([]), total = ref(0), loading = ref(false), busy = ref(false);
-const filters = ref({ q: '', status: '', starred: false, trash: false, sort: 'newest', from: '', to: '' });
+const filters = ref({ q: '', status: '', starred: false, unread: false, trash: false, sort: 'newest', from: '', to: '' });
 const page = ref(1), pageSize = ref(20);
 const selected = ref([]);
 const detailId = computed(() => route.query.r || '');
 const writable = computed(() => allowed('responses.write'));
 let controller = null, searchTimer = null;
 
-const params = computed(() => ({ q: filters.value.q.trim(), status: filters.value.status, starred: filters.value.starred ? 'true' : '', from: filters.value.from, to: filters.value.to }));
+const params = computed(() => ({ q: filters.value.q.trim(), status: filters.value.status, starred: filters.value.starred ? 'true' : '', unread: filters.value.unread ? 'true' : '', from: filters.value.from, to: filters.value.to }));
 const exportQuery = format => query({ ...params.value, format, lang: locale.value });
-const activeFilters = computed(() => Boolean(params.value.q || params.value.status || params.value.starred || params.value.from || params.value.to));
+const activeFilters = computed(() => Boolean(params.value.q || params.value.status || params.value.starred || params.value.unread || params.value.from || params.value.to));
 
 async function load() {
   controller?.abort();
@@ -45,7 +45,7 @@ async function load() {
   } finally { loading.value = false; }
 }
 
-watch(() => [filters.value.status, filters.value.starred, filters.value.trash, filters.value.sort, filters.value.from, filters.value.to, pageSize.value], () => { page.value = 1; selected.value = []; load(); });
+watch(() => [filters.value.status, filters.value.starred, filters.value.unread, filters.value.trash, filters.value.sort, filters.value.from, filters.value.to, pageSize.value], () => { page.value = 1; selected.value = []; load(); });
 watch(() => filters.value.q, () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { page.value = 1; load(); }, 300); });
 watch(page, load);
 onMounted(load);
@@ -90,7 +90,7 @@ function updated(response) {
   if (target) Object.assign(target, response);
 }
 function removed() { close(); load(); }
-function resetFilters() { filters.value = { ...filters.value, q: '', status: '', starred: false, from: '', to: '' }; }
+function resetFilters() { filters.value = { ...filters.value, q: '', status: '', starred: false, unread: false, from: '', to: '' }; }
 </script>
 
 <template>
@@ -105,6 +105,7 @@ function resetFilters() { filters.value = { ...filters.value, q: '', status: '',
         <option v-for="status in statuses" :key="status" :value="status">{{ t(statusKeys[status]) }}</option>
       </select>
       <DateRange v-model:from="filters.from" v-model:to="filters.to" />
+      <button v-if="form.settings?.ticketMode" type="button" class="chip" :class="{ active: filters.unread }" :aria-pressed="filters.unread" @click="filters.unread = !filters.unread"><AppIcon name="message" :size="14" />{{ t('ticket.awaiting') }}</button>
       <button type="button" class="chip" :class="{ active: filters.starred }" :aria-pressed="filters.starred" @click="filters.starred = !filters.starred"><AppIcon name="star" :size="14" :filled="filters.starred" />{{ t('responses.starred') }}</button>
       <MenuButton :label="t('responses.export')" icon="download" :text="t('responses.export')" button-class="button">
         <a class="menu-item" :href="'/api/admin/forms/' + form.id + '/export' + exportQuery('csv')" download><AppIcon name="grid" :size="16" /><span>{{ t('export.csvWide') }}<small>{{ t('export.csvWideHint') }}</small></span></a>
@@ -121,6 +122,7 @@ function resetFilters() { filters.value = { ...filters.value, q: '', status: '',
       <select v-model="filters.sort" class="input select compact" :aria-label="t('forms.sort')">
         <option value="newest">{{ t('responses.newest') }}</option>
         <option value="oldest">{{ t('responses.oldest') }}</option>
+        <option value="activity">{{ t('ticket.sortActivity') }}</option>
       </select>
       <button type="button" class="chip" :class="{ active: filters.trash }" :aria-pressed="filters.trash" @click="filters.trash = !filters.trash"><AppIcon name="trash" :size="14" />{{ t('responses.trashView') }}</button>
     </div>
@@ -159,7 +161,8 @@ function resetFilters() { filters.value = { ...filters.value, q: '', status: '',
                 <span class="mono">#{{ shortId(item.id) }}</span>
                 <StatusBadge :status="item.status" />
                 <span v-if="item.attachments.length" class="muted small"><AppIcon name="paperclip" :size="12" />{{ item.attachments.length }}</span>
-                <span v-if="item.note" class="muted small" :title="t('responses.note')"><AppIcon name="message" :size="12" /></span>
+                <span v-if="item.messageCount" class="muted small" :title="t('ticket.conversation')"><AppIcon name="message" :size="12" />{{ item.messageCount }}</span>
+                <span v-if="item.unread" class="unread-dot" :title="t('ticket.awaiting')"></span>
                 <time class="muted small" :datetime="item.createdAt" :title="formatDate(item.createdAt)">{{ relativeTime(item.createdAt) }}</time>
               </span>
               <span class="response-row-summary clamp-2">{{ summarizeResponse(item) || t('responses.onlyFiles') }}</span>

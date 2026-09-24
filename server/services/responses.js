@@ -14,7 +14,11 @@ export const parseResponse = row => ({
   starred: Boolean(row.starred),
   durationMs: row.duration_ms ?? null,
   locale: row.locale || '',
-  deletedAt: row.deleted_at ?? null
+  deletedAt: row.deleted_at ?? null,
+  ticket: Boolean(row.access_hash),
+  unread: Boolean(row.unread),
+  lastActivityAt: row.last_activity_at || row.created_at,
+  ...(row.message_count !== undefined ? { messageCount: row.message_count } : {})
 });
 
 const isoDay = value => typeof value === 'string' && /^\d{4}-\d{2}-\d{2}(T[\d:.]+Z)?$/.test(value) && Number.isFinite(Date.parse(value));
@@ -25,6 +29,7 @@ export function responseFilter(formId, query = {}) {
   clauses.push(query.trash === 'true' ? 'deleted_at IS NOT NULL' : 'deleted_at IS NULL');
   if (statuses.includes(query.status)) { clauses.push('status=?'); params.push(query.status); }
   if (query.starred === 'true') clauses.push('starred=1');
+  if (query.unread === 'true') clauses.push('unread=1');
   if (isoDay(query.from)) { clauses.push('created_at>=?'); params.push(new Date(query.from).toISOString()); }
   if (isoDay(query.to)) { clauses.push('created_at<?'); params.push(new Date(query.to).toISOString()); }
   const search = typeof query.q === 'string' ? query.q.trim().slice(0, 200).toLowerCase() : '';

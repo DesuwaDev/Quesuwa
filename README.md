@@ -197,7 +197,7 @@ git push origin v1.2.0
 
 tag 中的版本号会在构建时注入：页面底部、登录页与工作台侧栏左下角显示 `vX.Y.Z`，系统页显示服务器运行的版本；若浏览器缓存的页面与服务器版本不一致，系统页会提示刷新。本地构建未指定版本时使用 `package.json` 中的版本，开发模式显示 `-dev` 后缀。
 
-镜像特点：基于 `node:24-alpine`，运行层只含生产依赖（约 3 MB）和已构建的前端，移除了 npm / yarn / corepack；以非 root 的 `node` 用户运行；健康检查使用 Alpine 自带的 busybox `wget`，不会额外启动 Node 进程；构建使用 GitHub Actions 缓存，重复发布更快。
+镜像特点：运行层基于纯 `alpine`，只从 `node:24-alpine` 复制 `node` 可执行文件（不含 npm / yarn / corepack 和头文件），再加上生产依赖与已构建的前端（两者压缩后约 1.3 MB）；以非 root 的 `node` 用户运行；健康检查使用 Alpine 自带的 busybox `wget`，不会额外启动 Node 进程；构建使用 GitHub Actions 缓存，重复发布更快。
 
 ```sh
 docker run -d --name quesuwa --restart unless-stopped   --env-file .env -e NODE_ENV=production   -e PUBLIC_ORIGIN=https://feedback.example.com   -p 127.0.0.1:3100:3100 -v quesuwa-data:/app/data   ghcr.io/desuwadev/quesuwa:latest

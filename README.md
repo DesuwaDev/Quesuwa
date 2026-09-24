@@ -51,14 +51,14 @@ Vue 3 + Vite 前端，Node.js / Express 后端，SQLite 数据库，本地文件
 git clone https://github.com/DesuwaDev/Quesuwa.git
 cd Quesuwa
 npm ci
-npm run setup
 npm run build
 npm start
 ```
 
 - 首页：http://127.0.0.1:3100
 - 工作台：http://127.0.0.1:3100/admin
-- 首次启动会创建所有者账号：用户名为 `.env` 中的 `ADMIN_USERNAME`（默认 `admin`），密码为 `ADMIN_PASSWORD`（`npm run setup` 自动生成）。之后可在“我的账户”中修改，`.env` 不会被改写。
+- 首次启动时终端会打印一次性**设置码**，打开 `/admin` 输入设置码即可创建所有者账号。也可以在 `.env` 中预先设置 `ADMIN_USERNAME` / `ADMIN_PASSWORD`（`npm run setup` 会生成带随机密码的 `.env`），此时直接创建该账号。
+- `.env` 完全可选。默认语言、附件存储上限、反向代理层数可在工作台“系统 → 运行设置”中修改，立即生效；若设置了对应环境变量，则以环境变量为准，网页中显示为锁定。
 - 开发：`npm run dev`，访问 http://127.0.0.1:5173，API 代理到 3100。
 - 修改 `.env` 后需要重启服务。
 
@@ -120,23 +120,10 @@ npm run build
 npm start
 ```
 
-生产环境必须设置：
+所有环境变量都是可选的（见 `.env.example`）：
 
-```dotenv
-NODE_ENV=production
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=替换为独立随机长密码
-HOST=127.0.0.1
-PORT=3100
-PUBLIC_ORIGIN=https://feedback.example.com
-TRUST_PROXY_HOPS=1
-DATA_DIR=/srv/quesuwa-data
-MAX_STORAGE_MB=1024
-```
-
-`TRUST_PROXY_HOPS=1` 仅适用于**恰好一个可信反向代理**的部署；默认 0 不信任转发头。不要把 Node 端口直接暴露给可绕过代理的访客。
-
-`PUBLIC_ORIGIN` 填浏览器访问的 HTTPS 来源（不含路径），生产启动时会校验，错误则拒绝启动。分享链接使用浏览器当前的来源。目前按独立域名根路径部署，不支持反代到子路径。
+- 部署在反向代理后面时，在“系统 → 运行设置”把“可信反向代理层数”设为实际层数（或设置 `TRUST_PROXY_HOPS`），限流才会按访客真实 IP 计算。不要把 Node 端口直接暴露给可绕过代理的访客。
+- 未设置 `PUBLIC_ORIGIN` 时，写操作要求请求来源与所访问的域名一致，可直接在任意域名后使用；设置后则必须完全匹配该来源（含协议与端口），生产环境要求 HTTPS。分享链接使用浏览器当前的来源。目前按独立域名根路径部署，不支持子路径。
 
 HTTPS Nginx 示例：
 
@@ -152,7 +139,7 @@ location / {
 }
 ```
 
-生产模式的登录 Cookie 带 `Secure`，必须使用 HTTPS。内置限流（单进程内存计数，重启重置）：每 IP 每小时 20 次提交、每 15 分钟 10 次登录与 30 次访问码尝试。所有写操作都会校验请求来源。
+通过 HTTPS 访问时（或生产环境设置了 HTTPS 的 `PUBLIC_ORIGIN`），登录 Cookie 自动带 `Secure`。内置限流（单进程内存计数，重启重置）：每 IP 每小时 20 次提交、每 15 分钟 10 次登录与 30 次访问码尝试。所有写操作都会校验请求来源。
 
 ## Webhook
 
@@ -182,7 +169,7 @@ npm start
 
 ## Docker 镜像与版本发布
 
-推送版本 tag 时，GitHub Actions（`.github/workflows/release.yml`）会先跑测试，再分别在 amd64 与 arm64 **原生 runner** 上编译（不使用 QEMU 模拟），最后合并为一个多架构镜像推送到 `ghcr.io/desuwadev/quesuwa`。普通提交不会构建镜像。
+推送版本 tag 时，GitHub Actions（`.github/workflows/release.yml`）会先跑测试，再分别在 amd64 与 arm64 **原生 runner** 上编译（不使用 QEMU 模拟），最后合并为一个多架构镜像推送到 `ghcr.io/desuwadev/quesuwa`，并同时更新 `latest`。普通提交不会构建镜像。
 
 ```sh
 git tag v1.2.0
@@ -192,7 +179,7 @@ git push origin v1.2.0
 | tag | 生成的镜像标签 |
 |---|---|
 | `v1.2.0` | `1.2.0`、`1.2`、`1`、`latest` |
-| `v1.3.0-rc.1`（预发布） | 仅 `1.3.0-rc.1` |
+| `v1.3.0-rc.1`（预发布） | `1.3.0-rc.1`、`latest` |
 | `v0.4.0` | `0.4.0`、`0.4`、`latest`（0.x 不生成主版本标签） |
 
 tag 中的版本号会在构建时注入：页面底部、登录页与工作台侧栏左下角显示 `vX.Y.Z`，系统页显示服务器运行的版本；若浏览器缓存的页面与服务器版本不一致，系统页会提示刷新。本地构建未指定版本时使用 `package.json` 中的版本，开发模式显示 `-dev` 后缀。
@@ -200,17 +187,18 @@ tag 中的版本号会在构建时注入：页面底部、登录页与工作台�
 镜像特点：运行层基于纯 `alpine`，只从 `node:24-alpine` 复制 `node` 可执行文件（不含 npm / yarn / corepack 和头文件），再加上生产依赖与已构建的前端（两者压缩后约 1.3 MB）；以非 root 的 `node` 用户运行；健康检查使用 Alpine 自带的 busybox `wget`，不会额外启动 Node 进程；构建使用 GitHub Actions 缓存，重复发布更快。
 
 ```sh
-docker run -d --name quesuwa --restart unless-stopped   --env-file .env -e NODE_ENV=production   -e PUBLIC_ORIGIN=https://feedback.example.com   -p 127.0.0.1:3100:3100 -v quesuwa-data:/app/data   ghcr.io/desuwadev/quesuwa:latest
+docker run -d --name quesuwa --restart unless-stopped \
+  -p 127.0.0.1:3100:3100 -v quesuwa-data:/app/data \
+  ghcr.io/desuwadev/quesuwa:latest
 ```
 
-或使用仓库自带的 `docker-compose.yml`（端口默认只绑定 `127.0.0.1:3100`，版本可用 `QUESUWA_VERSION` 指定）：
+推荐使用仓库自带的 `docker-compose.yml`（拉取 `latest`，端口只绑定 `127.0.0.1:3100`，`.env` 可选）：
 
 ```sh
-npm run setup   # 或手动创建 .env，至少设置 ADMIN_PASSWORD
 docker compose up -d
+docker logs quesuwa     # 复制设置码，然后打开 http://127.0.0.1:3100/admin
+docker compose pull && docker compose up -d   # 以后升级
 ```
-
-生产环境在 `.env` 中设置 `NODE_ENV=production` 与 `PUBLIC_ORIGIN`，并在前面配置 HTTPS 反向代理。
 
 也可以本地自行构建：`docker build --build-arg APP_VERSION=1.2.0 -t quesuwa .`。
 

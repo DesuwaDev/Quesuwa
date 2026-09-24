@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { COOKIE, hashToken, hashPassword, publicUser, validPassword } from '../auth.js';
+import { COOKIE, hashToken, hashPassword, publicUser, validPassword, validUsername } from '../auth.js';
 import { fail } from '../errors.js';
 
 export function publicAccountRoutes({ db, auth, cookieOptions, limiter, originAllowed, audit }) {
@@ -15,7 +15,23 @@ export function publicAccountRoutes({ db, auth, cookieOptions, limiter, originAl
     db.prepare('UPDATE users SET last_login_at=? WHERE id=?').run(new Date().toISOString(), row.id);
     req.user = publicUser(row);
     audit(req, 'login', row.id, row.username);
-    res.cookie(COOKIE, token, { ...cookieOptions, maxAge: lifetime }).json({ ok: true, user: publicUser(row) });
+    res.cookie(COOKIE, token, { ...cookieOptions(req), maxAge: lifetime }).json({ ok: true, user: publicUser(row) });
+  });
+  router.get('/setup', (_req, res) => res.json({ needed: auth.setupNeeded() }));
+
+  router.post('/setup', limiter(15 * 60_000, 10), (req, res) => {
+    if (!originAllowed(req)) throw fail(403, 'errors.origin');
+    if (!auth.setupNeeded()) throw fail(409, 'errors.setupDone');
+    const { code, username, password, displayName = '' } = req.body || {};
+    if (!auth.checkSetupCode(code)) throw fail(403, 'errors.setupCode');
+    if (!validUsername(username)) throw fail(400, 'errors.username');
+    if (!validPassword(password)) throw fail(400, 'errors.passwordLength');
+    if (typeof displayName !== 'string' || displayName.trim().length > 40) throw fail(400, 'errors.displayName');
+    const row = auth.createOwner({ username, password, displayName: displayName.trim() });
+    const { token, lifetime } = auth.sessions.create(row.id, false, req.get('user-agent'));
+    req.user = publicUser(row);
+    audit(req, 'setup', row.id, row.username);
+    res.cookie(COOKIE, token, { ...cookieOptions(req), maxAge: lifetime }).status(201).json({ ok: true, user: publicUser(row) });
   });
   return router;
 }
@@ -25,7 +41,7 @@ export function accountRoutes({ db, auth, cookieOptions, limiter, audit }) {
   router.get('/session', (req, res) => res.json({ ok: true, user: req.user }));
   router.post('/logout', (req, res) => {
     auth.sessions.remove(req.sessionToken);
-    res.clearCookie(COOKIE, cookieOptions).json({ ok: true });
+    res.clearCookie(COOKIE, cookieOptions(req)).json({ ok: true });
   });
   router.patch('/me', (req, res) => {
     const displayName = typeof req.body?.displayName === 'string' ? req.body.displayName.trim() : null;
@@ -41,7 +57,7 @@ export function accountRoutes({ db, auth, cookieOptions, limiter, audit }) {
     db.prepare('UPDATE users SET salt=?, hash=? WHERE id=?').run(salt, hash, req.user.id);
     auth.sessions.removeForUser(req.user.id);
     audit(req, 'passwordChanged', req.user.id, req.user.username);
-    res.clearCookie(COOKIE, cookieOptions).json({ ok: true });
+    res.clearCookie(COOKIE, cookieOptions(req)).json({ ok: true });
   });
   router.get('/sessions', (req, res) => {
     const current = hashToken(req.sessionToken);

@@ -15,7 +15,7 @@ export function cleanName(raw) {
   return path.basename(name.replaceAll('\\', '/')).replace(/[\x00-\x1f\x7f]/g, '').slice(0, 160) || 'attachment';
 }
 
-export function createStorage(db, { dataDir, maxStorageMB }) {
+export function createStorage(db, { dataDir, quotaMB }) {
   const uploads = path.join(dataDir, 'uploads');
   fs.mkdirSync(uploads, { recursive: true });
   const filePath = id => path.join(uploads, id);
@@ -46,7 +46,7 @@ export function createStorage(db, { dataDir, maxStorageMB }) {
     for (const suffix of ['', '-wal']) {
       try { databaseBytes += fs.statSync(path.join(dataDir, 'report.sqlite' + suffix)).size; } catch { /* WAL may not exist yet. */ }
     }
-    return { bytes, files, maxStorageMB, databaseBytes, pendingCleanup: db.prepare('SELECT count(*) AS n FROM file_cleanup').get().n };
+    return { bytes, files, maxStorageMB: quotaMB(), databaseBytes, pendingCleanup: db.prepare('SELECT count(*) AS n FROM file_cleanup').get().n };
   }
 
   // Detects the real content type; the extension alone is only trusted for UTF-8 text.
@@ -69,7 +69,7 @@ export function createStorage(db, { dataDir, maxStorageMB }) {
   }
 
   function ensureCapacity(incomingBytes) {
-    if (incomingBytes && usedBytes() + incomingBytes > maxStorageMB * 1024 * 1024) throw fail(507, 'errors.storageFull');
+    if (incomingBytes && usedBytes() + incomingBytes > quotaMB() * 1024 * 1024) throw fail(507, 'errors.storageFull');
   }
 
   function write(attachments, buffers) {

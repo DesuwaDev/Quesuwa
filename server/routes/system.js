@@ -38,7 +38,7 @@ export function overviewRoutes({ db }) {
   return router;
 }
 
-export function systemRoutes({ db, storage }) {
+export function systemRoutes({ db, storage, settings, audit, publicOrigin }) {
   const router = Router();
   router.get('/', (req, res) => {
     const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
@@ -51,10 +51,16 @@ export function systemRoutes({ db, storage }) {
       users: db.prepare('SELECT count(*) AS n FROM users').get().n,
       ...storage.usage(),
       version: appVersion,
+      settings: { values: settings.values(), locked: settings.locked(), publicOrigin },
       node: process.version,
       uptime: Math.round(process.uptime()),
       events: { total, page, pageSize: 25, items: db.prepare('SELECT action, target, detail, actor, created_at AS createdAt FROM audit ORDER BY id DESC LIMIT 25 OFFSET ?').all((page - 1) * 25) }
     });
+  });
+  router.put('/settings', (req, res) => {
+    const values = settings.update(req.body);
+    audit(req, 'settings', 'system', '');
+    res.json({ values, locked: settings.locked(), publicOrigin });
   });
   return router;
 }

@@ -24,12 +24,40 @@ export function publicUser(row) {
 }
 
 export function configureAuth(db, { bootstrapPassword, bootstrapUsername = 'admin' }) {
-  if (!db.prepare('SELECT count(*) AS n FROM users').get().n) {
+  if (bootstrapPassword && !db.prepare('SELECT count(*) AS n FROM users').get().n) {
     const { salt, hash } = hashPassword(bootstrapPassword);
     const username = validUsername(bootstrapUsername) ? bootstrapUsername : 'admin';
     db.prepare("INSERT INTO users(id,username,display_name,role,salt,hash,created_at) VALUES (?,?,'','owner',?,?,?)").run(randomUUID(), username, salt, hash, new Date().toISOString());
   }
   const dummy = hashPassword(randomBytes(16).toString('hex'));
+
+  // Without a bootstrap password the first owner is created in the web UI,
+  // guarded by a one-time code printed to the server log.
+  let pendingCode = null;
+  const setupNeeded = () => !db.prepare('SELECT count(*) AS n FROM users').get().n;
+  function setupCode() {
+    if (!pendingCode) {
+      const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      pendingCode = [...randomBytes(10)].map(value => alphabet[value % alphabet.length]).join('');
+    }
+    return pendingCode;
+  }
+  function checkSetupCode(value) {
+    if (!pendingCode || typeof value !== 'string') return false;
+    const normalized = value.trim().toUpperCase().replace(/[\s-]/g, '');
+    return timingSafeEqual(createHash('sha256').update(normalized).digest(), createHash('sha256').update(pendingCode).digest());
+  }
+  function createOwner({ username, password, displayName }) {
+    const id = randomUUID(), { salt, hash } = hashPassword(password);
+    db.exec('BEGIN IMMEDIATE');
+    try {
+      if (!setupNeeded()) throw fail(409, 'errors.setupDone');
+      db.prepare("INSERT INTO users(id,username,display_name,role,salt,hash,created_at) VALUES (?,?,?,'owner',?,?,?)").run(id, username, displayName, salt, hash, new Date().toISOString());
+      db.exec('COMMIT');
+    } catch (error) { db.exec('ROLLBACK'); throw error; }
+    pendingCode = null;
+    return getUser(id);
+  }
   let activeChecks = 0;
 
   // Always derives a key, even for unknown users, so timing does not reveal accounts.
@@ -81,5 +109,5 @@ export function configureAuth(db, { bootstrapPassword, bootstrapUsername = 'admi
 
   const allow = permission => (req, _res, next) => next(can(req.user?.role, permission) ? undefined : fail(403, 'errors.forbidden'));
 
-  return { verify, findUser, getUser, sessions, sessionToken, requireUser, allow, can: (req, permission) => can(req.user?.role, permission) };
+  return { verify, findUser, getUser, sessions, sessionToken, requireUser, allow, setupNeeded, setupCode, checkSetupCode, createOwner, can: (req, permission) => can(req.user?.role, permission) };
 }

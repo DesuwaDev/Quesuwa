@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue';
 import { t, hasKey } from '../../i18n.js';
 import { api } from '../../lib/api.js';
-import { notifyError } from '../../lib/feedback.js';
+import { notify, notifyError } from '../../lib/feedback.js';
 import { formatBytes, formatDate, formatNumber, formatPercent } from '../../lib/format.js';
 import { stateKeys, statusKeys } from '../../../shared/constants.js';
 import AppIcon from '../../components/AppIcon.vue';
@@ -18,10 +18,29 @@ const uptime = computed(() => {
   return days ? t('time.daysHours', { days, hours }) : t('time.hoursMinutes', { hours, minutes });
 });
 
+const form = ref(null), saving = ref(false);
+const isLocked = key => Boolean(data.value?.settings.locked.includes(key));
+const settingsDirty = computed(() => Boolean(form.value && data.value) && JSON.stringify(form.value) !== JSON.stringify(data.value.settings.values));
+
 async function load() {
   loading.value = true;
-  try { data.value = await api('/admin/system?page=' + page.value); } catch (error) { notifyError(error); }
+  try {
+    const keepEdits = settingsDirty.value;
+    data.value = await api('/admin/system?page=' + page.value);
+    if (!keepEdits) form.value = { ...data.value.settings.values };
+  } catch (error) { notifyError(error); }
   finally { loading.value = false; }
+}
+
+async function saveSettings() {
+  saving.value = true;
+  try {
+    const changes = Object.fromEntries(Object.entries(form.value).filter(([key]) => !isLocked(key)));
+    data.value.settings = await api('/admin/system/settings', { method: 'PUT', body: changes });
+    form.value = { ...data.value.settings.values };
+    notify('system.settingsSaved');
+  } catch (error) { notifyError(error); }
+  finally { saving.value = false; }
 }
 watch(page, load);
 onMounted(load);
@@ -58,6 +77,35 @@ function actionLabel(action) {
         <div class="stat-tile"><span class="stat-label"><AppIcon name="inbox" :size="15" />{{ t('system.responses') }}</span><strong class="stat-value">{{ formatNumber(data.responses) }}</strong><span class="stat-foot">{{ t('system.inTrash', { count: formatNumber(data.trashedResponses) }) }}</span></div>
         <div class="stat-tile"><span class="stat-label"><AppIcon name="users" :size="15" />{{ t('system.users') }}</span><strong class="stat-value">{{ formatNumber(data.users) }}</strong></div>
         <div class="stat-tile"><span class="stat-label"><AppIcon name="activity" :size="15" />{{ t('system.uptime') }}</span><strong class="stat-value small">{{ uptime }}</strong><span class="stat-foot">{{ t('system.version', { version: data.version, node: data.node }) }}</span></div>
+      </section>
+
+      <section class="card settings-card system-settings">
+        <header class="card-header"><h2><AppIcon name="sliders" :size="18" />{{ t('system.settings') }}</h2></header>
+        <p class="muted small">{{ t('system.settingsIntro') }}</p>
+        <form class="inline-fields" @submit.prevent="saveSettings">
+          <label class="field">
+            <span class="field-label">{{ t('system.defaultLocale') }}</span>
+            <select v-model="form.defaultLocale" class="input select" :disabled="isLocked('defaultLocale')">
+              <option value="zh-CN">{{ t('language.zhCN') }}</option>
+              <option value="en">{{ t('language.en') }}</option>
+            </select>
+            <small class="hint">{{ isLocked('defaultLocale') ? t('system.lockedByEnv', { name: 'DEFAULT_LOCALE' }) : t('system.defaultLocaleHint') }}</small>
+          </label>
+          <label class="field">
+            <span class="field-label">{{ t('system.quota') }}</span>
+            <input v-model.number="form.maxStorageMB" class="input" type="number" min="1" max="1048576" step="1" :disabled="isLocked('maxStorageMB')" />
+            <small class="hint">{{ isLocked('maxStorageMB') ? t('system.lockedByEnv', { name: 'MAX_STORAGE_MB' }) : t('system.quotaHint') }}</small>
+          </label>
+          <label class="field">
+            <span class="field-label">{{ t('system.proxyHops') }}</span>
+            <select v-model.number="form.trustProxyHops" class="input select" :disabled="isLocked('trustProxyHops')">
+              <option v-for="hops in [0, 1, 2, 3, 4, 5]" :key="hops" :value="hops">{{ hops ? t('system.proxyCount', { count: hops }) : t('system.proxyNone') }}</option>
+            </select>
+            <small class="hint">{{ isLocked('trustProxyHops') ? t('system.lockedByEnv', { name: 'TRUST_PROXY_HOPS' }) : t('system.proxyHint') }}</small>
+          </label>
+        </form>
+        <p class="hint small"><AppIcon name="globe" :size="14" />{{ data.settings.publicOrigin ? t('system.originFixed', { origin: data.settings.publicOrigin }) : t('system.originAuto') }}</p>
+        <div><button type="button" class="button primary" :disabled="saving || !settingsDirty" @click="saveSettings">{{ saving ? t('editor.saving') : t('common.save') }}</button></div>
       </section>
 
       <div class="analytics-grid">

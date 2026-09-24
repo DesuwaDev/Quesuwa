@@ -1,11 +1,12 @@
 services:
   quesuwa:
-    image: ghcr.io/desuwadev/quesuwa:${QUESUWA_VERSION:-0.0.1-beta.2}
+    image: ghcr.io/desuwadev/quesuwa:latest
     container_name: quesuwa
     restart: unless-stopped
-    env_file: .env
-    # These override .env: inside the container the app must listen on all
-    # interfaces and keep its data in the mounted volume.
+    # Optional. Without it, open /admin and use the setup code from `docker logs quesuwa`.
+    env_file:
+      - path: .env
+        required: false
     environment:
       HOST: 0.0.0.0
       PORT: 3100

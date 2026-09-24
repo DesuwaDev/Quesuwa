@@ -4,7 +4,7 @@ import { rateLimit } from 'express-rate-limit';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { t, localeMiddleware } from './i18n.js';
+import { t, localeMiddleware, setServerLocale } from './i18n.js';
 import { openDatabase } from './db.js';
 import { fail, errorHandler } from './errors.js';
 import { configureAuth } from './auth.js';
@@ -18,33 +18,45 @@ import { formRoutes } from './routes/forms.js';
 import { responseRoutes } from './routes/responses.js';
 import { publicRoutes } from './routes/public.js';
 import { overviewRoutes, systemRoutes } from './routes/system.js';
+import { createSettings } from './services/settings.js';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 
-export function createApp({ dataDir, password, username = 'admin', production = false, publicOrigin = '', trustProxyHops = 0, maxStorageMB = 1024 }) {
-  if (!password || password.length < 16) throw new Error(t('cli.passwordRequired'));
-  if (production) {
+// Options left undefined are configured in the web UI (System → Settings);
+// defined options come from the environment and lock the matching setting.
+export function createApp({ dataDir, password, username = 'admin', production = false, publicOrigin = '', trustProxyHops, maxStorageMB, defaultLocale }) {
+  if (password && password.length < 16) throw new Error(t('cli.passwordRequired'));
+  if (publicOrigin) {
     let origin;
     try { origin = new URL(publicOrigin); } catch { throw new Error(t('errors.productionOrigin')); }
-    if (origin.protocol !== 'https:' || origin.origin !== publicOrigin) throw new Error(t('errors.productionOrigin'));
+    if ((production && origin.protocol !== 'https:') || origin.origin !== publicOrigin) throw new Error(t('errors.productionOrigin'));
   }
-  if (!Number.isInteger(maxStorageMB) || maxStorageMB < 1 || maxStorageMB > 1048576) throw new Error(t('errors.storageConfig'));
+  if (maxStorageMB !== undefined && (!Number.isInteger(maxStorageMB) || maxStorageMB < 1 || maxStorageMB > 1048576)) throw new Error(t('errors.storageConfig'));
+  if (trustProxyHops !== undefined && (!Number.isInteger(trustProxyHops) || trustProxyHops < 0 || trustProxyHops > 5)) throw new Error(t('cli.proxyInvalid'));
   fs.mkdirSync(dataDir, { recursive: true });
   const db = openDatabase(dataDir);
+  const settings = createSettings(db, { maxStorageMB, trustProxyHops, defaultLocale: defaultLocale || undefined });
 
   const app = express();
   app.disable('x-powered-by');
-  app.set('trust proxy', trustProxyHops);
+  settings.onChange(values => {
+    app.set('trust proxy', values.trustProxyHops);
+    setServerLocale(values.defaultLocale);
+  });
   app.use(helmet({ contentSecurityPolicy: { directives: { 'img-src': ["'self'", 'blob:', 'data:'], 'script-src': ["'self'"], 'connect-src': ["'self'"], 'form-action': ["'self'"], 'object-src': ["'none'"] } } }));
   app.use('/api', (_req, res, next) => { res.set('Cache-Control', 'no-store'); next(); });
   app.use(localeMiddleware);
   app.use(express.json({ limit: '1mb' }));
 
+  // With PUBLIC_ORIGIN the browser origin must match exactly; otherwise it must
+  // point at the host the request was sent to, so it works behind any proxy.
   const originAllowed = req => {
     const origin = req.get('origin');
     if (!origin) return false;
-    return origin === (publicOrigin || `${req.protocol}://${req.get('host')}`);
+    if (publicOrigin) return origin === publicOrigin;
+    try { return new URL(origin).host === req.get('host'); } catch { return false; }
   };
+  const secureCookie = req => req.secure || (production && publicOrigin.startsWith('https:'));
   app.use('/api', (req, _res, next) => {
     if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method) && req.get('origin') && !originAllowed(req)) return next(fail(403, 'errors.origin'));
     next();
@@ -53,11 +65,12 @@ export function createApp({ dataDir, password, username = 'admin', production = 
 
   const auth = configureAuth(db, { bootstrapPassword: password, bootstrapUsername: username });
   const audit = createAudit(db);
-  const storage = createStorage(db, { dataDir, maxStorageMB });
+  const storage = createStorage(db, { dataDir, quotaMB: () => settings.values().maxStorageMB });
   const forms = createFormStore(db);
   const webhooks = createWebhooks(db);
-  const cookieOptions = { httpOnly: true, sameSite: 'strict', secure: production, path: '/api/admin' };
-  const context = { db, auth, audit, storage, forms, webhooks, limiter, cookieOptions, originAllowed, production };
+  const cookieOptions = req => ({ httpOnly: true, sameSite: 'strict', secure: secureCookie(req), path: '/api/admin' });
+  const context = { db, auth, audit, storage, forms, webhooks, limiter, cookieOptions, originAllowed, secureCookie, settings, publicOrigin };
+  if (auth.setupNeeded()) console.log(t('cli.setupCode', { code: auth.setupCode() }));
 
   app.use('/api/forms', publicRoutes(context));
   app.use('/api/admin', publicAccountRoutes(context));
@@ -82,5 +95,5 @@ export function createApp({ dataDir, password, username = 'admin', production = 
     res.sendFile(path.join(dist, 'index.html'));
   });
   app.use(errorHandler);
-  return { app, close: () => db.close() };
+  return { app, close: () => db.close(), setupCode: () => auth.setupNeeded() ? auth.setupCode() : null };
 }

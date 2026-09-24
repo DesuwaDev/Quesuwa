@@ -48,6 +48,9 @@ const migrations = [
       try { update.run(JSON.stringify(normalizeDefinition(JSON.parse(row.definition))), row.id); }
       catch { /* Keep definitions that cannot be normalized; editors will report the problem on save. */ }
     }
+  },
+  db => {
+    db.exec('CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT NOT NULL)');
   }
 ];
 

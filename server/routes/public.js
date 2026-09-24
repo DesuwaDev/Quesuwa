@@ -12,7 +12,7 @@ const digest = value => createHash('sha256').update(String(value)).digest();
 const codeMatches = (expected, given) => typeof given === 'string' && given.length <= 64 && timingSafeEqual(digest(expected), digest(given));
 const deviceCookie = formId => 'quesuwa_done_' + formId.replaceAll('-', '').slice(0, 16);
 
-export function publicRoutes({ db, forms, storage, webhooks, limiter, production }) {
+export function publicRoutes({ db, forms, storage, webhooks, limiter, secureCookie }) {
   const router = Router();
   const alreadySubmitted = (req, form) => normalizeSettings(form.settings).onePerDevice && new RegExp(`(?:^|;\\s*)${deviceCookie(form.id)}=1(?:;|$)`).test(req.headers.cookie || '');
 
@@ -119,7 +119,7 @@ export function publicRoutes({ db, forms, storage, webhooks, limiter, production
         Number.isInteger(duration) && duration > 0 && duration < 7 * 24 * 3600_000 ? duration : null,
         normalizeLocale(req.body.locale) || '');
     } catch (error) { rollback(); throw error; }
-    if (settings.onePerDevice) res.cookie(deviceCookie(form.id), '1', { httpOnly: true, sameSite: 'lax', secure: production, path: '/api/forms', maxAge: 365 * 24 * 3600_000 });
+    if (settings.onePerDevice) res.cookie(deviceCookie(form.id), '1', { httpOnly: true, sameSite: 'lax', secure: secureCookie(req), path: '/api/forms', maxAge: 365 * 24 * 3600_000 });
     webhooks.responseCreated(form, response);
     res.status(201).json({ id: response.id, thanks: form.thanks || t('common.thanks'), thanksKey: form.thanks ? null : 'common.thanks' });
   });

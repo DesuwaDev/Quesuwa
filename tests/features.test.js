@@ -126,3 +126,29 @@ test('option conditions hide choices and conditional required applies on the ser
   const invalid = await fetch(`${base}/api/admin/forms/${form.id}`, { method: 'PUT', headers: { Origin: base, 'Content-Type': 'application/json', Cookie }, body: JSON.stringify({ ...form, fields: [fields[0], { ...fields[1], optionLogic: [{ option: 'Missing', logic: fields[1].optionLogic[0].logic }] }] }) });
   assert.equal(invalid.status, 400);
 });
+
+test('first-run setup in the web UI and runtime settings', async t => {
+  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'quesuwa-setup-'));
+  const instance = createApp({ dataDir, maxStorageMB: 64 });
+  const server = instance.app.listen(0, '127.0.0.1');
+  await new Promise(resolve => server.once('listening', resolve));
+  t.after(async () => { await new Promise(resolve => server.close(resolve)); instance.close(); fs.rmSync(dataDir, { recursive: true, force: true }); });
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const post = (url, body, cookie = '', method = 'POST') => fetch(base + '/api' + url, { method, headers: { Origin: base, 'Content-Type': 'application/json', Cookie: cookie }, body: JSON.stringify(body) });
+  assert.equal((await (await fetch(base + '/api/admin/setup')).json()).needed, true);
+  const owner = { username: 'owner', password: 'owner-password-123', displayName: 'Owner' };
+  assert.equal((await post('/admin/setup', { ...owner, code: 'WRONG' })).status, 403);
+  const created = await post('/admin/setup', { ...owner, code: instance.setupCode().toLowerCase() });
+  assert.equal(created.status, 201);
+  const cookie = created.headers.get('set-cookie').split(';')[0];
+  assert.equal((await (await fetch(base + '/api/admin/setup')).json()).needed, false);
+  assert.equal((await post('/admin/setup', { ...owner, code: 'ANY' })).status, 409);
+  const system = await (await fetch(base + '/api/admin/system', { headers: { Cookie: cookie } })).json();
+  assert.deepEqual(system.settings.locked, ['maxStorageMB']);
+  assert.equal((await post('/admin/system/settings', { maxStorageMB: 10 }, cookie, 'PUT')).status, 400);
+  assert.equal((await post('/admin/system/settings', { trustProxyHops: 9 }, cookie, 'PUT')).status, 400);
+  const saved = await (await post('/admin/system/settings', { defaultLocale: 'en', trustProxyHops: 1 }, cookie, 'PUT')).json();
+  assert.equal(saved.values.defaultLocale, 'en');
+  const error = await (await fetch(base + '/api/admin/forms')).json();
+  assert.equal(error.error, 'Please sign in to the admin workspace.');
+});

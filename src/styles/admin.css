@@ -425,3 +425,4 @@
   .sidebar-footer .version-tag { padding: 0; text-align: center; font-size: 0.66rem; }
 }
 .page > .banner { margin-bottom: var(--space-4); }
+.system-settings { margin-bottom: var(--space-4); }

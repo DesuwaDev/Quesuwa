@@ -3,12 +3,26 @@ import { t } from './i18n.js';
 import path from 'node:path';
 import { createApp } from './app.js';
 import { appVersion } from './version.js';
-const port = Number(process.env.PORT || 3100);
-const host = process.env.HOST || '127.0.0.1';
-const publicOrigin = (process.env.PUBLIC_ORIGIN || '').trim().replace(/\/$/, '');
-const trustProxyHops = Number(process.env.TRUST_PROXY_HOPS || 0);
-if (!Number.isInteger(trustProxyHops) || trustProxyHops < 0 || trustProxyHops > 5) throw new Error(t('cli.proxyInvalid'));
-const instance = createApp({ dataDir: path.resolve(process.env.DATA_DIR || './data'), password: process.env.ADMIN_PASSWORD, username: (process.env.ADMIN_USERNAME || 'admin').trim(), production: process.env.NODE_ENV === 'production', maxStorageMB: Number(process.env.MAX_STORAGE_MB || 1024), publicOrigin, trustProxyHops });
+
+// Every variable is optional; unset values fall back to web UI settings or defaults.
+const env = name => {
+  const value = process.env[name];
+  return value === undefined || value.trim() === '' ? undefined : value.trim();
+};
+const integer = name => env(name) === undefined ? undefined : Number(env(name));
+const port = Number(env('PORT') || 3100);
+const host = env('HOST') || '127.0.0.1';
+const publicOrigin = (env('PUBLIC_ORIGIN') || '').replace(/\/$/, '');
+const instance = createApp({
+  dataDir: path.resolve(env('DATA_DIR') || './data'),
+  password: env('ADMIN_PASSWORD'),
+  username: env('ADMIN_USERNAME') || 'admin',
+  production: env('NODE_ENV') === 'production',
+  publicOrigin,
+  trustProxyHops: integer('TRUST_PROXY_HOPS'),
+  maxStorageMB: integer('MAX_STORAGE_MB'),
+  defaultLocale: env('DEFAULT_LOCALE')
+});
 const server = instance.app.listen(port, host, () => console.log(t('cli.listening', { url: publicOrigin || `http://${host}:${port}`, version: appVersion })));
 server.requestTimeout = 120000;
 server.headersTimeout = 30000;

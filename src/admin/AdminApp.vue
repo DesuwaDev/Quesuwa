@@ -1,9 +1,10 @@
 <script setup>
-import { computed, onMounted, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { t } from '../i18n.js';
 import { api, session, allowed } from '../lib/api.js';
 import { route } from '../lib/router.js';
 import LoginView from './LoginView.vue';
+import SetupView from './SetupView.vue';
 import AdminLayout from './AdminLayout.vue';
 import DashboardView from './DashboardView.vue';
 import FormsView from './FormsView.vue';
@@ -26,9 +27,13 @@ const view = computed(() => {
   return { name: 'missing' };
 });
 
+const setupNeeded = ref(false);
 async function check() {
   try { session.user = (await api('/admin/session')).user; }
-  catch { session.user = null; }
+  catch {
+    session.user = null;
+    try { setupNeeded.value = (await api('/admin/setup')).needed; } catch { setupNeeded.value = false; }
+  }
   finally { session.checked = true; }
 }
 onMounted(check);
@@ -37,6 +42,7 @@ watch(() => session.user?.id, (current, previous) => { if (!current && previous)
 
 <template>
   <div v-if="!session.checked" class="boot-screen"><span class="spinner"></span></div>
+  <SetupView v-else-if="!session.user && setupNeeded" @done="setupNeeded = false" />
   <LoginView v-else-if="!session.user" />
   <AdminLayout v-else>
     <DashboardView v-if="view.name === 'dashboard'" />

@@ -193,18 +193,36 @@ tag 中的版本号会在构建时注入：页面底部、登录页与工作台�
 镜像特点：运行层基于纯 `alpine`，只从 `node:24-alpine` 复制 `node` 可执行文件（不含 npm / yarn / corepack 和头文件），再加上生产依赖与已构建的前端（两者压缩后约 1.3 MB）；以非 root 的 `node` 用户运行；健康检查使用 Alpine 自带的 busybox `wget`，不会额外启动 Node 进程；构建使用 GitHub Actions 缓存，重复发布更快。
 
 ```sh
+mkdir -p data
+# Linux 主机执行：容器以 UID/GID 1000:1000 运行，需要数据目录写权限。
+sudo chown 1000:1000 data
 docker run -d --name quesuwa --restart unless-stopped \
-  -p 127.0.0.1:3100:3100 -v quesuwa-data:/app/data \
+  -p 127.0.0.1:3100:3100 -v "$(pwd)/data:/app/data" \
   ghcr.io/desuwadev/quesuwa:latest
 ```
 
 推荐使用仓库自带的 `docker-compose.yml`（拉取 `latest`，端口只绑定 `127.0.0.1:3100`，`.env` 可选）：
+
+数据挂载到 `docker-compose.yml` 同目录的 `data/`，包含数据库和上传附件，升级镜像或重建容器后仍会保留。首次启动前创建 `data/`；Linux 主机还需执行上面的 `chown`，确保容器用户可写。Windows Docker Desktop 无需执行 `chown`。
 
 ```sh
 docker compose up -d
 docker logs quesuwa     # 复制设置码，然后打开 http://127.0.0.1:3100/admin
 docker compose pull && docker compose up -d   # 以后升级
 ```
+
+旧版配置使用 Docker 命名卷 `quesuwa-data`，同样持久化，但文件由 Docker 管理。已有部署切换目录挂载前，先停止旧容器并复制完整数据（在 Compose 文件所在目录执行，目标 `data/` 应为空）：
+
+```sh
+docker stop quesuwa
+mkdir -p data
+docker cp quesuwa:/app/data/. ./data/
+# Linux 主机执行；Windows Docker Desktop 跳过。
+sudo chown -R 1000:1000 data
+docker compose up -d
+```
+
+复制必须在旧容器被重建之前完成。启动后确认原有问卷和附件正常；验证完成前保留旧命名卷，不要执行 `docker compose down -v`。
 
 也可以本地自行构建：`docker build --build-arg APP_VERSION=1.2.0 -t quesuwa .`。
 

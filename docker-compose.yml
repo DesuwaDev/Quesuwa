@@ -15,7 +15,4 @@ services:
       # Only reachable from this machine; put an HTTPS reverse proxy in front.
       - "127.0.0.1:3100:3100"
     volumes:
-      - quesuwa-data:/app/data
-
-volumes:
-  quesuwa-data:
+      - ./data:/app/data

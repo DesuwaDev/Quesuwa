@@ -60,6 +60,28 @@ const migrations = [
     db.exec(`CREATE TABLE IF NOT EXISTS messages (id TEXT PRIMARY KEY, response_id TEXT NOT NULL, author TEXT NOT NULL, user_id TEXT, author_name TEXT NOT NULL DEFAULT '', body TEXT NOT NULL, created_at TEXT NOT NULL);
       CREATE INDEX IF NOT EXISTS messages_response ON messages(response_id, created_at);
       CREATE INDEX IF NOT EXISTS responses_unread ON responses(form_id, unread);`);
+  },
+  db => {
+    // Email delivery state of staff messages, and a log of outgoing notifications.
+    addColumn(db, 'messages', 'delivery', "TEXT NOT NULL DEFAULT ''");
+    db.exec('CREATE TABLE IF NOT EXISTS notification_log (id INTEGER PRIMARY KEY, created_at TEXT NOT NULL, channel TEXT NOT NULL, event TEXT NOT NULL, target TEXT NOT NULL, ok INTEGER NOT NULL, error TEXT NOT NULL DEFAULT \'\')');
+  },
+  db => {
+    // Durable notification queue (replaces the in-memory retry log).
+    db.exec(`CREATE TABLE IF NOT EXISTS outbox (id INTEGER PRIMARY KEY, created_at TEXT NOT NULL, next_at INTEGER NOT NULL, attempts INTEGER NOT NULL DEFAULT 0,
+        channel TEXT NOT NULL, event TEXT NOT NULL, target TEXT NOT NULL, payload TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'pending', error TEXT NOT NULL DEFAULT '', sent_at TEXT);
+      CREATE INDEX IF NOT EXISTS outbox_due ON outbox(status, next_at);
+      DROP TABLE IF EXISTS notification_log;`);
+    // Member email, notification preferences and two-factor authentication.
+    addColumn(db, 'users', 'email', "TEXT NOT NULL DEFAULT ''");
+    addColumn(db, 'users', 'notify_prefs', "TEXT NOT NULL DEFAULT '{}'");
+    addColumn(db, 'users', 'totp_secret', "TEXT NOT NULL DEFAULT ''");
+    addColumn(db, 'users', 'totp_pending', "TEXT NOT NULL DEFAULT ''");
+    addColumn(db, 'users', 'totp_last_step', 'INTEGER NOT NULL DEFAULT 0');
+    addColumn(db, 'users', 'recovery_codes', "TEXT NOT NULL DEFAULT '[]'");
+    // Personal API tokens (only a hash is stored).
+    db.exec(`CREATE TABLE IF NOT EXISTS api_tokens (id TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, name TEXT NOT NULL,
+        token_hash TEXT NOT NULL UNIQUE, prefix TEXT NOT NULL, scope TEXT NOT NULL, created_at TEXT NOT NULL, last_used_at TEXT, expires_at TEXT);`);
   }
 ];
 

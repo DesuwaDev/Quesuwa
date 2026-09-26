@@ -31,8 +31,10 @@ export function userRoutes({ db, auth, audit }) {
     if (!roles.includes(role)) throw fail(400, 'errors.roleInvalid');
     if (!validPassword(password)) throw fail(400, 'errors.passwordLength');
     if (db.prepare('SELECT id FROM users WHERE username=?').get(username)) throw fail(409, 'errors.usernameTaken');
+    const email = typeof req.body.email === 'string' ? req.body.email.trim() : '';
+    if (email.length > 254 || (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) throw fail(400, 'errors.notifyEmail');
     const id = randomUUID(), { salt, hash } = hashPassword(password);
-    db.prepare('INSERT INTO users(id,username,display_name,role,salt,hash,created_at) VALUES (?,?,?,?,?,?,?)').run(id, username, displayName(req.body.displayName) || '', role, salt, hash, new Date().toISOString());
+    db.prepare('INSERT INTO users(id,username,display_name,email,role,salt,hash,created_at) VALUES (?,?,?,?,?,?,?,?)').run(id, username, displayName(req.body.displayName) || '', email, role, salt, hash, new Date().toISOString());
     audit(req, 'userCreated', id, username);
     res.status(201).json(publicUser(auth.getUser(id)));
   });
@@ -50,6 +52,15 @@ export function userRoutes({ db, auth, audit }) {
       if (disabled || role !== user.role) auth.sessions.removeForUser(user.id);
     });
     audit(req, 'userUpdated', user.id, user.username);
+    res.json(publicUser(auth.getUser(user.id)));
+  });
+
+  // Owners can remove a member's second factor, e.g. after a lost phone.
+  router.post('/:id/reset-2fa', (req, res) => {
+    const user = find(req.params.id);
+    db.prepare("UPDATE users SET totp_secret='', totp_pending='', totp_last_step=0, recovery_codes='[]' WHERE id=?").run(user.id);
+    auth.sessions.removeForUser(user.id, user.id === req.user.id ? req.sessionToken : undefined);
+    audit(req, 'twoFactorReset', user.id, user.username);
     res.json(publicUser(auth.getUser(user.id)));
   });
 

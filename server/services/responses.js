@@ -51,3 +51,15 @@ export function summarize(response, separator, limit = 2) {
   }
   return parts.join(' · ');
 }
+
+// The respondent's contact address: the configured email question, otherwise the first answered one.
+export function contactEmail(fields, answers, contactField = '') {
+  if (contactField === 'none') return '';
+  const emailFields = fields.filter(field => field.type === 'email');
+  const chosen = contactField ? emailFields.filter(field => field.id === contactField) : [];
+  for (const field of chosen.length ? chosen : emailFields) {
+    const value = answers[field.id];
+    if (typeof value === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return value;
+  }
+  return '';
+}

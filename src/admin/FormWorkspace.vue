@@ -112,7 +112,10 @@ async function duplicate() {
   } catch (error) { notifyError(error); }
 }
 async function trash() {
-  if (!(await confirmDialog({ titleKey: 'forms.trashTitle', messageKey: 'forms.trashConfirm', params: { title: form.value.title }, danger: true, confirmKey: 'forms.trash' }))) return;
+  // Never-saved questionnaires without responses go straight to the trash.
+  const untouched = form.value.version === 1 && !form.value.responseCount && !dirty.value;
+  if (!untouched && !(await confirmDialog({ titleKey: 'forms.trashTitle', messageKey: 'forms.trashConfirm', params: { title: form.value.title }, danger: true, confirmKey: 'forms.trash' }))) return;
+  if (dirty.value) discard();
   try {
     await api('/admin/forms/' + props.formId, { method: 'DELETE', body: {} });
     notify('forms.trashed');

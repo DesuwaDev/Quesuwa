@@ -227,3 +227,9 @@ button.ranking-item:hover:not(:disabled) { border-color: var(--primary); }
 .ticket-link:hover { border-color: var(--primary); text-decoration: none; }
 .ticket-link .icon { color: var(--primary); }
 @media (max-width: 560px) { .ticket-link { grid-template-columns: auto minmax(0, 1fr) auto; } .ticket-link time { display: none; } }
+.timeline-event { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 4px 10px; align-self: center; padding: 4px 12px; border-radius: var(--radius-full); background: var(--surface-2); color: var(--text-2); font-size: 0.78rem; }
+.timeline-event time { color: var(--text-3); }
+.bubble-foot { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 6px 10px; }
+.delivery { display: inline-flex; align-items: center; gap: 4px; font-size: 0.72rem; font-weight: 600; color: var(--text-3); }
+.delivery.sent { color: var(--success); }
+.delivery.failed { color: var(--danger); }

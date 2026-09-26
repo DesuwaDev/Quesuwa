@@ -3,7 +3,7 @@ import { answerable, normalizeSettings } from '../../shared/schema.js';
 import { fail } from '../errors.js';
 
 // Respondent view of a ticket, authorised by the private key from the follow-up link.
-export function ticketRoutes({ db, forms, tickets, webhooks, limiter }) {
+export function ticketRoutes({ db, forms, tickets, webhooks, notifier, limiter }) {
   const router = Router();
   const key = req => req.get('x-ticket-key');
 
@@ -35,10 +35,14 @@ export function ticketRoutes({ db, forms, tickets, webhooks, limiter }) {
     const row = tickets.open(req.params.id, key(req));
     if (!view(row).canReply) throw fail(410, 'errors.ticketClosed');
     const message = tickets.add(row.id, { author: 'respondent', body: req.body?.body });
+    if (['resolved', 'needsInfo'].includes(row.status)) tickets.add(row.id, { author: 'system', body: 'status:pending' });
     // A reply to a resolved or "needs info" ticket puts it back in the queue.
     db.prepare("UPDATE responses SET unread=1, last_activity_at=?, status=CASE WHEN status IN ('resolved','needsInfo') THEN 'pending' ELSE status END WHERE id=?").run(message.createdAt, row.id);
     const form = forms.get(row.form_id);
-    if (form) webhooks.send(form, 'message.created', { responseId: row.id, message: { id: message.id, body: message.body, createdAt: message.createdAt } }).catch(error => console.error(error));
+    if (form) {
+      webhooks.send(form, 'message.created', { responseId: row.id, message: { id: message.id, body: message.body, createdAt: message.createdAt } }).catch(error => console.error(error));
+      notifier.ticketReplied({ form, row, message, origin: `${req.protocol}://${req.get('host')}` });
+    }
     res.status(201).json(view(db.prepare('SELECT * FROM responses WHERE id=?').get(row.id)));
   });
   return router;

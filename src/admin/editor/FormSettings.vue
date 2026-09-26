@@ -7,6 +7,8 @@ import { toLocalInput, fromLocalInput, formatDate, formatNumber } from '../../li
 import { accents, accentKeys, stateKeys } from '../../../shared/constants.js';
 import AppIcon from '../../components/AppIcon.vue';
 import ToggleSwitch from '../../components/ToggleSwitch.vue';
+import { messaging, loadMessaging } from '../../lib/messaging.js';
+import { linkHandler } from '../../lib/router.js';
 
 const props = defineProps({ draft: Object, form: Object, readonly: Boolean });
 const settings = computed(() => props.draft.settings);
@@ -40,7 +42,8 @@ async function testWebhook() {
   } catch (error) { notifyError(error); }
   finally { testing.value = false; }
 }
-onMounted(loadDeliveries);
+const emailFields = computed(() => props.draft.fields.filter(field => field.type === 'email'));
+onMounted(() => { loadDeliveries(); loadMessaging(); });
 </script>
 
 <template>
@@ -91,6 +94,15 @@ onMounted(loadDeliveries);
         </span>
         <small class="hint">{{ t('settings.accessCodeHint') }}</small>
       </label>
+      <label class="field">
+        <span class="field-label">{{ t('settings.retention') }}</span>
+        <select v-model.number="settings.retentionDays" class="input select" :disabled="readonly">
+          <option :value="0">{{ t('settings.retentionForever') }}</option>
+          <option v-for="days in [30, 90, 180, 365, 730]" :key="days" :value="days">{{ t('settings.retentionDays', { count: days }) }}</option>
+          <option v-if="settings.retentionDays && ![30, 90, 180, 365, 730].includes(settings.retentionDays)" :value="settings.retentionDays">{{ t('settings.retentionDays', { count: settings.retentionDays }) }}</option>
+        </select>
+        <small class="hint" :class="{ 'field-error': settings.retentionDays > 0 }">{{ settings.retentionDays > 0 ? t('settings.retentionWarning', { count: settings.retentionDays }) : t('settings.retentionHint') }}</small>
+      </label>
     </section>
 
     <section class="card settings-card">
@@ -128,6 +140,29 @@ onMounted(loadDeliveries);
         <span class="field-label">{{ t('settings.closedMessage') }}</span>
         <textarea v-model="settings.closedMessage" class="input textarea autosize" rows="2" maxlength="1000" :disabled="readonly" :placeholder="t('settings.closedMessagePlaceholder')"></textarea>
       </label>
+    </section>
+
+    <section class="card settings-card span-2">
+      <header class="card-header"><h2><AppIcon name="mail" :size="18" />{{ t('formNotify.title') }}</h2></header>
+      <div class="inline-fields notify-grid">
+        <div class="stack-form">
+          <ToggleSwitch v-model="settings.notifyAdmins" :label="t('formNotify.admins')" :hint="t('formNotify.adminsHint')" :disabled="readonly" />
+          <p v-if="messaging.loaded && !messaging.alerts" class="hint small"><AppIcon name="info" :size="14" /><span>{{ t('formNotify.noAlerts') }} <a v-if="allowed('system.read')" href="/admin/notifications" @click="linkHandler('/admin/notifications')($event)">{{ t('formNotify.configure') }}</a></span></p>
+        </div>
+        <div class="stack-form">
+          <label class="field">
+            <span class="field-label">{{ t('formNotify.contactField') }}</span>
+            <select v-model="settings.contactField" class="input select" :disabled="readonly">
+              <option value="">{{ t('formNotify.contactAuto') }}</option>
+              <option v-for="field in emailFields" :key="field.id" :value="field.id">{{ field.label }}</option>
+              <option value="none">{{ t('formNotify.contactNone') }}</option>
+            </select>
+            <small class="hint">{{ emailFields.length ? t('formNotify.contactHint') : t('formNotify.contactMissing') }}</small>
+          </label>
+          <ToggleSwitch v-model="settings.sendReceipt" :label="t('formNotify.receipt')" :hint="t('formNotify.receiptHint')" :disabled="readonly || settings.contactField === 'none'" />
+          <p v-if="messaging.loaded && !messaging.mail" class="hint small"><AppIcon name="info" :size="14" /><span>{{ t('formNotify.noMail') }} <a v-if="allowed('system.read')" href="/admin/notifications" @click="linkHandler('/admin/notifications')($event)">{{ t('formNotify.configure') }}</a></span></p>
+        </div>
+      </div>
     </section>
 
     <section class="card settings-card span-2">

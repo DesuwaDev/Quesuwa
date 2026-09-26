@@ -56,8 +56,8 @@ const questionCount = form => form.fields.filter(answerable).length;
 
 async function act(task, messageKey = 'common.done') {
   busy.value = true;
-  try { await task(); if (messageKey) notify(messageKey); await load(); }
-  catch (error) { notifyError(error); }
+  try { await task(); if (messageKey) notify(messageKey); await load(); return true; }
+  catch (error) { notifyError(error); return false; }
   finally { busy.value = false; }
 }
 
@@ -69,14 +69,25 @@ const duplicate = form => act(async () => {
   const copy = await api('/admin/forms/' + form.id + '/duplicate', { method: 'POST', body: {} });
   navigate('/admin/forms/' + copy.id + '/edit');
 }, 'forms.duplicated');
+// A questionnaire that was never saved after creation and has no responses is
+// removed without a prompt; the toast offers an undo instead.
+const untouched = form => form.version === 1 && !form.responseCount;
 async function remove(form) {
+  if (untouched(form)) {
+    if (await act(() => api('/admin/forms/' + form.id, { method: 'DELETE', body: {} }), '')) notify('forms.trashed', { action: { key: 'common.undo', run: () => restore(form) }, timeout: 6000 });
+    return;
+  }
   if (!(await confirmDialog({ titleKey: 'forms.trashTitle', messageKey: 'forms.trashConfirm', params: { title: form.title }, danger: true, confirmKey: 'forms.trash' }))) return;
   act(() => api('/admin/forms/' + form.id, { method: 'DELETE', body: {} }), 'forms.trashed');
 }
 const restore = form => act(() => api('/admin/forms/' + form.id + '/restore', { method: 'POST', body: {} }), 'forms.restored');
+// Typing the title is only required when responses would be destroyed.
 async function purge(form) {
-  const confirmation = await promptDialog({ titleKey: 'forms.purgeTitle', messageKey: 'forms.purgeConfirm', params: { title: form.title, count: form.responseCount }, expected: form.title, danger: true, confirmKey: 'forms.purge' });
-  if (confirmation !== form.title) return;
+  let confirmation = form.title;
+  if (form.responseCount) {
+    confirmation = await promptDialog({ titleKey: 'forms.purgeTitle', messageKey: 'forms.purgeConfirm', params: { title: form.title, count: form.responseCount }, expected: form.title, danger: true, confirmKey: 'forms.purge' });
+    if (confirmation !== form.title) return;
+  } else if (!(await confirmDialog({ titleKey: 'forms.purgeTitle', messageKey: 'forms.purgeEmptyConfirm', params: { title: form.title }, danger: true, confirmKey: 'forms.purge' }))) return;
   act(() => api('/admin/forms/' + form.id + '?permanent=true', { method: 'DELETE', body: { confirmation } }), 'forms.purged');
 }
 </script>

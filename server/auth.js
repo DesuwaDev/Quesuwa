@@ -20,7 +20,7 @@ export const validPassword = value => typeof value === 'string' && value.length 
 export const validUsername = value => typeof value === 'string' && /^[a-zA-Z0-9][a-zA-Z0-9._-]{1,31}$/.test(value);
 
 export function publicUser(row) {
-  return row && { id: row.id, username: row.username, displayName: row.display_name, role: row.role, disabled: Boolean(row.disabled), createdAt: row.created_at, lastLoginAt: row.last_login_at };
+  return row && { id: row.id, username: row.username, displayName: row.display_name, email: row.email || '', role: row.role, disabled: Boolean(row.disabled), twoFactor: Boolean(row.totp_secret), createdAt: row.created_at, lastLoginAt: row.last_login_at };
 }
 
 export function configureAuth(db, { bootstrapPassword, bootstrapUsername = 'admin' }) {
@@ -98,7 +98,37 @@ export function configureAuth(db, { bootstrapPassword, bootstrapUsername = 'admi
 
   const sessionToken = req => /(?:^|;\s*)quesuwa_session=([a-f0-9]{64})(?:;|$)/.exec(req.headers.cookie || '')?.[1];
 
+  // ---- Personal API tokens: "Authorization: Bearer qsw_…" ----
+  const tokens = {
+    create(userId, { name, scope, days }) {
+      const secret = 'qsw_' + randomBytes(30).toString('base64url');
+      const id = randomUUID(), now = new Date();
+      const expiresAt = days ? new Date(now.getTime() + days * 86400_000).toISOString() : null;
+      db.prepare('INSERT INTO api_tokens(id,user_id,name,token_hash,prefix,scope,created_at,expires_at) VALUES (?,?,?,?,?,?,?,?)').run(id, userId, name, hashToken(secret), secret.slice(0, 10), scope, now.toISOString(), expiresAt);
+      return { secret, token: tokens.list(userId).find(item => item.id === id) };
+    },
+    list: userId => db.prepare('SELECT id, name, prefix, scope, created_at AS createdAt, last_used_at AS lastUsedAt, expires_at AS expiresAt FROM api_tokens WHERE user_id=? ORDER BY created_at DESC').all(userId),
+    revoke: (userId, id) => db.prepare('DELETE FROM api_tokens WHERE id=? AND user_id=?').run(id, userId).changes,
+    resolve(secret) {
+      if (typeof secret !== 'string' || !/^qsw_[A-Za-z0-9_-]{40}$/.test(secret)) return null;
+      const row = db.prepare('SELECT t.id AS token_id, t.scope, t.expires_at, t.last_used_at, u.* FROM api_tokens t JOIN users u ON u.id=t.user_id WHERE t.token_hash=? AND u.disabled=0').get(hashToken(secret));
+      if (!row || (row.expires_at && Date.parse(row.expires_at) <= Date.now())) return null;
+      if (!row.last_used_at || Date.now() - Date.parse(row.last_used_at) > 5 * 60_000) db.prepare('UPDATE api_tokens SET last_used_at=? WHERE id=?').run(new Date().toISOString(), row.token_id);
+      return row;
+    }
+  };
+
   function requireUser(req, _res, next) {
+    const bearer = /^Bearer\s+(\S+)$/i.exec(req.get('authorization') || '')?.[1];
+    if (bearer) {
+      const row = tokens.resolve(bearer);
+      if (!row) return next(fail(401, 'errors.tokenInvalid'));
+      req.user = publicUser(row);
+      req.apiToken = { id: row.token_id, scope: row.scope };
+      // Read-only tokens may only read.
+      if (row.scope !== 'write' && !['GET', 'HEAD'].includes(req.method)) return next(fail(403, 'errors.tokenReadOnly'));
+      return next();
+    }
     const token = sessionToken(req);
     const row = sessions.resolve(token);
     if (!row) return next(fail(401, 'errors.loginRequired'));
@@ -107,7 +137,10 @@ export function configureAuth(db, { bootstrapPassword, bootstrapUsername = 'admi
     next();
   }
 
+  // Account security, members, secrets and backups are never reachable with an API token.
+  const sessionOnly = (req, _res, next) => next(req.apiToken ? fail(403, 'errors.tokenNotAllowed') : undefined);
+
   const allow = permission => (req, _res, next) => next(can(req.user?.role, permission) ? undefined : fail(403, 'errors.forbidden'));
 
-  return { verify, findUser, getUser, sessions, sessionToken, requireUser, allow, setupNeeded, setupCode, checkSetupCode, createOwner, can: (req, permission) => can(req.user?.role, permission) };
+  return { verify, findUser, getUser, sessions, sessionToken, requireUser, sessionOnly, tokens, allow, setupNeeded, setupCode, checkSetupCode, createOwner, can: (req, permission) => can(req.user?.role, permission) };
 }

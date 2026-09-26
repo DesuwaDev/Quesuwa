@@ -16,7 +16,8 @@ try {
   db.exec('BEGIN IMMEDIATE');
   const user = db.prepare('SELECT id FROM users WHERE username=?').get(username);
   // Recovery always yields an enabled owner account so the workspace can be managed again.
-  if (user) db.prepare("UPDATE users SET salt=?, hash=?, disabled=0, role='owner' WHERE id=?").run(salt, hash, user.id);
+  // Recovery also removes two-factor authentication so a lost phone cannot lock the owner out.
+  if (user) db.prepare("UPDATE users SET salt=?, hash=?, disabled=0, role='owner', totp_secret='', totp_pending='', recovery_codes='[]' WHERE id=?").run(salt, hash, user.id);
   else db.prepare("INSERT INTO users(id,username,display_name,role,salt,hash,created_at) VALUES (?,?,'','owner',?,?,?)").run(randomUUID(), username, salt, hash, new Date().toISOString());
   db.prepare('DELETE FROM sessions WHERE user_id IN (SELECT id FROM users WHERE username=?)').run(username);
   db.exec('COMMIT');

@@ -7,10 +7,13 @@ import { formatDate, describeAgent } from '../../lib/format.js';
 import { roleKeys, roleHintKeys } from '../../../shared/constants.js';
 import AppIcon from '../../components/AppIcon.vue';
 import PasswordStrength from '../../components/PasswordStrength.vue';
+import TwoFactorCard from './TwoFactorCard.vue';
+import TokensCard from './TokensCard.vue';
+import AlertPrefsCard from './AlertPrefsCard.vue';
 
 const displayName = ref(session.user.displayName || ''), savingName = ref(false);
 const current = ref(''), next = ref(''), confirm = ref(''), passwordError = ref(null), changing = ref(false);
-const sessions = ref([]);
+const sessions = ref([]), prefs = ref(null), recoveryLeft = ref(0);
 const mismatch = computed(() => confirm.value && next.value !== confirm.value);
 
 async function saveName() {
@@ -46,7 +49,15 @@ async function revokeOthers() {
   try { await api('/admin/sessions/revoke', { method: 'POST', body: {} }); notify('account.sessionRevoked'); await loadSessions(); }
   catch (error) { notifyError(error); }
 }
-onMounted(loadSessions);
+async function loadMe() {
+  try {
+    const data = await api('/admin/me');
+    session.user = data.user;
+    prefs.value = data.prefs;
+    recoveryLeft.value = data.recoveryLeft;
+  } catch (error) { notifyError(error); }
+}
+onMounted(() => { loadMe(); loadSessions(); });
 </script>
 
 <template>
@@ -98,6 +109,10 @@ onMounted(loadSessions);
         <button type="submit" class="button primary align-start" :disabled="changing || !current || next.length < 12 || mismatch">{{ t('account.password') }}</button>
       </form>
     </section>
+
+    <AlertPrefsCard :prefs="prefs" />
+    <TwoFactorCard :recovery-left="recoveryLeft" @changed="loadMe(); loadSessions()" />
+    <TokensCard />
 
     <section class="card settings-card">
       <header class="card-header">

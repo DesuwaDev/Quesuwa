@@ -38,7 +38,7 @@ export function overviewRoutes({ db }) {
   return router;
 }
 
-export function systemRoutes({ db, storage, settings, audit, publicOrigin }) {
+export function systemRoutes({ db, storage, settings, audit, publicOrigin, backups }) {
   const router = Router();
   router.get('/', (req, res) => {
     const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
@@ -57,6 +57,28 @@ export function systemRoutes({ db, storage, settings, audit, publicOrigin }) {
       events: { total, page, pageSize: 25, items: db.prepare('SELECT action, target, detail, actor, created_at AS createdAt FROM audit ORDER BY id DESC LIMIT 25 OFFSET ?').all((page - 1) * 25) }
     });
   });
+  router.get('/backups', (_req, res) => res.json({ config: backups.config(), status: backups.status(), items: backups.list() }));
+  router.put('/backups', (req, res) => {
+    const config = backups.update(req.body);
+    audit(req, 'backupSettings', 'system', '');
+    res.json({ config, status: backups.status(), items: backups.list() });
+  });
+  router.post('/backups/run', async (req, res) => {
+    const status = await backups.run();
+    audit(req, 'backupRun', 'system', status.name);
+    res.json({ config: backups.config(), status, items: backups.list() });
+  });
+  router.get('/backups/:name', (req, res) => {
+    res.download(backups.file(req.params.name), req.params.name);
+  });
+  // Full archive: a consistent database snapshot plus every attachment.
+  router.get('/archive', async (req, res) => {
+    audit(req, 'backupDownload', 'system', '');
+    res.type('application/zip').attachment(`quesuwa-archive-${new Date().toISOString().slice(0, 10)}.zip`);
+    try { await backups.streamArchive(res); }
+    catch (error) { if (!error.aborted) console.error(error); res.destroy(); }
+  });
+
   router.put('/settings', (req, res) => {
     const values = settings.update(req.body);
     audit(req, 'settings', 'system', '');

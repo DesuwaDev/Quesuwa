@@ -98,6 +98,16 @@
       },
       {
         "kind": "literal",
+        "value": "/admin/notifications",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "notifications",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "missing",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
@@ -163,6 +173,16 @@
       {
         "kind": "literal",
         "value": "system.read",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/admin/notifications",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "mail",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
@@ -544,6 +564,11 @@
       },
       {
         "kind": "literal",
+        "value": "email",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "state-",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
@@ -555,6 +580,21 @@
       {
         "kind": "literal",
         "value": "accent-",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "system.read",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/admin/notifications",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "none",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
@@ -1281,6 +1321,21 @@
       },
       {
         "kind": "literal",
+        "value": "/admin/login/2fa",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "recovery",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "totp",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "text",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
@@ -1360,6 +1415,124 @@
       }
     ]
   },
+  "src/admin/responses/ConversationPanel.vue": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "updated",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "quesuwa.replyEmail",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "staff",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "respondent",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "smooth",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "error",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/admin/responses/",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "/messages",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "POST",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "pending",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/messages/",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "/resend",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "failed",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "Enter",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "system",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "ticket.delivery.",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "from-me",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "from-staff",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "alert",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "mail",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      }
+    ],
+    "dynamicKeys": [
+      {
+        "expression": "statusKeys[statusOf(message)] || 'status.pending'",
+        "reason": "Key resolved from a fixed translation-key map, a reviewed key prefix or a validated API error code."
+      },
+      {
+        "expression": "'ticket.delivery.' + message.delivery",
+        "reason": "Key resolved from a fixed translation-key map, a reviewed key prefix or a validated API error code."
+      },
+      {
+        "expression": "statusKeys[status]",
+        "reason": "Key resolved from a fixed translation-key map, a reviewed key prefix or a validated API error code."
+      }
+    ]
+  },
   "src/admin/responses/format.js": {
     "literals": [
       {
@@ -1398,6 +1571,11 @@
       },
       {
         "kind": "literal",
+        "value": "quesuwa.statusEmail",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "/api/admin/responses/",
         "reason": "Route, URL, file path or query string fragment."
       },
@@ -1428,12 +1606,7 @@
       },
       {
         "kind": "literal",
-        "value": "/messages",
-        "reason": "Route, URL, file path or query string fragment."
-      },
-      {
-        "kind": "literal",
-        "value": "Enter",
+        "value": "error",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
@@ -1508,17 +1681,7 @@
       },
       {
         "kind": "literal",
-        "value": "staff",
-        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
-      },
-      {
-        "kind": "literal",
-        "value": "from-me",
-        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
-      },
-      {
-        "kind": "literal",
-        "value": "from-staff",
+        "value": "mailto:",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
@@ -1579,10 +1742,6 @@
       },
       {
         "expression": "languageKey(response.locale)",
-        "reason": "Key resolved from a fixed translation-key map, a reviewed key prefix or a validated API error code."
-      },
-      {
-        "expression": "statusKeys[status]",
         "reason": "Key resolved from a fixed translation-key map, a reviewed key prefix or a validated API error code."
       }
     ]
@@ -1781,8 +1940,269 @@
       }
     ]
   },
+  "src/admin/settings/AlertPrefsCard.vue": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "/admin/me",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "PATCH",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/admin/forms",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "selected",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      }
+    ]
+  },
+  "src/admin/settings/BackupCard.vue": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "/admin/system/backups",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "PUT",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/admin/system/backups/run",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "POST",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "muted",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "field-error",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "checkCircle",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "alert",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/admin/system/backups/",
+        "reason": "Route, URL, file path or query string fragment."
+      }
+    ]
+  },
+  "src/admin/settings/NotificationsView.vue": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "reply",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "alert",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "receipt",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/admin/notifications",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "PUT",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/admin/notifications/test",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "POST",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "error",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "/admin/notifications/outbox/${}/retry",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "/admin/notifications/preview",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "success",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "warning",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "danger",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "muted",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "sent",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "pending",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "alertMail",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "telegram",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "mail",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "digest",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "failed",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      }
+    ],
+    "dynamicKeys": [
+      {
+        "expression": "key",
+        "reason": "Key resolved from a fixed translation-key map, a reviewed key prefix or a validated API error code."
+      },
+      {
+        "expression": "channelKey(entry.channel)",
+        "reason": "Key resolved from a fixed translation-key map, a reviewed key prefix or a validated API error code."
+      },
+      {
+        "expression": "eventKey(entry.event)",
+        "reason": "Key resolved from a fixed translation-key map, a reviewed key prefix or a validated API error code."
+      }
+    ]
+  },
+  "src/admin/settings/SmtpFields.vue": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "alert",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "smtp.qq.com",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "tls",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "smtp.exmail.qq.com",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "smtp.163.com",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "smtp.qiye.aliyun.com",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "smtp.gmail.com",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "smtp.office365.com",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "starttls",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "mail",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      }
+    ],
+    "dynamicKeys": [
+      {
+        "expression": "preset.key",
+        "reason": "Key resolved from a fixed translation-key map, a reviewed key prefix or a validated API error code."
+      }
+    ]
+  },
   "src/admin/settings/SystemView.vue": {
     "literals": [
+      {
+        "kind": "literal",
+        "value": "timeZone",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
       {
         "kind": "literal",
         "value": "/admin/system?page=",
@@ -1847,6 +2267,16 @@
         "kind": "literal",
         "value": "TRUST_PROXY_HOPS",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "timezone",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "TZ",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       }
     ],
     "dynamicKeys": [
@@ -1861,6 +2291,129 @@
       {
         "expression": "key",
         "reason": "Key resolved from a fixed translation-key map, a reviewed key prefix or a validated API error code."
+      }
+    ]
+  },
+  "src/admin/settings/TokensCard.vue": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "read",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "curl -H \"Authorization: Bearer ${}\" ${}/api/admin/forms",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/admin/tokens",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "POST",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/admin/tokens/",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "DELETE",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "write",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "warning",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "muted",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      }
+    ]
+  },
+  "src/admin/settings/TwoFactorCard.vue": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "changed",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/admin/2fa/setup",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "POST",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "svg",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "M",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/admin/2fa/enable",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "password",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/admin/2fa/recovery",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "/admin/2fa/disable",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "text/plain",
+        "reason": "HTTP header name, MIME type or protocol value."
+      },
+      {
+        "kind": "literal",
+        "value": "a",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "quesuwa-recovery-${}.txt",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "success",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "muted",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       }
     ]
   },
@@ -1915,6 +2468,11 @@
         "kind": "literal",
         "value": "PATCH",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/reset-2fa",
+        "reason": "Route, URL, file path or query string fragment."
       },
       {
         "kind": "literal",
@@ -2125,6 +2683,26 @@
       },
       {
         "kind": "literal",
+        "value": "text",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "password",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "current-password",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "off",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "danger",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
@@ -2137,6 +2715,10 @@
     "dynamicKeys": [
       {
         "expression": "key",
+        "reason": "Key resolved from a fixed translation-key map, a reviewed key prefix or a validated API error code."
+      },
+      {
+        "expression": "dialog.fieldKey",
         "reason": "Key resolved from a fixed translation-key map, a reviewed key prefix or a validated API error code."
       },
       {
@@ -3065,6 +3647,15 @@
         "kind": "literal",
         "value": "Linux",
         "reason": "Browser or operating system product name shown as a device label."
+      }
+    ]
+  },
+  "src/lib/messaging.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "/admin/messaging",
+        "reason": "Route, URL, file path or query string fragment."
       }
     ]
   },
@@ -4034,6 +4625,11 @@
       },
       {
         "kind": "literal",
+        "value": "system",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "staff",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
@@ -4046,6 +4642,12 @@
         "kind": "literal",
         "value": "from-me",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      }
+    ],
+    "dynamicKeys": [
+      {
+        "expression": "statusKeys[message.body.replace(/^status:/, '')] || 'status.pending'",
+        "reason": "Key resolved from a fixed translation-key map, a reviewed key prefix or a validated API error code."
       }
     ]
   },
@@ -4180,6 +4782,16 @@
         "kind": "literal",
         "value": "system.read",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/admin/notifications",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/admin/messaging",
+        "reason": "Route, URL, file path or query string fragment."
       },
       {
         "kind": "literal",
@@ -4354,6 +4966,61 @@
         "kind": "literal",
         "value": "DELETE FROM sessions WHERE user_id=?",
         "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "qsw_",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "base64url",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "INSERT INTO api_tokens(id,user_id,name,token_hash,prefix,scope,created_at,expires_at) VALUES (?,?,?,?,?,?,?,?)",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT id, name, prefix, scope, created_at AS createdAt, last_used_at AS lastUsedAt, expires_at AS expiresAt FROM api_tokens WHERE user_id=? ORDER BY created_at DESC",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "DELETE FROM api_tokens WHERE id=? AND user_id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT t.id AS token_id, t.scope, t.expires_at, t.last_used_at, u.* FROM api_tokens t JOIN users u ON u.id=t.user_id WHERE t.token_hash=? AND u.disabled=0",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "UPDATE api_tokens SET last_used_at=? WHERE id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "authorization",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "write",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "GET",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "HEAD",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       }
     ]
   },
@@ -4527,6 +5194,76 @@
       {
         "kind": "template",
         "value": "CREATE TABLE IF NOT EXISTS messages (id TEXT PRIMARY KEY, response_id TEXT NOT NULL, author TEXT NOT NULL, user_id TEXT, author_name TEXT NOT NULL DEFAULT '', body TEXT NOT NULL, created_at TEXT NOT NULL);\n      CREATE INDEX IF NOT EXISTS messages_response ON messages(response_id, created_at);\n      CREATE INDEX IF NOT EXISTS responses_unread ON responses(form_id, unread);",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "messages",
+        "reason": "SQLite table or column name used by schema migrations."
+      },
+      {
+        "kind": "literal",
+        "value": "delivery",
+        "reason": "SQLite table or column name used by schema migrations."
+      },
+      {
+        "kind": "literal",
+        "value": "CREATE TABLE IF NOT EXISTS notification_log (id INTEGER PRIMARY KEY, created_at TEXT NOT NULL, channel TEXT NOT NULL, event TEXT NOT NULL, target TEXT NOT NULL, ok INTEGER NOT NULL, error TEXT NOT NULL DEFAULT '')",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "template",
+        "value": "CREATE TABLE IF NOT EXISTS outbox (id INTEGER PRIMARY KEY, created_at TEXT NOT NULL, next_at INTEGER NOT NULL, attempts INTEGER NOT NULL DEFAULT 0,\n        channel TEXT NOT NULL, event TEXT NOT NULL, target TEXT NOT NULL, payload TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'pending', error TEXT NOT NULL DEFAULT '', sent_at TEXT);\n      CREATE INDEX IF NOT EXISTS outbox_due ON outbox(status, next_at);\n      DROP TABLE IF EXISTS notification_log;",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "users",
+        "reason": "SQLite table or column name used by schema migrations."
+      },
+      {
+        "kind": "literal",
+        "value": "email",
+        "reason": "SQLite table or column name used by schema migrations."
+      },
+      {
+        "kind": "literal",
+        "value": "notify_prefs",
+        "reason": "SQLite table or column name used by schema migrations."
+      },
+      {
+        "kind": "literal",
+        "value": "TEXT NOT NULL DEFAULT '{}'",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "totp_secret",
+        "reason": "SQLite table or column name used by schema migrations."
+      },
+      {
+        "kind": "literal",
+        "value": "totp_pending",
+        "reason": "SQLite table or column name used by schema migrations."
+      },
+      {
+        "kind": "literal",
+        "value": "totp_last_step",
+        "reason": "SQLite table or column name used by schema migrations."
+      },
+      {
+        "kind": "literal",
+        "value": "recovery_codes",
+        "reason": "SQLite table or column name used by schema migrations."
+      },
+      {
+        "kind": "literal",
+        "value": "TEXT NOT NULL DEFAULT '[]'",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "CREATE TABLE IF NOT EXISTS api_tokens (id TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, name TEXT NOT NULL,\n        token_hash TEXT NOT NULL UNIQUE, prefix TEXT NOT NULL, scope TEXT NOT NULL, created_at TEXT NOT NULL, last_used_at TEXT, expires_at TEXT);",
         "reason": "SQLite statement, clause or column definition; values are bound separately."
       },
       {
@@ -4715,6 +5452,40 @@
       }
     ]
   },
+  "server/lib/totp.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567",
+        "reason": "Character set for generated random codes."
+      },
+      {
+        "kind": "literal",
+        "value": "sha1",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "otpauth://totp/${}:${}?secret=${}&issuer=${}&algorithm=SHA1&digits=6&period=30",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "sha256",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "hex",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "string",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      }
+    ]
+  },
   "server/lib/zip.js": {
     "literals": [
       {
@@ -4733,18 +5504,13 @@
     "literals": [
       {
         "kind": "literal",
-        "value": "/login",
-        "reason": "Route, URL, file path or query string fragment."
+        "value": "UPDATE users SET totp_last_step=? WHERE id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
       },
       {
         "kind": "literal",
-        "value": "string",
-        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
-      },
-      {
-        "kind": "literal",
-        "value": "admin",
-        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+        "value": "UPDATE users SET recovery_codes=? WHERE id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
       },
       {
         "kind": "literal",
@@ -4763,6 +5529,31 @@
       },
       {
         "kind": "literal",
+        "value": "/login",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "string",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "admin",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "base64url",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/login/2fa",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
         "value": "/setup",
         "reason": "Route, URL, file path or query string fragment."
       },
@@ -4778,6 +5569,16 @@
       },
       {
         "kind": "literal",
+        "value": "token",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "session",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "/logout",
         "reason": "Route, URL, file path or query string fragment."
       },
@@ -4788,7 +5589,7 @@
       },
       {
         "kind": "literal",
-        "value": "UPDATE users SET display_name=? WHERE id=?",
+        "value": "UPDATE users SET display_name=?, email=?, notify_prefs=? WHERE id=?",
         "reason": "SQLite statement, clause or column definition; values are bound separately."
       },
       {
@@ -4804,6 +5605,86 @@
       {
         "kind": "literal",
         "value": "passwordChanged",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/2fa/setup",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "UPDATE users SET totp_pending=? WHERE id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "Quesuwa",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/2fa/enable",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "UPDATE users SET totp_secret=totp_pending, totp_pending='', totp_last_step=?, recovery_codes=? WHERE id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "twoFactorEnabled",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/2fa/recovery",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "/2fa/disable",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "UPDATE users SET totp_secret='', totp_pending='', totp_last_step=0, recovery_codes='[]' WHERE id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "twoFactorDisabled",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/tokens",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "read",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "write",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "tokenCreated",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/tokens/:id",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "tokenRevoked",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
@@ -5012,6 +5893,50 @@
       }
     ]
   },
+  "server/routes/notifications.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "notifications",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "system",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/test",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "/outbox/:id/retry",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "/preview",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "alert",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "receipt",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "reply",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      }
+    ]
+  },
   "server/routes/public.js": {
     "literals": [
       {
@@ -5108,6 +6033,16 @@
         "kind": "literal",
         "value": "/api/forms",
         "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT * FROM responses WHERE id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "host",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       }
     ],
     "dynamicKeys": [
@@ -5128,6 +6063,21 @@
         "kind": "literal",
         "value": "SELECT * FROM responses WHERE id=?",
         "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "host",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "system",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "status:",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
         "kind": "literal",
@@ -5201,8 +6151,43 @@
       },
       {
         "kind": "literal",
+        "value": "pending",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "UPDATE responses SET unread=0, last_activity_at=?, status=COALESCE(?, status) WHERE id=?",
         "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "message",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "sent",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "failed",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/responses/:id/messages/:messageId/resend",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "respondent",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "status",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
         "kind": "literal",
@@ -5216,18 +6201,13 @@
       },
       {
         "kind": "literal",
-        "value": "UPDATE responses SET status=?, note=?, starred=? WHERE id=?",
+        "value": "UPDATE responses SET status=?, note=?, starred=?, last_activity_at=COALESCE(?, last_activity_at) WHERE id=?",
         "reason": "SQLite statement, clause or column definition; values are bound separately."
       },
       {
         "kind": "literal",
         "value": "/forms/:id/responses/batch",
         "reason": "Route, URL, file path or query string fragment."
-      },
-      {
-        "kind": "literal",
-        "value": "status",
-        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
         "kind": "literal",
@@ -5470,17 +6450,62 @@
       },
       {
         "kind": "literal",
+        "value": "/backups",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "backupSettings",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "system",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/backups/run",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "backupRun",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/backups/:name",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "/archive",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "backupDownload",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "application/zip",
+        "reason": "HTTP header name, MIME type or protocol value."
+      },
+      {
+        "kind": "template",
+        "value": "quesuwa-archive-${}.zip",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "/settings",
         "reason": "Route, URL, file path or query string fragment."
       },
       {
         "kind": "literal",
         "value": "settings",
-        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
-      },
-      {
-        "kind": "literal",
-        "value": "system",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       }
     ]
@@ -5519,12 +6544,37 @@
       },
       {
         "kind": "literal",
+        "value": "resolved",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "needsInfo",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "system",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "status:pending",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "UPDATE responses SET unread=1, last_activity_at=?, status=CASE WHEN status IN ('resolved','needsInfo') THEN 'pending' ELSE status END WHERE id=?",
         "reason": "SQLite statement, clause or column definition; values are bound separately."
       },
       {
         "kind": "literal",
         "value": "message.created",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "host",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
@@ -5563,7 +6613,7 @@
       },
       {
         "kind": "literal",
-        "value": "INSERT INTO users(id,username,display_name,role,salt,hash,created_at) VALUES (?,?,?,?,?,?,?)",
+        "value": "INSERT INTO users(id,username,display_name,email,role,salt,hash,created_at) VALUES (?,?,?,?,?,?,?,?)",
         "reason": "SQLite statement, clause or column definition; values are bound separately."
       },
       {
@@ -5589,6 +6639,21 @@
       {
         "kind": "literal",
         "value": "userUpdated",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/:id/reset-2fa",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "UPDATE users SET totp_secret='', totp_pending='', totp_last_step=0, recovery_codes='[]' WHERE id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "twoFactorReset",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
@@ -5634,6 +6699,125 @@
         "kind": "literal",
         "value": "DELETE FROM audit WHERE id NOT IN (SELECT id FROM audit ORDER BY id DESC LIMIT 2000)",
         "reason": "SQLite statement, clause or column definition; values are bound separately."
+      }
+    ]
+  },
+  "server/services/backup.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "backups",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "uploads",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT value FROM settings WHERE key=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "INSERT INTO settings(key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "backup",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "T",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "quesuwa-${}.sqlite",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "backupStatus",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "en-CA",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "numeric",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "2-digit",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "h23",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "backupLast",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "quesuwa-archive-",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "report.sqlite",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "uploads/",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT id, definition FROM forms",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT id, attachments FROM responses WHERE form_id=? AND created_at<?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "BEGIN IMMEDIATE",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "DELETE FROM responses WHERE id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "COMMIT",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "ROLLBACK",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "retention",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       }
     ]
   },
@@ -5732,6 +6916,395 @@
       }
     ]
   },
+  "server/services/notify.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "tls",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "https://api.telegram.org",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "#B0554D",
+        "reason": "DOM selector or media query."
+      },
+      {
+        "kind": "literal",
+        "value": "&amp;",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "&lt;",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "&gt;",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "&quot;",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "string",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "object",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "starttls",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "none",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "alert",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT value FROM settings WHERE key='notifications'",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "events",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "alertMail",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "telegram",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "mail",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "digest",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "appearance",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "INSERT INTO settings(key, value) VALUES ('notifications', ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "Quesuwa",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "${}/bot${}/sendMessage",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "POST",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "application/json",
+        "reason": "HTTP header name, MIME type or protocol value."
+      },
+      {
+        "kind": "literal",
+        "value": "HTML",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "INSERT INTO outbox(created_at, next_at, attempts, channel, event, target, payload, status, error, sent_at) VALUES (?,?,?,?,?,?,?,?,?,?)",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "DELETE FROM outbox WHERE status<>'pending' AND id NOT IN (SELECT id FROM outbox ORDER BY id DESC LIMIT 1000)",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "pending",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT * FROM outbox WHERE status='pending' AND next_at<=? ORDER BY id LIMIT 10",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "UPDATE outbox SET status='sent', attempts=attempts+1, error='', sent_at=? WHERE id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "UPDATE outbox SET status=?, attempts=?, error=?, next_at=? WHERE id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "failed",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "sent",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT id, created_at AS createdAt, channel, event, target, status, attempts, error FROM outbox ORDER BY id DESC LIMIT 60",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "UPDATE outbox SET status='pending', attempts=0, error='', next_at=? WHERE id=? AND status='failed'",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "file",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "<tr><td style=\"padding:6px 0;color:#6B5C59;font-size:13px;vertical-align:top;width:38%\">${}</td><td style=\"padding:6px 0 6px 12px;color:#3A2F2E;font-size:14px;white-space:pre-wrap\">${}</td></tr>",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "<img src=\"${}\" alt=\"${}\" height=\"32\" style=\"display:block;height:32px;max-width:200px;margin-bottom:8px\">",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "<!doctype html><html><body style=\"margin:0;background:#F4EDE8;font-family:-apple-system,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif\">\n<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background:#F4EDE8;padding:24px 12px\"><tr><td align=\"center\">\n<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"max-width:560px;background:#FBF7F4;border:1px solid #E3D5CE;border-radius:14px;overflow:hidden\">\n<tr><td style=\"height:6px;background:${}\"></td></tr>\n<tr><td style=\"padding:24px 28px\">\n${}<div style=\"font-size:12px;letter-spacing:.08em;color:${};font-weight:700\">${}</div>\n<h1 style=\"margin:8px 0 12px;font-size:20px;color:#3A2F2E\">${}</h1>\n<p style=\"margin:0 0 16px;font-size:14px;line-height:1.6;color:#3A2F2E\">${}</p>\n${}\n${}\n${}\n${}\n${}\n</td></tr>\n<tr><td style=\"padding:14px 28px;border-top:1px solid #E3D5CE;font-size:12px;color:#8F7F7B;white-space:pre-wrap\">${}</td></tr>\n</table></td></tr></table></body></html>",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "<div style=\"margin:0 0 16px;padding:12px 14px;border-left:3px solid ${};background:#F3EBE6;border-radius:8px;font-size:14px;line-height:1.6;color:#3A2F2E;white-space:pre-wrap\">${}</div>",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"border-top:1px solid #E3D5CE;margin-bottom:12px\">${}</table>",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "<p style=\"margin:0 0 16px;font-size:13px;color:#8F7F7B\">${}</p>",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "<a href=\"${}\" style=\"display:inline-block;margin:4px 0 8px;padding:10px 18px;background:${};color:#FFFFFF;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px\">${}</a>",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "<p style=\"margin:16px 0 0;font-size:14px;line-height:1.6;color:#6B5C59;white-space:pre-wrap\">${}</p>",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "<b>${}</b>",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "<b>${}</b>: ${}",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "<a href=\"${}\">${}</a>",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT id, email, notify_prefs FROM users WHERE disabled=0 AND email<>''",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "selected",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "newResponse",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "${}/admin/forms/${}/responses?r=${}",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "template",
+        "value": "${}/t/${}#k=${}",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "response.created",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "receipt",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "message.created",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "ticketReply",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "message",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "unavailable",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "message.staff",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "status.changed",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "SELECT f.id, f.definition, count(r.id) AS n FROM forms f JOIN responses r ON r.form_id=f.id AND r.deleted_at IS NULL AND r.created_at>=?\n      WHERE f.deleted_at IS NULL GROUP BY f.id ORDER BY n DESC",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT SUM(CASE WHEN r.status='pending' THEN 1 ELSE 0 END) AS pending, SUM(r.unread) AS unread FROM responses r JOIN forms f ON f.id=r.form_id WHERE r.deleted_at IS NULL AND f.deleted_at IS NULL",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT count(*) AS n FROM responses r JOIN forms f ON f.id=r.form_id WHERE r.deleted_at IS NULL AND f.deleted_at IS NULL AND r.created_at>=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "template",
+        "value": "${}/admin",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "en-CA",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "numeric",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "2-digit",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "h23",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT value FROM settings WHERE key='digestLast'",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "null",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "INSERT INTO settings(key, value) VALUES ('digestLast', ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "A1B2C3D4",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "test",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "<b>${}</b>\n${}",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "all",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      }
+    ],
+    "dynamicKeys": [
+      {
+        "expression": "code",
+        "reason": "Key resolved from a fixed translation-key map, a reviewed key prefix or a validated API error code."
+      },
+      {
+        "expression": "key",
+        "reason": "Key resolved from a fixed translation-key map, a reviewed key prefix or a validated API error code."
+      }
+    ]
+  },
   "server/services/responses.js": {
     "literals": [
       {
@@ -5798,11 +7371,36 @@
         "kind": "literal",
         "value": "file",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "none",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "email",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       }
     ]
   },
   "server/services/settings.js": {
     "literals": [
+      {
+        "kind": "literal",
+        "value": "UTC",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "string",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "en",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
       {
         "kind": "literal",
         "value": "zh-CN",
@@ -6052,12 +7650,22 @@
       },
       {
         "kind": "literal",
-        "value": "base64url",
-        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+        "value": "SELECT value FROM settings WHERE key='ticketSecret'",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
       },
       {
         "kind": "literal",
         "value": "hex",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "INSERT INTO settings(key, value) VALUES ('ticketSecret', ?)",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "base64url",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
@@ -6072,12 +7680,27 @@
       },
       {
         "kind": "literal",
-        "value": "SELECT id, author, author_name AS authorName, body, created_at AS createdAt FROM messages WHERE response_id=? ORDER BY created_at, rowid",
+        "value": "SELECT id, author, author_name AS authorName, body, created_at AS createdAt, delivery FROM messages WHERE response_id=? ORDER BY created_at, rowid",
         "reason": "SQLite statement, clause or column definition; values are bound separately."
       },
       {
         "kind": "literal",
-        "value": "INSERT INTO messages(id,response_id,author,user_id,author_name,body,created_at) VALUES (?,?,?,?,?,?,?)",
+        "value": "system",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "INSERT INTO messages(id,response_id,author,user_id,author_name,body,created_at,delivery) VALUES (?,?,?,?,?,?,?,?)",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "UPDATE messages SET delivery=? WHERE id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT id, author, author_name AS authorName, body, created_at AS createdAt, delivery FROM messages WHERE id=? AND response_id=?",
         "reason": "SQLite statement, clause or column definition; values are bound separately."
       },
       {
@@ -6623,6 +8246,16 @@
       },
       {
         "kind": "literal",
+        "value": "notifyAdmins",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "sendReceipt",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "single",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
@@ -6790,6 +8423,11 @@
         "kind": "literal",
         "value": "published",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "none",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       }
     ]
   },
@@ -6822,7 +8460,7 @@
       },
       {
         "kind": "literal",
-        "value": "UPDATE users SET salt=?, hash=?, disabled=0, role='owner' WHERE id=?",
+        "value": "UPDATE users SET salt=?, hash=?, disabled=0, role='owner', totp_secret='', totp_pending='', recovery_codes='[]' WHERE id=?",
         "reason": "SQLite statement, clause or column definition; values are bound separately."
       },
       {

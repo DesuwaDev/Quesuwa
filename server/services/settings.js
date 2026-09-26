@@ -3,11 +3,17 @@ import { fail } from '../errors.js';
 
 // Runtime settings editable in the web UI. A value supplied through the
 // environment takes precedence and is reported as locked.
-const defaults = { defaultLocale: 'zh-CN', maxStorageMB: 1024, trustProxyHops: 0 };
+const serverZone = (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch { return 'UTC'; } })();
+const validZone = value => {
+  if (typeof value !== 'string' || !value || value.length > 64) return false;
+  try { new Intl.DateTimeFormat('en', { timeZone: value }); return true; } catch { return false; }
+};
+const defaults = { defaultLocale: 'zh-CN', maxStorageMB: 1024, trustProxyHops: 0, timezone: serverZone };
 const validators = {
   defaultLocale: value => normalizeLocale(value) === value,
   maxStorageMB: value => Number.isInteger(value) && value >= 1 && value <= 1048576,
-  trustProxyHops: value => Number.isInteger(value) && value >= 0 && value <= 5
+  trustProxyHops: value => Number.isInteger(value) && value >= 0 && value <= 5,
+  timezone: validZone
 };
 
 export function createSettings(db, locked) {

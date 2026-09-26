@@ -12,6 +12,7 @@ import FormWorkspace from './FormWorkspace.vue';
 import AccountView from './settings/AccountView.vue';
 import UsersView from './settings/UsersView.vue';
 import SystemView from './settings/SystemView.vue';
+import NotificationsView from './settings/NotificationsView.vue';
 import EmptyState from '../components/EmptyState.vue';
 
 const tabs = ['edit', 'settings', 'share', 'responses', 'analytics'];
@@ -24,6 +25,7 @@ const view = computed(() => {
   if (path === '/admin/account') return { name: 'account' };
   if (path === '/admin/users') return { name: allowed('users.manage') ? 'users' : 'forbidden' };
   if (path === '/admin/system') return { name: allowed('system.read') ? 'system' : 'forbidden' };
+  if (path === '/admin/notifications') return { name: allowed('system.read') ? 'notifications' : 'forbidden' };
   return { name: 'missing' };
 });
 
@@ -51,6 +53,7 @@ watch(() => session.user?.id, (current, previous) => { if (!current && previous)
     <AccountView v-else-if="view.name === 'account'" />
     <UsersView v-else-if="view.name === 'users'" />
     <SystemView v-else-if="view.name === 'system'" />
+    <NotificationsView v-else-if="view.name === 'notifications'" />
     <EmptyState v-else-if="view.name === 'forbidden'" icon="lock" :title="t('errors.forbidden')" />
     <EmptyState v-else icon="alert" :title="t('public.notFound')" :text="t('public.notFoundHint')" />
   </AdminLayout>

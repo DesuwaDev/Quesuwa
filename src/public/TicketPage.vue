@@ -9,6 +9,7 @@ import { keyFromLocation, parseTicketInput, rememberTicket, savedTickets, ticket
 import { formatAnswer } from '../../shared/answers.js';
 import AppIcon from '../components/AppIcon.vue';
 import StatusBadge from '../components/StatusBadge.vue';
+import { statusKeys } from '../../shared/constants.js';
 
 const props = defineProps({ id: { type: String, required: true } });
 const key = ref(keyFromLocation() || savedTickets().find(item => item.id === props.id)?.key || '');
@@ -112,11 +113,17 @@ const answerOf = field => field.type === 'file'
         <h2 class="card-title">{{ t('ticket.conversation') }}</h2>
         <div ref="thread" class="ticket-thread" aria-live="polite">
           <p v-if="!ticket.messages.length" class="muted center small">{{ t('ticket.noMessages') }}</p>
-          <div v-for="message in ticket.messages" :key="message.id" class="bubble" :class="message.author === 'staff' ? 'from-staff' : 'from-me'">
-            <span class="bubble-author">{{ message.author === 'staff' ? t('ticket.staff', { name: message.authorName }) : t('ticket.me') }}</span>
-            <p class="preserve">{{ message.body }}</p>
-            <time class="bubble-time" :datetime="message.createdAt" :title="formatDate(message.createdAt)">{{ relativeTime(message.createdAt) }}</time>
-          </div>
+          <template v-for="message in ticket.messages" :key="message.id">
+            <div v-if="message.author === 'system'" class="timeline-event">
+              <span>{{ t('ticket.statusEvent', { status: t(statusKeys[message.body.replace(/^status:/, '')] || 'status.pending') }) }}</span>
+              <time :datetime="message.createdAt" :title="formatDate(message.createdAt)">{{ relativeTime(message.createdAt) }}</time>
+            </div>
+            <div v-else class="bubble" :class="message.author === 'staff' ? 'from-staff' : 'from-me'">
+              <span class="bubble-author">{{ message.author === 'staff' ? t('ticket.staff', { name: message.authorName }) : t('ticket.me') }}</span>
+              <p class="preserve">{{ message.body }}</p>
+              <time class="bubble-time" :datetime="message.createdAt" :title="formatDate(message.createdAt)">{{ relativeTime(message.createdAt) }}</time>
+            </div>
+          </template>
         </div>
         <form v-if="ticket.canReply" class="ticket-composer" @submit.prevent="send">
           <textarea v-model="draft" class="input textarea autosize" rows="2" maxlength="5000" :placeholder="t('ticket.replyPlaceholder')" :aria-label="t('ticket.replyPlaceholder')" @keydown="keydown"></textarea>

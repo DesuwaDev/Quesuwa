@@ -28,6 +28,12 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
+      - run: npm run build
+      - name: Browser tests
+        run: npm run test:e2e
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+          REQUIRE_BROWSER: '1'
 
   build:
     needs: verify

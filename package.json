@@ -1,7 +1,7 @@
 {
   "name": "quesuwa",
   "private": true,
-  "version": "0.0.1-beta.4",
+  "version": "0.0.1-beta.5",
   "type": "module",
   "engines": {
     "node": ">=24.0.0"
@@ -15,7 +15,8 @@
     "check:i18n": "node scripts/check-i18n.js",
     "prebuild": "npm run check:i18n",
     "pretest": "npm run check:i18n",
-    "reset-password": "node scripts/reset-password.js"
+    "reset-password": "node scripts/reset-password.js",
+    "test:e2e": "node --test tests/e2e/*.e2e.js"
   },
   "dependencies": {
     "dotenv": "^17.0.0",
@@ -23,7 +24,8 @@
     "express-rate-limit": "^8.0.0",
     "file-type": "^21.0.0",
     "helmet": "^8.1.0",
-    "multer": "^2.0.2"
+    "multer": "^2.0.2",
+    "nodemailer": "^7.0.13"
   },
   "devDependencies": {
     "@babel/parser": "^7.29.9",
@@ -31,6 +33,7 @@
     "@vue/compiler-dom": "^3.5.43",
     "@vue/compiler-sfc": "^3.5.43",
     "concurrently": "^9.2.0",
+    "puppeteer-core": "^24.43.1",
     "qrcode": "^1.5.4",
     "vite": "^7.0.0",
     "vue": "^3.5.0"

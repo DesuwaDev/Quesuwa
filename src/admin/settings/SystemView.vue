@@ -8,6 +8,9 @@ import { stateKeys, statusKeys } from '../../../shared/constants.js';
 import AppIcon from '../../components/AppIcon.vue';
 import PaginationBar from '../../components/PaginationBar.vue';
 import { appVersion } from '../../lib/version.js';
+import BackupCard from './BackupCard.vue';
+
+const zones = (() => { try { return Intl.supportedValuesOf('timeZone'); } catch { return []; } })();
 
 const data = ref(null), page = ref(1), loading = ref(false);
 const quotaBytes = computed(() => (data.value?.maxStorageMB || 1) * 1024 * 1024);
@@ -103,6 +106,12 @@ function actionLabel(action) {
             </select>
             <small class="hint">{{ isLocked('trustProxyHops') ? t('system.lockedByEnv', { name: 'TRUST_PROXY_HOPS' }) : t('system.proxyHint') }}</small>
           </label>
+          <label class="field">
+            <span class="field-label">{{ t('system.timezone') }}</span>
+            <input v-model.trim="form.timezone" class="input" list="timezone-list" maxlength="64" autocomplete="off" spellcheck="false" :disabled="isLocked('timezone')" />
+            <datalist id="timezone-list"><option v-for="zone in zones" :key="zone" :value="zone" /></datalist>
+            <small class="hint">{{ isLocked('timezone') ? t('system.lockedByEnv', { name: 'TZ' }) : t('system.timezoneHint') }}</small>
+          </label>
         </form>
         <p class="hint small"><AppIcon name="globe" :size="14" />{{ data.settings.publicOrigin ? t('system.originFixed', { origin: data.settings.publicOrigin }) : t('system.originAuto') }}</p>
         <div><button type="button" class="button primary" :disabled="saving || !settingsDirty" @click="saveSettings">{{ saving ? t('editor.saving') : t('common.save') }}</button></div>
@@ -119,14 +128,7 @@ function actionLabel(action) {
           </dl>
           <p v-if="data.pendingCleanup" class="banner warning"><AppIcon name="alert" :size="16" />{{ t('system.cleanupPending', { count: data.pendingCleanup }) }}</p>
         </section>
-        <section class="card span-2">
-          <header class="card-header"><h2><AppIcon name="shield" :size="18" />{{ t('system.backup') }}</h2></header>
-          <ul class="tips-list">
-            <li>{{ t('system.backupTip1') }}</li>
-            <li>{{ t('system.backupTip2') }}</li>
-            <li>{{ t('system.backupTip3') }}</li>
-          </ul>
-        </section>
+        <BackupCard :timezone="data.settings.values.timezone" />
       </div>
 
       <section class="card flush">

@@ -21,6 +21,9 @@ import { overviewRoutes, systemRoutes } from './routes/system.js';
 import { createSettings } from './services/settings.js';
 import { createTickets } from './services/tickets.js';
 import { ticketRoutes } from './routes/tickets.js';
+import { createNotifier } from './services/notify.js';
+import { notificationRoutes, messagingRoutes } from './routes/notifications.js';
+import { createBackups, createRetention, startJobs } from './services/backup.js';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 
@@ -71,22 +74,28 @@ export function createApp({ dataDir, password, username = 'admin', production = 
   const forms = createFormStore(db);
   const webhooks = createWebhooks(db);
   const tickets = createTickets(db);
+  const notifier = createNotifier(db, { settings, tickets, publicOrigin });
+  const backups = createBackups(db, { dataDir, settings });
+  const retention = createRetention(db, { storage, tickets, audit });
+  const stopJobs = startJobs([() => notifier.work(), () => notifier.digestTick(), () => backups.tick(), () => retention.tick()]);
   const cookieOptions = req => ({ httpOnly: true, sameSite: 'strict', secure: secureCookie(req), path: '/api/admin' });
-  const context = { db, auth, audit, storage, forms, webhooks, tickets, limiter, cookieOptions, originAllowed, secureCookie, settings, publicOrigin };
+  const context = { db, auth, audit, storage, forms, webhooks, tickets, notifier, backups, retention, limiter, cookieOptions, originAllowed, secureCookie, settings, publicOrigin };
   if (auth.setupNeeded()) console.log(t('cli.setupCode', { code: auth.setupCode() }));
 
   app.use('/api/forms', publicRoutes(context));
   app.use('/api/tickets', ticketRoutes(context));
   app.use('/api/admin', publicAccountRoutes(context));
   app.use('/api/admin', auth.requireUser, (req, _res, next) => {
-    // Every authenticated state change must come from this site.
-    if (!['GET', 'HEAD'].includes(req.method) && !originAllowed(req)) return next(fail(403, 'errors.origin'));
+    // Every cookie-authenticated state change must come from this site; API tokens carry no ambient credentials.
+    if (!req.apiToken && !['GET', 'HEAD'].includes(req.method) && !originAllowed(req)) return next(fail(403, 'errors.origin'));
     next();
   });
   app.use('/api/admin', accountRoutes(context));
   app.use('/api/admin', overviewRoutes(context));
-  app.use('/api/admin/users', auth.allow('users.manage'), userRoutes(context));
-  app.use('/api/admin/system', auth.allow('system.read'), systemRoutes(context));
+  app.use('/api/admin/users', auth.sessionOnly, auth.allow('users.manage'), userRoutes(context));
+  app.use('/api/admin/system', auth.sessionOnly, auth.allow('system.read'), systemRoutes(context));
+  app.use('/api/admin/notifications', auth.sessionOnly, auth.allow('system.read'), notificationRoutes(context));
+  app.use('/api/admin/messaging', messagingRoutes(context));
   app.use('/api/admin/forms', formRoutes(context));
   app.use('/api/admin', responseRoutes(context));
   app.get('/api/health', (_req, res) => { db.prepare('SELECT 1').get(); res.json({ ok: true }); });
@@ -101,5 +110,5 @@ export function createApp({ dataDir, password, username = 'admin', production = 
     res.sendFile(path.join(dist, 'index.html'));
   });
   app.use(errorHandler);
-  return { app, close: () => db.close(), setupCode: () => auth.setupNeeded() ? auth.setupCode() : null };
+  return { app, close: () => { stopJobs(); notifier.close(); db.close(); }, notifier, backups, retention, setupCode: () => auth.setupNeeded() ? auth.setupCode() : null };
 }

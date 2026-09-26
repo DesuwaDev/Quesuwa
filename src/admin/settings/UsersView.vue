@@ -26,7 +26,7 @@ function generatePassword() {
   dialog.value.password = [...values].map(value => alphabet[value % alphabet.length]).join('');
   dialog.value.reveal = true;
 }
-const openCreate = () => { dialogError.value = null; dialog.value = { mode: 'create', username: '', displayName: '', role: 'editor', password: '', reveal: false }; };
+const openCreate = () => { dialogError.value = null; dialog.value = { mode: 'create', username: '', displayName: '', email: '', role: 'editor', password: '', reveal: false }; };
 const openReset = user => { dialogError.value = null; dialog.value = { mode: 'reset', user, password: '', reveal: false }; };
 
 async function submit() {
@@ -35,7 +35,7 @@ async function submit() {
   const value = dialog.value;
   try {
     if (value.mode === 'create') {
-      await api('/admin/users', { method: 'POST', body: { username: value.username.trim(), displayName: value.displayName, role: value.role, password: value.password } });
+      await api('/admin/users', { method: 'POST', body: { username: value.username.trim(), displayName: value.displayName, email: value.email.trim(), role: value.role, password: value.password } });
       notify('users.created');
     } else {
       await api('/admin/users/' + value.user.id + '/password', { method: 'POST', body: { password: value.password } });
@@ -54,6 +54,12 @@ async function update(user, changes) {
     notify('users.updated');
   } catch (error) { notifyError(error); }
   await load();
+}
+
+async function resetTwoFactor(user) {
+  if (!(await confirmDialog({ titleKey: 'users.reset2fa', messageKey: 'users.reset2faConfirm', params: { name: user.username }, danger: true, confirmKey: 'users.reset2fa' }))) return;
+  try { await api('/admin/users/' + user.id + '/reset-2fa', { method: 'POST', body: {} }); notify('users.reset2faDone'); await load(); }
+  catch (error) { notifyError(error); }
 }
 
 async function remove(user) {
@@ -89,8 +95,9 @@ async function remove(user) {
               <td>
                 <div class="member-cell">
                   <span class="avatar small">{{ (user.displayName || user.username).slice(0, 1).toUpperCase() }}</span>
-                  <span><strong>{{ user.displayName || user.username }}</strong><small class="mono muted">{{ user.username }}</small></span>
+                  <span><strong>{{ user.displayName || user.username }}</strong><small class="mono muted">{{ user.username }}<template v-if="user.email"> · {{ user.email }}</template></small></span>
                   <span v-if="user.id === session.user.id" class="badge info">{{ t('users.you') }}</span>
+                  <span v-if="user.twoFactor" class="badge success" :title="t('twoFactor.title')"><AppIcon name="lock" :size="12" />{{ t('users.twoFactorBadge') }}</span>
                 </div>
               </td>
               <td>
@@ -103,6 +110,7 @@ async function remove(user) {
               <td class="hide-narrow">{{ user.sessions }}</td>
               <td class="row-actions">
                 <button type="button" class="button ghost small" @click="openReset(user)"><AppIcon name="key" :size="14" /><span class="hide-narrow">{{ t('users.resetPassword') }}</span></button>
+                <button v-if="user.twoFactor && user.id !== session.user.id" type="button" class="button ghost small" @click="resetTwoFactor(user)"><AppIcon name="lock" :size="14" /><span class="hide-narrow">{{ t('users.reset2fa') }}</span></button>
                 <template v-if="user.id !== session.user.id">
                   <button type="button" class="button ghost small" @click="update(user, { disabled: !user.disabled })">{{ user.disabled ? t('users.enable') : t('users.disable') }}</button>
                   <button type="button" class="icon-button ghost small danger" :aria-label="t('users.delete')" @click="remove(user)"><AppIcon name="trash" :size="14" /></button>
@@ -125,6 +133,11 @@ async function remove(user) {
           <label class="field">
             <span class="field-label">{{ t('account.displayName') }}</span>
             <input v-model="dialog.displayName" class="input" maxlength="40" />
+          </label>
+          <label class="field">
+            <span class="field-label">{{ t('prefs.email') }}</span>
+            <input v-model="dialog.email" class="input" type="email" maxlength="254" autocomplete="off" />
+            <small class="hint">{{ t('users.emailHint') }}</small>
           </label>
           <label class="field">
             <span class="field-label">{{ t('users.role') }}</span>

@@ -1,21 +1,26 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { t } from '../../i18n.js';
 import { api, allowed } from '../../lib/api.js';
 import { notify, notifyError, confirmDialog } from '../../lib/feedback.js';
 import { copyText } from '../../lib/clipboard.js';
 import { formatDate, formatDuration, formatBytes, shortId } from '../../lib/format.js';
-import { statuses, statusKeys } from '../../../shared/constants.js';
+import { statuses } from '../../../shared/constants.js';
 import { answerable } from '../../../shared/schema.js';
 import { isAnswered, isOtherValue } from '../../../shared/answers.js';
 import AppIcon from '../../components/AppIcon.vue';
 import StatusBadge from '../../components/StatusBadge.vue';
 import { answerText } from './format.js';
+import ConversationPanel from './ConversationPanel.vue';
+import { storage } from '../../lib/storage.js';
+import { messaging, loadMessaging } from '../../lib/messaging.js';
 
 const props = defineProps({ responseId: String, form: Object, hasPrevious: Boolean, hasNext: Boolean, writable: Boolean });
 const emit = defineEmits(['close', 'previous', 'next', 'updated', 'removed']);
 const response = ref(null), error = ref(null), note = ref(''), savingNote = ref(false);
-const reply = ref(''), replyStatus = ref(''), sendingReply = ref(false);
+const notifyStatus = ref(storage.get('quesuwa.statusEmail') === '1');
+watch(notifyStatus, value => storage.set('quesuwa.statusEmail', value ? '1' : '0'));
+const canEmail = computed(() => messaging.mail && Boolean(response.value?.contactEmail));
 const fields = computed(() => response.value?.snapshot.fields.filter(answerable) || []);
 const noteDirty = computed(() => response.value && note.value.trim() !== response.value.note);
 const files = fieldId => response.value.attachments.filter(file => file.fieldId === fieldId);
@@ -38,14 +43,17 @@ async function load() {
 
 async function patch(body, messageKey) {
   try {
-    const updated = await api('/admin/responses/' + response.value.id, { method: 'PATCH', body });
+    const { event, delivery, ...updated } = await api('/admin/responses/' + response.value.id, { method: 'PATCH', body });
     Object.assign(response.value, updated);
+    if (event) response.value.messages.push(event);
     note.value = updated.note;
     emit('updated', updated);
-    if (messageKey) notify(messageKey);
+    if (delivery && !delivery.ok) notify('ticket.emailFailed', { type: 'error', params: { error: delivery.error || '—' }, timeout: 8000 });
+    else if (delivery) notify('ticket.statusEmailed', { params: { email: response.value.contactEmail } });
+    else if (messageKey) notify(messageKey);
   } catch (reason) { notifyError(reason); }
 }
-const setStatus = status => { if (status !== response.value.status) patch({ status }, 'responses.statusSaved'); };
+const setStatus = status => { if (status !== response.value.status) patch({ status, notify: canEmail.value && notifyStatus.value }, 'responses.statusSaved'); };
 const toggleStar = () => patch({ starred: !response.value.starred });
 async function saveNote() {
   savingNote.value = true;
@@ -53,22 +61,6 @@ async function saveNote() {
   savingNote.value = false;
 }
 
-async function sendReply() {
-  if (!reply.value.trim()) return;
-  sendingReply.value = true;
-  try {
-    const data = await api('/admin/responses/' + response.value.id + '/messages', { method: 'POST', body: { body: reply.value, ...(replyStatus.value ? { status: replyStatus.value } : {}) } });
-    response.value.messages.push(data.message);
-    response.value.status = data.response.status;
-    response.value.lastActivityAt = data.response.lastActivityAt;
-    emit('updated', { id: response.value.id, status: data.response.status, unread: false, messageCount: response.value.messages.length });
-    reply.value = '';
-    replyStatus.value = '';
-    notify('ticket.replySent');
-  } catch (reason) { notifyError(reason); }
-  finally { sendingReply.value = false; }
-}
-const replyKeys = event => { if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') sendReply(); };
 
 async function trash() {
   if (!(await confirmDialog({ titleKey: 'responses.trashTitle', messageKey: 'responses.trashConfirm', params: { count: 1 }, danger: true, confirmKey: 'responses.trash' }))) return;
@@ -97,7 +89,7 @@ function keys(event) {
   else if ((event.key === 'ArrowLeft' || event.key === 'k') && props.hasPrevious) emit('previous');
   else if ((event.key === 'ArrowRight' || event.key === 'j') && props.hasNext) emit('next');
 }
-onMounted(() => { load(); window.addEventListener('keydown', keys); });
+onMounted(() => { load(); loadMessaging(); window.addEventListener('keydown', keys); });
 onBeforeUnmount(() => window.removeEventListener('keydown', keys));
 </script>
 
@@ -122,31 +114,12 @@ onBeforeUnmount(() => window.removeEventListener('keydown', keys));
         <span><AppIcon name="clock" :size="14" />{{ formatDate(response.createdAt) }}</span>
         <span v-if="response.durationMs"><AppIcon name="activity" :size="14" />{{ t('responses.duration', { time: formatDuration(response.durationMs) }) }}</span>
         <span v-if="languageKey(response.locale)"><AppIcon name="globe" :size="14" />{{ t(languageKey(response.locale)) }}</span>
+        <span v-if="response.contactEmail"><AppIcon name="mail" :size="14" /><a :href="'mailto:' + response.contactEmail">{{ response.contactEmail }}</a></span>
         <span><AppIcon name="layers" :size="14" />{{ t('responses.version', { version: response.snapshot.version }) }}</span>
         <span v-if="response.deletedAt" class="badge muted">{{ t('responses.inTrash') }}</span>
       </div>
 
-      <section v-if="response.ticket" class="ticket-admin">
-        <header class="ticket-admin-head"><AppIcon name="message" :size="16" /><strong>{{ t('ticket.conversation') }}</strong><span class="muted small">{{ t('ticket.adminHint') }}</span></header>
-        <div class="ticket-thread compact">
-          <p v-if="!response.messages.length" class="muted small">{{ t('ticket.adminEmpty') }}</p>
-          <div v-for="message in response.messages" :key="message.id" class="bubble" :class="message.author === 'staff' ? 'from-me' : 'from-staff'">
-            <span class="bubble-author">{{ message.author === 'staff' ? message.authorName : t('ticket.respondent') }}</span>
-            <p class="preserve">{{ message.body }}</p>
-            <time class="bubble-time" :datetime="message.createdAt" :title="formatDate(message.createdAt)">{{ formatDate(message.createdAt) }}</time>
-          </div>
-        </div>
-        <form v-if="writable" class="ticket-composer" @submit.prevent="sendReply">
-          <textarea v-model="reply" class="input textarea autosize" rows="2" maxlength="5000" :placeholder="t('ticket.adminPlaceholder')" :aria-label="t('ticket.adminPlaceholder')" @keydown="replyKeys"></textarea>
-          <div class="ticket-composer-foot">
-            <select v-model="replyStatus" class="input select compact" :aria-label="t('ticket.statusAfter')">
-              <option value="">{{ t('ticket.keepStatus') }}</option>
-              <option v-for="status in statuses" :key="status" :value="status">{{ t('ticket.setStatus', { status: t(statusKeys[status]) }) }}</option>
-            </select>
-            <button type="submit" class="button primary small" :disabled="sendingReply || !reply.trim()"><AppIcon name="send" :size="14" />{{ t('ticket.send') }}</button>
-          </div>
-        </form>
-      </section>
+      <ConversationPanel v-if="response.conversation" :response="response" :writable="writable" @updated="emit('updated', $event)" />
 
       <div class="review-panel">
         <div class="review-row">
@@ -154,6 +127,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', keys));
           <div class="status-picker" role="radiogroup" :aria-label="t('responses.status')">
             <button v-for="status in statuses" :key="status" type="button" role="radio" :aria-checked="response.status === status" :class="{ active: response.status === status }" :disabled="!writable" @click="setStatus(status)"><StatusBadge :status="status" /></button>
           </div>
+          <label v-if="canEmail && writable" class="check-row small"><input v-model="notifyStatus" type="checkbox" />{{ t('ticket.notifyOnStatus', { email: response.contactEmail }) }}</label>
         </div>
         <label class="field">
           <span class="field-label">{{ t('responses.note') }}</span>

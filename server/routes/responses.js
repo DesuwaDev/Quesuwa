@@ -10,7 +10,7 @@ import { writeZip, ZIP_MAX_BYTES, ZIP_MAX_ENTRIES } from '../lib/zip.js';
 
 const exportName = (form, extension) => `${form.slug}-${new Date().toISOString().slice(0, 10)}.${extension}`;
 
-export function responseRoutes({ db, forms, storage, audit, auth, tickets, webhooks }) {
+export function responseRoutes({ db, forms, storage, audit, auth, tickets, notifier }) {
   const router = Router();
   const write = auth.allow('responses.write');
   const findResponse = id => {
@@ -18,6 +18,14 @@ export function responseRoutes({ db, forms, storage, audit, auth, tickets, webho
     if (!row) throw fail(404, 'errors.responseNotFound');
     return row;
   };
+  const origin = req => `${req.protocol}://${req.get('host')}`;
+  // A conversation exists when the respondent can read it (ticket) or be emailed.
+  const conversable = (form, row) => Boolean(row.access_hash) || Boolean(form && notifier.recipientFor(form, row));
+  // Status changes are kept in the conversation as a progress timeline.
+  function recordStatus(form, row, status) {
+    if (status === row.status || !conversable(form, row)) return null;
+    return tickets.add(row.id, { author: 'system', body: 'status:' + status });
+  }
 
   router.get('/forms/:id/responses', (req, res) => {
     forms.require(req.params.id);
@@ -33,8 +41,11 @@ export function responseRoutes({ db, forms, storage, audit, auth, tickets, webho
 
   router.get('/responses/:id', (req, res) => {
     const response = parseResponse(findResponse(req.params.id));
+    const row = findResponse(req.params.id);
     const form = forms.get(response.formId);
-    res.json({ ...response, formTitle: form?.title || response.snapshot.title, messages: response.ticket ? tickets.messages(response.id) : [] });
+    const contact = form ? notifier.recipientFor(form, row) : '';
+    const followUp = form ? notifier.followUpLink(origin(req), row, form) : '';
+    res.json({ ...response, formTitle: form?.title || response.snapshot.title, contactEmail: contact, followUpUrl: followUp, conversation: Boolean(form) && conversable(form, row), messages: tickets.messages(response.id) });
   });
 
   router.post('/responses/:id/read', (req, res) => {
@@ -42,18 +53,38 @@ export function responseRoutes({ db, forms, storage, audit, auth, tickets, webho
     res.json({ ok: true });
   });
 
-  // Staff reply in a ticket, optionally changing the status in the same step.
-  router.post('/responses/:id/messages', write, (req, res) => {
+  // Staff reply, optionally changing the status and emailing the respondent in the same step.
+  router.post('/responses/:id/messages', write, async (req, res) => {
     const row = findResponse(req.params.id);
-    if (row.deleted_at || !row.access_hash) throw fail(404, 'errors.ticketNotFound');
+    const form = forms.get(row.form_id);
+    if (row.deleted_at || !form || !conversable(form, row)) throw fail(404, 'errors.ticketNotFound');
     const status = req.body?.status;
     if (status !== undefined && !statuses.includes(status)) throw fail(400, 'errors.statusInvalid');
-    const message = tickets.add(row.id, { author: 'staff', userId: req.user.id, authorName: req.user.displayName || req.user.username, body: req.body?.body });
+    const email = req.body?.email === true && Boolean(notifier.recipientFor(form, row)) && notifier.status().mail;
+    const message = tickets.add(row.id, { author: 'staff', userId: req.user.id, authorName: req.user.displayName || req.user.username, body: req.body?.body, delivery: email ? 'pending' : '' });
+    const event = status ? recordStatus(form, row, status) : null;
     db.prepare('UPDATE responses SET unread=0, last_activity_at=?, status=COALESCE(?, status) WHERE id=?').run(message.createdAt, status ?? null, row.id);
-    res.status(201).json({ message, response: parseResponse(findResponse(row.id)) });
+    let delivery = null;
+    if (email) {
+      delivery = await notifier.emailRespondent({ form, row: findResponse(row.id), origin: origin(req), kind: 'message', message, status: status ?? row.status });
+      message.delivery = delivery.ok ? 'sent' : 'failed';
+      tickets.setDelivery(message.id, message.delivery);
+    }
+    res.status(201).json({ message, event, delivery, response: parseResponse(findResponse(row.id)) });
   });
 
-  router.patch('/responses/:id', write, (req, res) => {
+  router.post('/responses/:id/messages/:messageId/resend', write, async (req, res) => {
+    const row = findResponse(req.params.id);
+    const form = forms.get(row.form_id);
+    const message = tickets.find(row.id, req.params.messageId);
+    if (!form || !message || message.author === 'respondent') throw fail(404, 'errors.ticketNotFound');
+    const status = message.author === 'system' ? message.body.replace(/^status:/, '') : row.status;
+    const delivery = await notifier.emailRespondent({ form, row, origin: origin(req), kind: message.author === 'system' ? 'status' : 'message', message, status });
+    tickets.setDelivery(message.id, delivery.ok ? 'sent' : 'failed');
+    res.json({ delivery, message: tickets.find(row.id, message.id) });
+  });
+
+  router.patch('/responses/:id', write, async (req, res) => {
     const row = findResponse(req.params.id);
     if (row.deleted_at) throw fail(404, 'errors.responseNotFound');
     const body = req.body || {};
@@ -63,8 +94,16 @@ export function responseRoutes({ db, forms, storage, audit, auth, tickets, webho
     if (!statuses.includes(status)) throw fail(400, 'errors.statusInvalid');
     if (typeof note !== 'string' || note.length > 10000) throw fail(400, 'errors.noteInvalid');
     if (typeof starred !== 'boolean') throw fail(400, 'errors.badRequest');
-    db.prepare('UPDATE responses SET status=?, note=?, starred=? WHERE id=?').run(status, note.trim(), starred ? 1 : 0, row.id);
-    res.json(parseResponse(findResponse(row.id)));
+    const form = forms.get(row.form_id);
+    const event = form ? recordStatus(form, row, status) : null;
+    db.prepare('UPDATE responses SET status=?, note=?, starred=?, last_activity_at=COALESCE(?, last_activity_at) WHERE id=?').run(status, note.trim(), starred ? 1 : 0, event?.createdAt ?? null, row.id);
+    let delivery = null;
+    if (event && body.notify === true && notifier.status().mail && notifier.recipientFor(form, row)) {
+      delivery = await notifier.emailRespondent({ form, row: findResponse(row.id), origin: origin(req), kind: 'status', status });
+      event.delivery = delivery.ok ? 'sent' : 'failed';
+      tickets.setDelivery(event.id, event.delivery);
+    }
+    res.json({ ...parseResponse(findResponse(row.id)), event, delivery });
   });
 
   router.post('/forms/:id/responses/batch', write, (req, res) => {
@@ -79,7 +118,7 @@ export function responseRoutes({ db, forms, storage, audit, auth, tickets, webho
     const now = new Date().toISOString();
     transaction(db, () => {
       for (const row of rows) {
-        if (action === 'status') db.prepare('UPDATE responses SET status=? WHERE id=?').run(status, row.id);
+        if (action === 'status') { recordStatus(form, row, status); db.prepare('UPDATE responses SET status=? WHERE id=?').run(status, row.id); }
         if (action === 'star' || action === 'unstar') db.prepare('UPDATE responses SET starred=? WHERE id=?').run(action === 'star' ? 1 : 0, row.id);
         if (action === 'trash') db.prepare('UPDATE responses SET deleted_at=? WHERE id=? AND deleted_at IS NULL').run(now, row.id);
         if (action === 'restore') db.prepare('UPDATE responses SET deleted_at=NULL WHERE id=?').run(row.id);

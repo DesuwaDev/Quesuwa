@@ -6,7 +6,7 @@ import ModalFrame from './ModalFrame.vue';
 import AppIcon from './AppIcon.vue';
 
 const dialog = computed(() => dialogState.current);
-const blocked = computed(() => Boolean(dialog.value?.prompt && dialog.value.expected && dialog.value.value !== dialog.value.expected));
+const blocked = computed(() => Boolean(dialog.value?.prompt && (dialog.value.expected ? dialog.value.value !== dialog.value.expected : dialog.value.required && !dialog.value.value)));
 const label = (key, params) => key ? t(key, params || {}) : '';
 
 function submit() {
@@ -25,8 +25,12 @@ const toastIcon = { success: 'checkCircle', error: 'alert', info: 'info' };
         <p class="preserve">{{ label(dialog.messageKey, dialog.params) }}</p>
       </div>
       <label v-if="dialog.prompt" class="field">
+        <span v-if="dialog.fieldKey" class="field-label">{{ t(dialog.fieldKey) }}</span>
         <span v-if="dialog.expected" class="field-label">{{ t('dialog.typeToConfirm', { value: dialog.expected }) }}</span>
-        <input v-model="dialog.value" class="input" :placeholder="dialog.expected || ''" autocomplete="off" autofocus />
+        <span class="input-affix">
+          <input v-model="dialog.value" class="input" :type="dialog.inputType || 'text'" :placeholder="dialog.expected || ''" :autocomplete="dialog.inputType === 'password' ? 'current-password' : 'off'" autofocus />
+          <button v-if="dialog.expected" type="button" class="button ghost small" @click="dialog.value = dialog.expected"><AppIcon name="edit" :size="14" />{{ t('dialog.autofill') }}</button>
+        </span>
       </label>
       <div class="modal-actions inline">
         <button type="button" class="button" @click="cancel">{{ t('common.cancel') }}</button>

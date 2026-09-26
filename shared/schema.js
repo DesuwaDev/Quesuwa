@@ -12,6 +12,10 @@ export const defaultSettings = Object.freeze({
   saveProgress: true,
   onePerDevice: false,
   ticketMode: false,
+  notifyAdmins: true,
+  sendReceipt: false,
+  contactField: '',
+  retentionDays: 0,
   startsAt: '',
   endsAt: '',
   responseLimit: 0,
@@ -61,11 +65,12 @@ export function normalizeSettings(value = {}) {
   if (value === undefined || value === null) value = {};
   if (typeof value !== 'object' || Array.isArray(value)) throw failure(code);
   const result = { ...defaultSettings };
-  for (const key of ['listed', 'showProgress', 'showNumbers', 'saveProgress', 'onePerDevice', 'ticketMode']) result[key] = bool(value[key], defaultSettings[key], code);
+  for (const key of ['listed', 'showProgress', 'showNumbers', 'saveProgress', 'onePerDevice', 'ticketMode', 'notifyAdmins', 'sendReceipt']) result[key] = bool(value[key], defaultSettings[key], code);
   result.startsAt = dateTime(value.startsAt, code);
   result.endsAt = dateTime(value.endsAt, code);
   if (result.startsAt && result.endsAt && result.startsAt >= result.endsAt) throw failure('errors.scheduleInvalid');
   result.responseLimit = integer(value.responseLimit, 0, 1000000, 0, code);
+  result.retentionDays = integer(value.retentionDays, 0, 3650, 0, code);
   result.submitLabel = text(value.submitLabel, 60, code);
   result.consentText = text(value.consentText, 2000, code);
   result.closedMessage = text(value.closedMessage, 1000, code);
@@ -75,6 +80,7 @@ export function normalizeSettings(value = {}) {
   result.webhookUrl = text(value.webhookUrl, 500, 'errors.webhookUrl');
   if (result.webhookUrl && !isHttpUrl(result.webhookUrl)) throw failure('errors.webhookUrl');
   result.webhookSecret = text(value.webhookSecret, 128, code);
+  result.contactField = text(value.contactField, 64, code);
   return result;
 }
 
@@ -237,13 +243,16 @@ export function normalizeDefinition(body) {
   }
   if (body.state === 'published' && !fields.some(f => !layoutTypes.includes(f.type))) throw failure('errors.noFields');
   if (fields.filter(f => f.type === 'file').length > LIMITS.fileFields) throw failure('errors.fileFieldCount', { max: LIMITS.fileFields });
+  const settings = normalizeSettings(body.settings);
+  // The contact email question must still exist; otherwise fall back to automatic detection.
+  if (settings.contactField && settings.contactField !== 'none' && !fields.some(f => f.id === settings.contactField && f.type === 'email')) settings.contactField = '';
   return {
     slug,
     state: body.state,
     title: text(body.title, LIMITS.title, 'errors.titleInvalid', {}, { required: true }),
     description: text(body.description, LIMITS.description, 'errors.formTextInvalid'),
     thanks: text(body.thanks, LIMITS.thanks, 'errors.formTextInvalid'),
-    settings: normalizeSettings(body.settings),
+    settings,
     fields
   };
 }

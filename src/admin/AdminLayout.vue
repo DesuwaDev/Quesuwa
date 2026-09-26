@@ -16,7 +16,7 @@ const nav = computed(() => [
   { to: '/admin/forms', icon: 'forms', label: 'nav.forms' },
   { to: '/admin/account', icon: 'user', label: 'nav.account' },
   ...(allowed('users.manage') ? [{ to: '/admin/users', icon: 'users', label: 'nav.users' }] : []),
-  ...(allowed('system.read') ? [{ to: '/admin/system', icon: 'server', label: 'nav.system' }] : [])
+  ...(allowed('system.read') ? [{ to: '/admin/notifications', icon: 'mail', label: 'nav.notifications' }, { to: '/admin/system', icon: 'server', label: 'nav.system' }] : [])
 ]);
 const initials = computed(() => (session.user?.displayName || session.user?.username || '?').trim().slice(0, 1).toUpperCase());
 watch(() => route.path, () => { drawer.value = false; });

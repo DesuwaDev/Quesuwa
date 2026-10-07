@@ -1,0 +1,31 @@
+/* The quick reactions are drawn with a bundled Twemoji subset (see src/assets/fonts/NOTICE.md),
+   so they look the same everywhere, including systems without the newest emoji. */
+@font-face {
+  font-family: "Quesuwa Reactions";
+  src: url("../assets/fonts/reactions.woff2") format("woff2");
+  font-display: swap;
+  unicode-range: U+2764, U+FE0F, U+1F38A, U+1F44D, U+1F44F, U+1F606, U+1F62E, U+1F917, U+1FAEA;
+}
+.reaction-emoji { font-family: "Quesuwa Reactions", var(--font-sans); font-style: normal; line-height: 1; }
+
+.reactions { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-right: auto; }
+.reaction-chip { display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 8px; border-radius: var(--radius-full); border: 1px solid var(--border); background: var(--surface); color: var(--text-2); font-size: 0.76rem; font-weight: 650; font-variant-numeric: tabular-nums; cursor: pointer; transition: border-color var(--fast), background var(--fast); }
+.reaction-chip .reaction-emoji { font-size: 15px; }
+.reaction-chip:hover:not(:disabled) { border-color: var(--border-strong); }
+.reaction-chip.mine { border-color: var(--primary); background: var(--primary-soft-strong); color: var(--primary); }
+.reaction-chip:disabled { cursor: default; }
+.reaction-add { display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border-radius: var(--radius-full); border: 1px dashed var(--border-strong); background: transparent; color: var(--text-3); cursor: pointer; transition: opacity var(--fast), color var(--fast); }
+.reaction-add:hover { color: var(--text-2); }
+/* With no reactions yet, the add button appears when the message is hovered or focused. */
+.reactions.empty .reaction-add { opacity: 0; }
+.bubble:hover .reaction-add, .bubble:focus-within .reaction-add, .reaction-add[aria-expanded="true"] { opacity: 1; }
+@media (hover: none) { .reactions.empty .reaction-add { opacity: 0.55; } }
+
+.reaction-palette { position: fixed; z-index: 150; display: grid; grid-template-columns: repeat(5, 44px); gap: 4px; padding: 10px; border-radius: var(--radius-lg); border: 1px solid var(--border); background: var(--surface); box-shadow: var(--shadow-lg); }
+.reaction-option { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 12px; background: transparent; cursor: pointer; transition: transform var(--fast), background var(--fast); }
+.reaction-option .reaction-emoji { font-size: 28px; }
+.reaction-option:hover, .reaction-option:focus-visible { background: var(--surface-2); transform: scale(1.12); outline: none; }
+.reaction-option.mine { background: var(--primary-soft); }
+@media (max-width: 360px) {
+  .reaction-palette { grid-template-columns: repeat(4, 44px); }
+}

@@ -58,12 +58,13 @@ async function setup(t) {
     return (await fetch(`${base}/api/forms/${slug}/responses`, { method: 'POST', body })).json();
   };
   const ticket = (id, key, method = 'GET', payload) => fetch(`${base}/api/tickets/${id}${method === 'POST' ? '/messages' : ''}`, { method, headers: { Origin: base, 'Content-Type': 'application/json', 'X-Ticket-Key': key }, body: payload && JSON.stringify(payload) });
+  const ticketPost = (id, key, path, payload) => fetch(`${base}/api/tickets/${id}${path}`, { method: 'POST', headers: { Origin: base, 'Content-Type': 'application/json', 'X-Ticket-Key': key }, body: JSON.stringify(payload) });
   const until = async (check, label) => {
     for (let i = 0; i < 100 && !check(); i++) await new Promise(r => setTimeout(r, 50));
     assert.ok(check(), label);
   };
   const decoded = mail => mail.body.replace(/=\n/g, '').replace(/=3D/g, '=');
-  return { admin, submit, ticket, until, decoded, mails: sink.mails };
+  return { admin, submit, ticket, ticketPost, until, decoded, mails: sink.mails };
 }
 
 const fields = [{ id: 'q', type: 'long', label: 'Issue', required: true }, { id: 'mail', type: 'email', label: 'Email' }];
@@ -131,4 +132,34 @@ test('emails can leave answers and replies out', async t => {
   await submit('support', quiet.version, { q: 'Toaster leaking', mail: 'user@example.test' });
   await until(() => mails.slice(count).some(mail => mail.to.includes('user@example.test')), 'second receipt delivered');
   assert.ok(!decoded(mails.slice(count).find(mail => mail.to.includes('user@example.test'))).includes('Toaster leaking'), 'the receipt leaves the answers out');
+});
+
+test('people react to messages with the quick reactions', async t => {
+  const { admin, submit, ticket, ticketPost } = await setup(t);
+  const form = await (await admin('/forms', 'POST', { title: 'Support', slug: 'support', state: 'published', settings: { ticketMode: true }, fields })).json();
+  const submitted = await submit('support', form.version, { q: 'Help me' });
+  const key = submitted.ticket.key;
+  const staffMessage = (await (await admin(`/responses/${submitted.id}/messages`, 'POST', { body: 'Looking into it', status: 'inProgress' })).json()).message;
+  const post = (messageId, body) => ticketPost(submitted.id, key, `/messages/${messageId}/reactions`, body);
+  const before = (await (await admin(`/responses/${submitted.id}`)).json()).rev;
+
+  let view = await (await post(staffMessage.id, { emoji: '🫪' })).json();
+  assert.deepEqual(view.messages.find(message => message.id === staffMessage.id).reactions, [{ emoji: '🫪', count: 1, mine: true, names: [] }]);
+  const staffReacted = await (await admin(`/responses/${submitted.id}/messages/${staffMessage.id}/reactions`, 'POST', { emoji: '❤️' })).json();
+  const onStaffSide = staffReacted.messages.find(message => message.id === staffMessage.id).reactions;
+  assert.deepEqual(onStaffSide.map(item => [item.emoji, item.count, item.respondent, item.staff.length]), [['🫪', 1, true, 0], ['❤️', 1, false, 1]]);
+  assert.notEqual(staffReacted.rev, before, 'live updates notice reactions');
+  view = await (await ticket(submitted.id, key)).json();
+  assert.deepEqual(view.messages.find(message => message.id === staffMessage.id).reactions.map(item => [item.emoji, item.mine, item.names.length]), [['🫪', true, 0], ['❤️', false, 1]]);
+
+  view = await (await post(staffMessage.id, { emoji: '🫪', on: false })).json();
+  assert.deepEqual(view.messages.find(message => message.id === staffMessage.id).reactions.map(item => item.emoji), ['❤️'], 'reacting again removes it');
+  const invalid = await post(staffMessage.id, { emoji: '🙄' });
+  assert.equal(invalid.status, 400);
+  assert.equal((await invalid.json()).code, 'errors.reactionInvalid');
+  const system = view.messages.find(message => message.author === 'system');
+  assert.equal((await post(system.id, { emoji: '👍' })).status, 404, 'status events cannot be reacted to');
+
+  await admin(`/responses/${submitted.id}`, 'PATCH', { status: 'closed' });
+  assert.equal((await post(staffMessage.id, { emoji: '👍' })).status, 410, 'closed conversations take no reactions');
 });

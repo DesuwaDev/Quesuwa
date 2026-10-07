@@ -2,7 +2,7 @@
 import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 import { t, displayError } from '../i18n.js';
 import { api } from '../lib/api.js';
-import { formatDate, formatBytes, relativeTime, shortId } from '../lib/format.js';
+import { formatDate, formatBytes, formatMessageTime, shortId } from '../lib/format.js';
 import { copyText } from '../lib/clipboard.js';
 import { notify } from '../lib/feedback.js';
 import { keyFromLocation, parseTicketInput, rememberTicket, savedTickets, ticketLink, forgetTicket } from '../lib/tickets.js';
@@ -15,6 +15,7 @@ import { trackReads } from '../lib/read-receipts.js';
 import RichText from '../components/RichText.vue';
 import MessageAttachments from '../components/MessageAttachments.vue';
 import ComposerFiles from '../components/ComposerFiles.vue';
+import MessageReactions from '../components/MessageReactions.vue';
 
 const props = defineProps({ id: { type: String, required: true } });
 const key = ref(keyFromLocation() || savedTickets().find(item => item.id === props.id)?.key || '');
@@ -84,6 +85,13 @@ async function load(quiet = false) {
     error.value = reason;
     if (reason.code === 'errors.ticketNotFound') forgetTicket(props.id);
   } finally { loading.value = false; }
+}
+
+// Respondents add or remove their own reactions; staff names come with the ticket.
+const reactionsOf = message => (message.reactions || []).map(item => ({ ...item, names: [...item.names, ...(item.mine ? [t('ticket.me')] : [])] }));
+async function react(message, emoji, on) {
+  try { apply(await api(ticketPath() + '/messages/' + encodeURIComponent(message.id) + '/reactions', { method: 'POST', headers: headers(), body: { emoji, on } })); }
+  catch (reason) { notify(reason.code || 'errors.operation', { type: 'error', params: reason.params || {} }); }
 }
 
 async function send() {
@@ -162,7 +170,7 @@ const answerOf = field => field.type === 'file'
           <div class="ticket-meta">
             <span class="mono">#{{ shortId(ticket.id) }}</span>
             <StatusBadge :status="ticket.status" />
-            <span class="muted small">{{ t('ticket.submittedAt', { date: formatDate(ticket.createdAt) }) }}</span>
+            <span class="muted small">{{ t('ticket.submittedAt', { date: formatDate(ticket.createdAt, { seconds: true }) }) }}</span>
           </div>
         </div>
         <div class="ticket-head-actions">
@@ -178,13 +186,16 @@ const answerOf = field => field.type === 'file'
           <template v-for="message in ticket.messages" :key="message.id">
             <div v-if="message.author === 'system'" class="timeline-event">
               <span>{{ t('ticket.statusEvent', { status: t(statusKeys[message.body.replace(/^status:/, '')] || 'status.pending') }) }}</span>
-              <time :datetime="message.createdAt" :title="formatDate(message.createdAt)">{{ relativeTime(message.createdAt) }}</time>
+              <time :datetime="message.createdAt" :title="formatDate(message.createdAt, { seconds: true })">{{ formatMessageTime(message.createdAt) }}</time>
             </div>
             <div v-else class="bubble" :class="message.author === 'staff' ? 'from-staff' : 'from-me'" :data-read-id="message.author === 'staff' ? message.id : undefined">
               <span class="bubble-author">{{ message.author === 'staff' ? t('ticket.staff', { name: message.authorName }) : t('ticket.me') }}</span>
               <RichText v-if="message.body" :text="message.body" />
               <MessageAttachments :files="message.attachments" :source="ticketFile" />
-              <time class="bubble-time" :datetime="message.createdAt" :title="formatDate(message.createdAt)">{{ relativeTime(message.createdAt) }}</time>
+              <span class="bubble-foot">
+                <MessageReactions :reactions="reactionsOf(message)" :can-react="ticket.canReply" @toggle="(emoji, on) => react(message, emoji, on)" />
+                <time class="bubble-time" :datetime="message.createdAt" :title="formatDate(message.createdAt, { seconds: true })">{{ formatMessageTime(message.createdAt) }}</time>
+              </span>
             </div>
           </template>
         </div>

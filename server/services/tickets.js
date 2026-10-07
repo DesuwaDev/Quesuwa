@@ -1,10 +1,12 @@
 import { createHash, createHmac, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import { fail } from '../errors.js';
 import { createLive } from '../lib/live.js';
+import { isReaction } from '../../shared/reactions.js';
 
 export const MESSAGE_MAX = 5000;
 export const RESPONDENT_BURST = 30;
 const RESPONDENT_WINDOW_MS = 60 * 60_000;
+const STAFF_ACTOR = 'staff:';
 const digest = value => createHash('sha256').update(String(value)).digest();
 
 export function createTickets(db) {
@@ -62,12 +64,44 @@ export function createTickets(db) {
   const shape = row => row && { ...row, attachments: JSON.parse(row.attachments || '[]') };
 
   // Staff see everything: retracted messages, edit history and read receipts.
-  const messages = responseId => db.prepare(`SELECT ${COLUMNS} FROM messages WHERE response_id=? ORDER BY created_at, rowid`).all(responseId).map(shape);
+  // Reactions per message, grouped by emoji in the order they were first used.
+  function reactionsOf(responseId) {
+    const byMessage = new Map();
+    for (const row of db.prepare('SELECT message_id, actor, actor_name, emoji FROM reactions WHERE response_id=? ORDER BY created_at, rowid').all(responseId)) {
+      if (!byMessage.has(row.message_id)) byMessage.set(row.message_id, []);
+      const list = byMessage.get(row.message_id);
+      let entry = list.find(item => item.emoji === row.emoji);
+      if (!entry) list.push(entry = { emoji: row.emoji, actors: [] });
+      entry.actors.push({ actor: row.actor, name: row.actor_name });
+    }
+    return byMessage;
+  }
+  const staffOf = actors => actors.filter(item => item.actor.startsWith(STAFF_ACTOR)).map(item => ({ id: item.actor.slice(STAFF_ACTOR.length), name: item.name }));
+
+  const messages = responseId => {
+    const reactions = reactionsOf(responseId);
+    return db.prepare(`SELECT ${COLUMNS} FROM messages WHERE response_id=? ORDER BY created_at, rowid`).all(responseId).map(shape).map(message => ({
+      ...message,
+      reactions: (reactions.get(message.id) || []).map(({ emoji, actors }) => ({ emoji, count: actors.length, respondent: actors.some(item => item.actor === 'respondent'), staff: staffOf(actors) }))
+    }));
+  };
 
   // Respondents see only the current text; retractions and edits leave no trace for them.
-  const publicMessages = responseId => messages(responseId).filter(message => !message.deletedAt).map(({ id, author, authorName, body, createdAt, attachments }) => ({
-    id, author, authorName: author === 'staff' ? authorName : '', body, createdAt, attachments: attachments.map(({ id: fileId, name, mime, size }) => ({ id: fileId, name, mime, size }))
+  const publicMessages = responseId => messages(responseId).filter(message => !message.deletedAt).map(({ id, author, authorName, body, createdAt, attachments, reactions }) => ({
+    id, author, authorName: author === 'staff' ? authorName : '', body, createdAt, attachments: attachments.map(({ id: fileId, name, mime, size }) => ({ id: fileId, name, mime, size })),
+    reactions: reactions.map(({ emoji, count, respondent, staff }) => ({ emoji, count, mine: respondent, names: staff.map(item => item.name) }))
   }));
+
+  // Adds or removes one person's emoji on a message, like reactions in chat apps.
+  function react(responseId, messageId, { actor, actorName = '', emoji, on }) {
+    const message = db.prepare('SELECT author, deleted_at FROM messages WHERE id=? AND response_id=?').get(messageId, responseId);
+    if (!message || message.author === 'system' || message.deleted_at) throw fail(404, 'errors.messageNotFound');
+    if (!isReaction(emoji)) throw fail(400, 'errors.reactionInvalid');
+    if (on) {
+      db.prepare('INSERT OR IGNORE INTO reactions(message_id, response_id, actor, actor_name, emoji, created_at) VALUES (?,?,?,?,?,?)').run(messageId, responseId, actor, actorName, emoji, new Date().toISOString());
+    } else db.prepare('DELETE FROM reactions WHERE message_id=? AND actor=? AND emoji=?').run(messageId, actor, emoji);
+    live.changed(responseId);
+  }
 
   function add(responseId, { author, userId = null, authorName = '', body, delivery = '', attachments = [] }) {
     const text = typeof body === 'string' ? body.trim() : '';
@@ -150,7 +184,9 @@ export function createTickets(db) {
     const row = db.prepare('SELECT status, unread, files_disabled FROM responses WHERE id=?').get(responseId);
     const list = db.prepare('SELECT id, delivery, edited_at, deleted_at, read_at FROM messages WHERE response_id=? ORDER BY created_at, rowid').all(responseId)
       .map(item => [item.id, item.delivery, item.edited_at, item.deleted_at, item.read_at].join(':'));
-    return createHash('sha1').update(JSON.stringify([row?.status ?? '', row?.unread ?? 0, row?.files_disabled ?? 0, list])).digest('base64url').slice(0, 16);
+    const reacted = db.prepare('SELECT message_id, actor, emoji FROM reactions WHERE response_id=? ORDER BY message_id, actor, emoji').all(responseId)
+      .map(item => [item.message_id, item.actor, item.emoji].join(':'));
+    return createHash('sha1').update(JSON.stringify([row?.status ?? '', row?.unread ?? 0, row?.files_disabled ?? 0, list, reacted])).digest('base64url').slice(0, 16);
   }
   const find = (responseId, messageId) => shape(db.prepare(`SELECT ${COLUMNS} FROM messages WHERE id=? AND response_id=?`).get(messageId, responseId));
 
@@ -159,11 +195,13 @@ export function createTickets(db) {
     const files = db.prepare('SELECT attachments FROM messages WHERE response_id=?');
     const cleanup = db.prepare('INSERT OR IGNORE INTO file_cleanup(id) VALUES (?)');
     const statement = db.prepare('DELETE FROM messages WHERE response_id=?');
+    const reactions = db.prepare('DELETE FROM reactions WHERE response_id=?');
     for (const id of responseIds) {
       for (const row of files.all(id)) for (const file of JSON.parse(row.attachments || '[]')) cleanup.run(file.id);
       statement.run(id);
+      reactions.run(id);
     }
   };
 
-  return { issueKey, linkKey, revokeLink, reissueLink, assertRespondentQuota, open, messages, publicMessages, add, edit, retract, markRead, fileOf, setDelivery, find, removeFor, revision, recall, remember, changed: live.changed, wait: live.wait, release: live.release };
+  return { issueKey, linkKey, revokeLink, reissueLink, assertRespondentQuota, open, messages, publicMessages, react, add, edit, retract, markRead, fileOf, setDelivery, find, removeFor, revision, recall, remember, changed: live.changed, wait: live.wait, release: live.release };
 }

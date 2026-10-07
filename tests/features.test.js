@@ -729,7 +729,7 @@ test('conversation editing, read receipts and attachments', async t => {
   assert.equal((await admin(`/responses/${ticket.id}/messages/${typo.id}`, 'PATCH', { body: 'Password reset broken' })).status, 200);
   let mine = (await view()).messages.find(message => message.id === typo.id);
   assert.equal(mine.body, 'Password reset broken');
-  assert.deepEqual(Object.keys(mine).sort(), ['attachments', 'author', 'authorName', 'body', 'createdAt', 'id']);
+  assert.deepEqual(Object.keys(mine).sort(), ['attachments', 'author', 'authorName', 'body', 'createdAt', 'id', 'reactions']);
   let staffSide = (await (await admin(`/responses/${ticket.id}`)).json()).messages.find(message => message.id === typo.id);
   assert.equal(staffSide.originalBody, 'Pasword reset broken');
   assert.ok(staffSide.editedAt && staffSide.editedBy);

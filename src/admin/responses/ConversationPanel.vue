@@ -1,10 +1,10 @@
 <script setup>
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { t } from '../../i18n.js';
-import { api } from '../../lib/api.js';
+import { api, session } from '../../lib/api.js';
 import { notify, notifyError, confirmDialog } from '../../lib/feedback.js';
 import { copyText } from '../../lib/clipboard.js';
-import { formatDate } from '../../lib/format.js';
+import { formatDate, formatMessageTime } from '../../lib/format.js';
 
 const formatTime = value => new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' }).format(new Date(value));
 import { storage } from '../../lib/storage.js';
@@ -18,6 +18,7 @@ import RichText from '../../components/RichText.vue';
 import MessageAttachments from '../../components/MessageAttachments.vue';
 import ComposerFiles from '../../components/ComposerFiles.vue';
 import ToggleSwitch from '../../components/ToggleSwitch.vue';
+import MessageReactions from '../../components/MessageReactions.vue';
 
 // Staff ↔ respondent messages, status timeline and optional email delivery.
 const props = defineProps({ response: { type: Object, required: true }, writable: Boolean, offline: Boolean });
@@ -27,7 +28,6 @@ const reply = ref(''), replyStatus = ref(''), sending = ref(false), thread = ref
 const files = ref([]), picker = ref(null);
 const editing = ref(null), editText = ref(''), savingEdit = ref(false), originals = ref({});
 const fileUrl = (file, inline) => `/api/admin/responses/${props.response.id}/conversation-files/${file.id}${inline ? '?inline=1' : ''}`;
-const formatShort = value => new Intl.DateTimeFormat(undefined, { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(value));
 const sendEmail = ref(storage.get('quesuwa.replyEmail') !== '0');
 const canEmail = computed(() => messaging.mail && Boolean(props.response.contactEmail));
 watch(sendEmail, value => storage.set('quesuwa.replyEmail', value ? '1' : '0'));
@@ -129,6 +129,20 @@ function onDrop(event) { picker.value?.add(event.dataTransfer?.files); }
 
 const insert = template => { reply.value = reply.value.trim() ? reply.value.trimEnd() + '\n\n' + template.body : template.body; };
 const keys = event => { if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') send(); };
+// Reactions as staff see them: who reacted, with "you" for the signed-in staff member.
+function reactionsOf(message) {
+  return (message.reactions || []).map(item => {
+    const mine = item.staff.some(person => person.id === session.user?.id);
+    const names = item.staff.map(person => person.id === session.user?.id ? t('reactions.you') : person.name);
+    return { emoji: item.emoji, count: item.count, mine, names: item.respondent ? [...names, t('ticket.respondent')] : names };
+  });
+}
+async function react(message, emoji, on) {
+  try {
+    const data = await api(`/admin/responses/${props.response.id}/messages/${message.id}/reactions`, { method: 'POST', body: { emoji, on } });
+    props.response.messages = data.messages;
+  } catch (reason) { notifyError(reason); }
+}
 async function copyFollowUp() {
   if (await copyText(props.response.followUpUrl)) notify('ticket.linkCopied');
 }
@@ -170,15 +184,15 @@ defineExpose({ scrollToEnd });
       <template v-for="message in response.messages" :key="message.id">
         <div v-if="message.author === 'system'" class="timeline-event">
           <span>{{ t('ticket.statusEvent', { status: t(statusKeys[statusOf(message)] || 'status.pending') }) }}</span>
-          <time :datetime="message.createdAt">{{ formatDate(message.createdAt) }}</time>
+          <time :datetime="message.createdAt" :title="formatDate(message.createdAt, { seconds: true })">{{ formatMessageTime(message.createdAt) }}</time>
           <span v-if="message.delivery" class="delivery" :class="message.delivery">{{ t('ticket.delivery.' + message.delivery) }}</span>
           <button v-if="message.delivery === 'failed' && writable" type="button" class="text-button small" @click="resend(message)">{{ t('ticket.resend') }}</button>
         </div>
         <div v-else class="bubble" :class="[message.author === 'staff' ? 'from-me' : 'from-staff', { retracted: message.deletedAt }]">
           <span class="bubble-head">
             <span class="bubble-author">{{ author(message) }}</span>
-            <span v-if="message.deletedAt" class="bubble-tag danger" :title="t('ticket.retractedBy', { name: message.deletedBy, time: formatDate(message.deletedAt) })">{{ t('ticket.retractedTag') }}</span>
-            <button v-if="message.editedAt" type="button" class="bubble-tag" :aria-expanded="Boolean(originals[message.id])" :title="t('ticket.editedBy', { name: message.editedBy, time: formatDate(message.editedAt) })" @click="toggleOriginal(message)">{{ t('ticket.editedTag') }}</button>
+            <span v-if="message.deletedAt" class="bubble-tag danger" :title="t('ticket.retractedBy', { name: message.deletedBy, time: formatDate(message.deletedAt, { seconds: true }) })">{{ t('ticket.retractedTag') }}</span>
+            <button v-if="message.editedAt" type="button" class="bubble-tag" :aria-expanded="Boolean(originals[message.id])" :title="t('ticket.editedBy', { name: message.editedBy, time: formatDate(message.editedAt, { seconds: true }) })" @click="toggleOriginal(message)">{{ t('ticket.editedTag') }}</button>
             <MenuButton v-if="writable && editing !== message.id" class="bubble-menu" :label="t('ticket.messageActions')" icon="more" button-class="icon-button ghost small">
               <button v-if="!message.deletedAt" type="button" class="menu-item" @click="startEdit(message)"><AppIcon name="edit" :size="16" />{{ t('ticket.edit') }}</button>
               <button v-if="!message.deletedAt" type="button" class="menu-item danger" @click="retract(message)"><AppIcon name="trash" :size="16" />{{ t('ticket.retract') }}</button>
@@ -201,12 +215,13 @@ defineExpose({ scrollToEnd });
             </div>
           </template>
           <span class="bubble-foot">
+            <MessageReactions :reactions="reactionsOf(message)" :can-react="writable && !message.deletedAt" @toggle="(emoji, on) => react(message, emoji, on)" />
             <span v-if="message.delivery" class="delivery" :class="message.delivery"><AppIcon :name="message.delivery === 'failed' ? 'alert' : 'mail'" :size="12" />{{ t('ticket.delivery.' + message.delivery) }}</span>
             <button v-if="message.delivery === 'failed' && writable" type="button" class="text-button small" @click="resend(message)">{{ t('ticket.resend') }}</button>
-            <span v-if="message.author === 'staff' && response.ticket && !message.deletedAt" class="read-receipt" :class="{ read: message.readAt }" :title="message.readAt ? formatDate(message.readAt) : ''">
-              <AppIcon :name="message.readAt ? 'checkCircle' : 'circle'" :size="12" />{{ message.readAt ? t('ticket.readAt', { time: formatShort(message.readAt) }) : t('ticket.unreadByRespondent') }}
+            <span v-if="message.author === 'staff' && response.ticket && !message.deletedAt" class="read-receipt" :class="{ read: message.readAt }" :title="message.readAt ? formatDate(message.readAt, { seconds: true }) : ''">
+              <AppIcon :name="message.readAt ? 'checkCircle' : 'circle'" :size="12" />{{ message.readAt ? t('ticket.readAt', { time: formatMessageTime(message.readAt) }) : t('ticket.unreadByRespondent') }}
             </span>
-            <time class="bubble-time" :datetime="message.createdAt">{{ formatDate(message.createdAt) }}</time>
+            <time class="bubble-time" :datetime="message.createdAt" :title="formatDate(message.createdAt, { seconds: true })">{{ formatMessageTime(message.createdAt) }}</time>
           </span>
         </div>
       </template>

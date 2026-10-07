@@ -54,6 +54,14 @@ export function responseRoutes({ db, forms, storage, audit, auth, tickets, notif
     });
   });
 
+  // Staff react to messages with emoji; the respondent sees the reaction and who left it.
+  router.post('/responses/:id/messages/:messageId/reactions', write, (req, res) => {
+    const row = findResponse(req.params.id);
+    if (row.deleted_at) throw fail(404, 'errors.responseNotFound');
+    tickets.react(row.id, req.params.messageId, { actor: 'staff:' + req.user.id, actorName: req.user.displayName || req.user.username, emoji: req.body?.emoji, on: req.body?.on !== false });
+    res.json({ messages: tickets.messages(row.id), rev: tickets.revision(row.id) });
+  });
+
   // Revoke the respondent's follow-up link, or issue a new one (earlier links stop working).
   router.post('/responses/:id/follow-up', write, (req, res) => {
     const row = findResponse(req.params.id);

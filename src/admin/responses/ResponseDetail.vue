@@ -157,7 +157,7 @@ onBeforeUnmount(() => { stopLive?.(); window.removeEventListener('keydown', keys
     <div v-else-if="!response" class="detail-loading"><span class="spinner"></span></div>
     <template v-else>
       <div class="detail-meta">
-        <span><AppIcon name="clock" :size="14" />{{ formatDate(response.createdAt) }}</span>
+        <span><AppIcon name="clock" :size="14" />{{ formatDate(response.createdAt, { seconds: true }) }}</span>
         <span v-if="response.durationMs"><AppIcon name="activity" :size="14" />{{ t('responses.duration', { time: formatDuration(response.durationMs) }) }}</span>
         <span v-if="languageKey(response.locale)"><AppIcon name="globe" :size="14" />{{ t(languageKey(response.locale)) }}</span>
         <span v-if="response.contactEmail"><AppIcon name="mail" :size="14" /><a :href="'mailto:' + response.contactEmail">{{ response.contactEmail }}</a></span>

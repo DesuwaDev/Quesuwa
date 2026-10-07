@@ -1,10 +1,21 @@
 import { locale, t } from '../i18n.js';
 
-export function formatDate(value, { time = true, dateStyle = 'medium' } = {}) {
+export function formatDate(value, { time = true, dateStyle = 'medium', seconds = false } = {}) {
   if (!value) return '';
   const date = new Date(value);
   if (!Number.isFinite(date.getTime())) return '';
-  return new Intl.DateTimeFormat(locale.value, time ? { dateStyle, timeStyle: 'short' } : { dateStyle }).format(date);
+  return new Intl.DateTimeFormat(locale.value, time ? { dateStyle, timeStyle: seconds ? 'medium' : 'short' } : { dateStyle }).format(date);
+}
+
+// Conversation times to the second: only the time for today, with the date (and year) otherwise.
+export function formatMessageTime(value) {
+  if (!value) return '';
+  const date = new Date(value), now = new Date();
+  if (!Number.isFinite(date.getTime())) return '';
+  const clock = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
+  if (date.toDateString() === now.toDateString()) return new Intl.DateTimeFormat(locale.value, clock).format(date);
+  const day = date.getFullYear() === now.getFullYear() ? { month: 'numeric', day: 'numeric' } : { year: 'numeric', month: 'numeric', day: 'numeric' };
+  return new Intl.DateTimeFormat(locale.value, { ...day, ...clock }).format(date);
 }
 
 export function formatDay(value, options = { month: 'short', day: 'numeric' }) {

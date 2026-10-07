@@ -65,6 +65,15 @@ export function ticketRoutes({ db, forms, storage, tickets, webhooks, notifier, 
 
   // The key is checked before any upload is read.
   const authorised = (req, _res, next) => { tickets.open(req.params.id, key(req)); next(); };
+  // Respondents react to messages while the conversation is open.
+  router.post('/:id/messages/:messageId/reactions', limiter(15 * 60_000, 300), authorised, (req, res) => {
+    const row = tickets.open(req.params.id, key(req));
+    const current = view(row);
+    if (!current.canReply) throw fail(410, current.closed ? 'errors.ticketLocked' : 'errors.ticketClosed');
+    tickets.react(row.id, req.params.messageId, { actor: 'respondent', emoji: req.body?.emoji, on: req.body?.on !== false });
+    res.json(view(db.prepare('SELECT * FROM responses WHERE id=?').get(row.id)));
+  });
+
   // Per address this only stops floods across tickets; each ticket has its own allowance.
   router.post('/:id/messages', limiter(60 * 60_000, 120), authorised, messageBody, async (req, res) => {
     const row = tickets.open(req.params.id, key(req));

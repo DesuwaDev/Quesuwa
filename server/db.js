@@ -101,7 +101,11 @@ const migrations = [
     addColumn(db, 'responses', 'files_disabled', 'INTEGER NOT NULL DEFAULT 0');
   },
   // Reissuing a follow-up link bumps this, so every earlier link stops working.
-  db => addColumn(db, 'responses', 'access_generation', 'INTEGER NOT NULL DEFAULT 0')
+  db => addColumn(db, 'responses', 'access_generation', 'INTEGER NOT NULL DEFAULT 0'),
+  // Emoji reactions on conversation messages; actor is 'respondent' or 'staff:<user id>'.
+  db => db.exec(`CREATE TABLE IF NOT EXISTS reactions (message_id TEXT NOT NULL, response_id TEXT NOT NULL, actor TEXT NOT NULL,
+      actor_name TEXT NOT NULL DEFAULT '', emoji TEXT NOT NULL, created_at TEXT NOT NULL, PRIMARY KEY (message_id, actor, emoji));
+    CREATE INDEX IF NOT EXISTS reactions_response ON reactions(response_id);`)
 ];
 
 export function openDatabase(dataDir) {

@@ -1,6 +1,7 @@
 // Stroke icon geometry (24×24 viewBox, 2px round strokes).
 export const icons = {
   plus: 'M12 5v14M5 12h14',
+  smilePlus: 'M22 11v1a10 10 0 1 1-9-10M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01M16 5h6M19 2v6',
   close: 'M18 6 6 18M6 6l12 12',
   check: 'M20 6 9 17l-5-5',
   chevronLeft: 'm15 18-6-6 6-6',

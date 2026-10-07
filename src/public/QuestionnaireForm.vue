@@ -5,7 +5,7 @@ import { api } from '../lib/api.js';
 import { storage } from '../lib/storage.js';
 import { notify } from '../lib/feedback.js';
 import { formatDate } from '../lib/format.js';
-import { visibleFields, paginate, checkAnswer, estimateSeconds } from '../../shared/answers.js';
+import { visibleFields, paginate, checkAnswer, estimateSeconds, isAnswered } from '../../shared/answers.js';
 import { answerable } from '../../shared/schema.js';
 import { parseAgent } from '../../shared/environment.js';
 import { route } from '../lib/router.js';
@@ -24,6 +24,7 @@ const draftKey = computed(() => 'quesuwa.draft.' + props.form.id);
 const canSaveDraft = computed(() => !props.preview && settings.value.saveProgress !== false);
 const state = reactive({ answers: {}, others: {}, uploads: {}, errors: {}, prefilled: {} });
 const pageIndex = ref(0), busy = ref(false), formError = ref(null), consent = ref(false), website = ref(''), restored = ref(false);
+const progress = ref(0);
 const root = ref(null), captchaRef = ref(null);
 // Human verification is asked for on the last page, right before sending.
 const needsCaptcha = computed(() => Boolean(props.form.captcha) && !props.preview);
@@ -40,6 +41,7 @@ function reset() {
   pageIndex.value = 0;
   consent.value = false;
   formError.value = null;
+  progress.value = 0;
 }
 reset();
 
@@ -123,14 +125,19 @@ const current = computed(() => pages.value[Math.min(pageIndex.value, pages.value
 const isLast = computed(() => pageIndex.value >= pages.value.length - 1);
 const questions = computed(() => visible.value.filter(answerable));
 const numbers = computed(() => settings.value.showNumbers === false ? {} : Object.fromEntries(questions.value.map((field, index) => [field.id, index + 1])));
-const answeredCount = computed(() => questions.value.filter(field => {
-  const value = probe.value[field.id];
-  if (field.type === 'file') return value > 0;
-  if (field.type === 'matrix') return Array.isArray(value) && value.some(Boolean);
-  return Array.isArray(value) ? value.length > 0 : String(value ?? '').trim() !== '';
-}).length);
-const progress = computed(() => questions.value.length ? Math.round((answeredCount.value / questions.value.length) * 100) : 0);
-const minutes = computed(() => Math.max(1, Math.round(estimateSeconds(props.form.fields, probe.value) / 60)));
+// Progress and time left follow the expected path (see estimateSeconds): answered questions
+// and earlier pages count as done, so questions opened by a branch don't push the bar back
+// the way an answered/shown count does.
+const passed = computed(() => new Set(pages.value.slice(0, pageIndex.value).flatMap(page => page.fields.map(field => field.id))));
+const expectedSeconds = computed(() => estimateSeconds(props.form.fields, probe.value));
+const remainingSeconds = computed(() => estimateSeconds(props.form.fields, probe.value, field => passed.value.has(field.id) || isAnswered(field, probe.value[field.id])));
+const progressNow = computed(() => expectedSeconds.value ? Math.min(100, Math.max(0, Math.round(100 * (1 - remainingSeconds.value / expectedSeconds.value)))) : 0);
+// The bar only moves forward: an answer that opens another question shouldn't feel like losing ground.
+watch(progressNow, value => { progress.value = Math.max(progress.value, value); }, { immediate: true });
+const minutes = computed(() => Math.max(1, Math.round(expectedSeconds.value / 60)));
+const minutesLeft = computed(() => Math.round(remainingSeconds.value / 60));
+// With branches the number of questions depends on the answers, so the header leaves it out.
+const branching = computed(() => props.form.fields.some(field => field.logic?.rules?.length));
 
 watch(pages, value => { if (pageIndex.value > value.length - 1) pageIndex.value = Math.max(0, value.length - 1); });
 
@@ -265,7 +272,7 @@ const outdated = computed(() => ['errors.versionConflict', 'errors.formChanged']
         <h1>{{ form.title || t('common.untitled') }}</h1>
         <p v-if="form.description" class="form-intro preserve">{{ form.description }}</p>
         <div class="form-meta">
-          <span><AppIcon name="forms" :size="14" />{{ t('common.questions', { count: questions.length }) }}</span>
+          <span v-if="!branching"><AppIcon name="forms" :size="14" />{{ t('common.questions', { count: questions.length }) }}</span>
           <span><AppIcon name="clock" :size="14" />{{ t('form.estimate', { minutes }) }}</span>
           <span v-if="settings.endsAt"><AppIcon name="calendar" :size="14" />{{ t('portal.endsAt', { date: formatDate(settings.endsAt) }) }}</span>
           <span><AppIcon name="shield" :size="14" />{{ t('form.anonymous') }}</span>
@@ -283,9 +290,9 @@ const outdated = computed(() => ['errors.versionConflict', 'errors.formChanged']
     <div v-if="settings.showProgress !== false && questions.length" class="progress-sticky">
       <div class="progress-info">
         <span v-if="pages.length > 1">{{ t('form.pageOf', { page: pageIndex + 1, pages: pages.length }) }}</span>
-        <span>{{ t('form.progress', { percent: progress }) }}</span>
+        <span>{{ minutesLeft ? t('form.timeLeft', { minutes: minutesLeft }) : t('form.almostDone') }}</span>
       </div>
-      <div class="progress-track" role="progressbar" :aria-valuenow="progress" aria-valuemin="0" aria-valuemax="100" :aria-label="t('form.progressLabel')"><span :style="{ width: progress + '%' }"></span></div>
+      <div class="progress-track" role="progressbar" :aria-valuenow="progress" aria-valuemin="0" aria-valuemax="100" :aria-valuetext="t('form.progress', { percent: progress })" :aria-label="t('form.progressLabel')"><span :style="{ width: progress + '%' }"></span></div>
     </div>
 
     <div class="trap" aria-hidden="true"><label>{{ t('form.website') }}<input v-model="website" tabindex="-1" autocomplete="off" /></label></div>
@@ -303,13 +310,13 @@ const outdated = computed(() => ['errors.versionConflict', 'errors.formChanged']
     </Transition>
 
     <div v-if="isLast && settings.consentText" class="consent-card">
-      <p class="preserve">{{ settings.consentText }}</p>
+      <p class="preserve consent-text" tabindex="0">{{ settings.consentText }}</p>
       <label class="check-row"><input v-model="consent" type="checkbox" :disabled="busy" />{{ t('form.consentAccept') }}</label>
     </div>
 
     <div class="form-footer">
       <CaptchaWidget v-if="isLast && needsCaptcha" ref="captchaRef" :config="form.captcha" />
-      <details v-if="isLast && environmentPreview.length && !preview" class="environment-note">
+      <details v-if="isLast && environmentPreview.length && !preview && settings.environmentNotice !== false" class="environment-note">
         <summary><AppIcon name="monitor" :size="14" />{{ t('environment.notice') }}</summary>
         <dl>
           <div v-for="[key, value] in environmentPreview" :key="key"><dt>{{ t(key) }}</dt><dd>{{ value }}</dd></div>

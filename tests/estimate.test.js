@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeDefinition } from '../shared/schema.js';
+import { normalizeDefinition, normalizeSettings } from '../shared/schema.js';
+import { readPrefill } from '../src/lib/prefill.js';
 import { estimateSeconds } from '../shared/answers.js';
 
 const define = (slug, fields) => normalizeDefinition({ title: slug, slug, state: 'draft', fields }).fields;
@@ -17,4 +18,30 @@ test('the time estimate follows one branch, not every branch added up', () => {
 
   const optional = define('optional', [{ id: 'note', type: 'long', label: 'Note', required: false }]);
   assert.ok(estimateSeconds(optional, {}) < estimateSeconds(optional.map(field => ({ ...field, required: true })), {}), 'optional questions count for less');
+});
+
+test('time left drops as questions are answered or pages passed', () => {
+  const fields = define('left', [
+    { id: 'a', type: 'single', label: 'A', required: true, options: ['Yes', 'No'] },
+    { id: 'b', type: 'long', label: 'B', required: true }
+  ]);
+  const total = estimateSeconds(fields, {});
+  const left = estimateSeconds(fields, { a: 'Yes' }, field => field.id === 'a');
+  assert.ok(left > 0 && left < total, `${left} of ${total}`);
+  assert.equal(estimateSeconds(fields, {}, () => true), 0);
+});
+
+test('link prefill ignores a placeholder the linking site left unfilled', () => {
+  const fields = define('prefill', [{ id: 'user', type: 'short', label: 'User', required: false, prefillKey: 'user' }]);
+  assert.deepEqual(readPrefill(fields, { user: '{{user}}' }), {});
+  assert.deepEqual(readPrefill(fields, { user: 'alice' }), { user: 'alice' });
+});
+
+test('the device notice can be hidden while details are still collected; statements can be long', () => {
+  assert.equal(normalizeSettings({ collectEnvironment: true }).environmentNotice, true);
+  const quiet = normalizeSettings({ collectEnvironment: true, environmentNotice: false });
+  assert.equal(quiet.collectEnvironment, true);
+  assert.equal(quiet.environmentNotice, false);
+  assert.equal(normalizeSettings({ consentText: '条'.repeat(15000) }).consentText.length, 15000);
+  assert.throws(() => normalizeSettings({ consentText: '条'.repeat(20001) }));
 });

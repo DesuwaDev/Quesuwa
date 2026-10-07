@@ -137,6 +137,7 @@ onMounted(() => { loadDeliveries(); loadMessaging(); });
         <small class="hint">{{ t('settings.autoCloseHint') }}</small>
       </label>
       <ToggleSwitch v-model="settings.collectEnvironment" :label="t('settings.collectEnvironment')" :hint="t('settings.collectEnvironmentHint')" :disabled="readonly" />
+      <ToggleSwitch v-if="settings.collectEnvironment" v-model="settings.environmentNotice" :label="t('settings.environmentNotice')" :hint="t('settings.environmentNoticeHint')" :disabled="readonly" />
       <ToggleSwitch v-model="settings.showProgress" :label="t('settings.showProgress')" :disabled="readonly" />
       <ToggleSwitch v-model="settings.showNumbers" :label="t('settings.showNumbers')" :disabled="readonly" />
       <ToggleSwitch v-model="settings.saveProgress" :label="t('settings.saveProgress')" :hint="t('settings.saveProgressHint')" :disabled="readonly" />
@@ -146,7 +147,7 @@ onMounted(() => { loadDeliveries(); loadMessaging(); });
       </label>
       <label class="field">
         <span class="field-label">{{ t('settings.consent') }}</span>
-        <textarea v-model="settings.consentText" class="input textarea autosize" rows="3" maxlength="2000" :disabled="readonly" :placeholder="t('settings.consentHint')"></textarea>
+        <textarea v-model="settings.consentText" class="input textarea autosize" rows="3" maxlength="20000" :disabled="readonly" :placeholder="t('settings.consentHint')"></textarea>
       </label>
     </section>
 

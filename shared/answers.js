@@ -145,7 +145,8 @@ const ESTIMATE_RUNS = 120;
 // every other question that opens or closes a branch is answered at random (all options
 // equally likely, optional ones skipped half the time) over many runs. A form with
 // branches then shows the length of a typical path, not every branch added up.
-export function estimateSeconds(fields, answers = {}) {
+// `skip` leaves fields out of the sum (e.g. answered ones, for the time still left).
+export function estimateSeconds(fields, answers = {}, skip = () => false) {
   const deciding = new Set(fields.flatMap(field => [
     ...(field.logic?.rules || []),
     ...(field.requiredLogic?.rules || []),
@@ -158,7 +159,7 @@ export function estimateSeconds(fields, answers = {}) {
   for (let run = 0; run < runs; run++) {
     const trial = { ...answers };
     for (const field of open) trial[field.id] = sampleAnswer(field, random);
-    for (const field of resolveFields(fields, trial)) total += fieldSeconds(field);
+    for (const field of resolveFields(fields, trial)) if (!skip(field)) total += fieldSeconds(field);
   }
   return total / runs;
 }

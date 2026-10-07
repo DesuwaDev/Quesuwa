@@ -13,6 +13,8 @@ export function readPrefill(fields, query = {}) {
     if (!field.prefillKey || !prefillTypes.includes(field.type)) continue;
     const raw = lookup[field.prefillKey.toLowerCase()];
     if (typeof raw !== 'string' || !raw.trim() || raw.length > 5000) continue;
+    // A template placeholder the linking site never filled in (e.g. "{{user}}") is not an answer.
+    if (/^\s*\{\{[^{}]*\}\}\s*$/.test(raw)) continue;
     let value = raw.trim();
     if (field.type === 'single' || field.type === 'select') value = matchOption(field, value);
     else if (field.type === 'multi') {

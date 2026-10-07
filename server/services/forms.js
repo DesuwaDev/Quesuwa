@@ -73,6 +73,7 @@ export function createFormStore(db) {
         accent: settings.accent,
         endsAt: settings.endsAt,
         collectEnvironment: settings.collectEnvironment,
+        environmentNotice: settings.environmentNotice,
         protected: Boolean(settings.accessCode)
       }
     };

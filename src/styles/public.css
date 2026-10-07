@@ -181,6 +181,9 @@ button.ranking-item:hover:not(:disabled) { border-color: var(--primary); }
 .file-name small { color: var(--text-3); }
 
 .consent-card { padding: var(--space-5) var(--space-6); border-radius: var(--radius-lg); background: var(--surface); border: 1px solid var(--border); display: flex; flex-direction: column; gap: var(--space-3); font-size: 0.9rem; color: var(--text-2); }
+/* Long statements scroll in place instead of pushing the submit button far down. */
+.consent-text { max-height: 13rem; overflow-y: auto; overscroll-behavior: contain; margin: 0; padding-right: 6px; }
+.consent-text:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; border-radius: 4px; }
 .form-footer { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-2) 0; }
 .form-nav { display: flex; align-items: center; gap: var(--space-2); }
 .form-nav .button { min-height: 46px; padding: 0 22px; font-size: 0.96rem; }

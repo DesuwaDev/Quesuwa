@@ -15,6 +15,7 @@ export const defaultSettings = Object.freeze({
   notifyAdmins: true,
   sendReceipt: false,
   collectEnvironment: false,
+  environmentNotice: true,
   ticketFiles: true,
   captcha: false,
   contactField: '',
@@ -69,7 +70,7 @@ export function normalizeSettings(value = {}) {
   if (value === undefined || value === null) value = {};
   if (typeof value !== 'object' || Array.isArray(value)) throw failure(code);
   const result = { ...defaultSettings };
-  for (const key of ['listed', 'showProgress', 'showNumbers', 'saveProgress', 'onePerDevice', 'ticketMode', 'notifyAdmins', 'sendReceipt', 'collectEnvironment', 'ticketFiles', 'captcha']) result[key] = bool(value[key], defaultSettings[key], code);
+  for (const key of ['listed', 'showProgress', 'showNumbers', 'saveProgress', 'onePerDevice', 'ticketMode', 'notifyAdmins', 'sendReceipt', 'collectEnvironment', 'environmentNotice', 'ticketFiles', 'captcha']) result[key] = bool(value[key], defaultSettings[key], code);
   result.startsAt = dateTime(value.startsAt, code);
   result.endsAt = dateTime(value.endsAt, code);
   if (result.startsAt && result.endsAt && result.startsAt >= result.endsAt) throw failure('errors.scheduleInvalid');
@@ -77,7 +78,7 @@ export function normalizeSettings(value = {}) {
   result.retentionDays = integer(value.retentionDays, 0, 3650, 0, code);
   result.autoCloseDays = integer(value.autoCloseDays, 0, 365, 0, code);
   result.submitLabel = text(value.submitLabel, 60, code);
-  result.consentText = text(value.consentText, 2000, code);
+  result.consentText = text(value.consentText, LIMITS.consent, code);
   result.closedMessage = text(value.closedMessage, 1000, code);
   result.accessCode = text(value.accessCode, 64, 'errors.accessCodeInvalid');
   if (value.accent !== undefined && !accents.includes(value.accent)) throw failure(code);

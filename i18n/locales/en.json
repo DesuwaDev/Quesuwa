@@ -90,6 +90,7 @@
   "responses.previous": "Previous response",
   "responses.next": "Next response",
   "responses.version": "Version {version}",
+  "responses.consentAccepted": "Statement accepted on submission",
   "responses.status": "Status",
   "responses.notePlaceholder": "Only visible to workspace members",
   "responses.onlyFiles": "Attachments only",

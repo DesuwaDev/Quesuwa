@@ -90,6 +90,7 @@
   "responses.previous": "上一份",
   "responses.next": "下一份",
   "responses.version": "问卷版本 {version}",
+  "responses.consentAccepted": "提交时同意的声明",
   "responses.status": "处理状态",
   "responses.notePlaceholder": "仅工作台成员可见",
   "responses.onlyFiles": "仅包含附件",

@@ -130,7 +130,7 @@ export function publicRoutes({ db, forms, storage, webhooks, tickets, notifier, 
     const rollback = storage.write(attachments, files.map(file => file.buffer));
     try {
       db.prepare('INSERT INTO responses (id, form_id, snapshot, answers, attachments, created_at, status, duration_ms, locale, access_hash, last_activity_at, environment) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)').run(
-        response.id, form.id, JSON.stringify({ id: form.id, slug: form.slug, title: form.title, version: form.version, fields: form.fields }), JSON.stringify(answers), JSON.stringify(attachments), response.createdAt, 'pending',
+        response.id, form.id, JSON.stringify({ id: form.id, slug: form.slug, title: form.title, version: form.version, fields: form.fields, ...(settings.consentText ? { consent: { text: settings.consentText } } : {}) }), JSON.stringify(answers), JSON.stringify(attachments), response.createdAt, 'pending',
         Number.isInteger(duration) && duration > 0 && duration < 7 * 24 * 3600_000 ? duration : null,
         normalizeLocale(req.body.locale) || '', ticket?.hash ?? null, response.createdAt, environment);
     } catch (error) { rollback(); throw error; }

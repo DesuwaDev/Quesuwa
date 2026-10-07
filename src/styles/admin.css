@@ -294,6 +294,9 @@
 .environment-panel dl { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px 16px; margin: 0; }
 .environment-panel dt { color: var(--text-3); font-size: 0.78rem; }
 .environment-panel dd { margin: 0; font-size: 0.9rem; overflow-wrap: anywhere; }
+.consent-record { border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg-tint); font-size: 0.86rem; color: var(--text-2); }
+.consent-record summary { display: flex; align-items: center; gap: 8px; padding: 10px 14px; cursor: pointer; }
+.consent-record p { margin: 0; padding: 0 14px 12px; max-height: 24rem; overflow-y: auto; }
 .environment-panel details summary { cursor: pointer; color: var(--text-3); font-size: 0.82rem; }
 .environment-panel details code { display: block; margin-top: 6px; font-size: 0.78rem; overflow-wrap: anywhere; color: var(--text-2); }
 

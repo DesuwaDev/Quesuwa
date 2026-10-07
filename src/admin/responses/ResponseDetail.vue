@@ -235,6 +235,11 @@ onBeforeUnmount(() => { stopLive?.(); window.removeEventListener('keydown', keys
         </details>
       </section>
 
+      <details v-if="response.snapshot.consent" class="consent-record">
+        <summary><AppIcon name="shield" :size="14" />{{ t('responses.consentAccepted') }}</summary>
+        <p class="preserve">{{ response.snapshot.consent.text }}</p>
+      </details>
+
       <footer class="detail-foot">
         <button type="button" class="button ghost small" @click="copyLink"><AppIcon name="link" :size="14" />{{ t('responses.copyLink') }}</button>
         <button type="button" class="button ghost small hide-mobile" @click="printPage"><AppIcon name="printer" :size="14" />{{ t('responses.print') }}</button>

@@ -42,6 +42,6 @@ test('the device notice can be hidden while details are still collected; stateme
   const quiet = normalizeSettings({ collectEnvironment: true, environmentNotice: false });
   assert.equal(quiet.collectEnvironment, true);
   assert.equal(quiet.environmentNotice, false);
-  assert.equal(normalizeSettings({ consentText: '条'.repeat(15000) }).consentText.length, 15000);
-  assert.throws(() => normalizeSettings({ consentText: '条'.repeat(20001) }));
+  assert.equal(normalizeSettings({ consentText: '条'.repeat(40000) }).consentText.length, 40000);
+  assert.throws(() => normalizeSettings({ consentText: '条'.repeat(50001) }));
 });

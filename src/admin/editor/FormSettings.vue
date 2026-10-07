@@ -147,7 +147,7 @@ onMounted(() => { loadDeliveries(); loadMessaging(); });
       </label>
       <label class="field">
         <span class="field-label">{{ t('settings.consent') }}</span>
-        <textarea v-model="settings.consentText" class="input textarea autosize" rows="3" maxlength="20000" :disabled="readonly" :placeholder="t('settings.consentHint')"></textarea>
+        <textarea v-model="settings.consentText" class="input textarea autosize" rows="3" maxlength="50000" :disabled="readonly" :placeholder="t('settings.consentHint')"></textarea>
       </label>
     </section>
 

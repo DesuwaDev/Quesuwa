@@ -76,6 +76,7 @@ test('collection settings, conditions and typed answers are enforced on the serv
   assert.equal((await submit(form, { choice: 'No', email: 'ignored hidden answer', rating: '4' })).status, 201);
   const saved = (await (await request(`/admin/forms/${form.id}/responses`)).json()).items[0];
   assert.equal(saved.answers.email, undefined);
+  assert.equal(saved.snapshot.consent.text, 'Consent required', 'the statement agreed to is kept with the answers');
   assert.equal((await submit(form, { choice: 'No' })).status, 410);
   assert.equal((await (await request('/forms')).json()).length, 0);
   form = await (await request(`/admin/forms/${form.id}`, 'PUT', { ...form, settings: { startsAt: '2099-01-01T00:00:00.000Z' } })).json();

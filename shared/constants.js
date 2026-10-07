@@ -14,7 +14,7 @@ export const LIMITS = Object.freeze({
   title: 120,
   description: 3000,
   thanks: 1000,
-  consent: 20000,
+  consent: 50000,
   label: 500,
   fieldDescription: 2000,
   option: 200,

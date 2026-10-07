@@ -5,7 +5,7 @@ import { api } from '../lib/api.js';
 import { storage } from '../lib/storage.js';
 import { notify } from '../lib/feedback.js';
 import { formatDate } from '../lib/format.js';
-import { visibleFields, paginate, checkAnswer } from '../../shared/answers.js';
+import { visibleFields, paginate, checkAnswer, estimateSeconds } from '../../shared/answers.js';
 import { answerable } from '../../shared/schema.js';
 import { parseAgent } from '../../shared/environment.js';
 import { route } from '../lib/router.js';
@@ -130,7 +130,7 @@ const answeredCount = computed(() => questions.value.filter(field => {
   return Array.isArray(value) ? value.length > 0 : String(value ?? '').trim() !== '';
 }).length);
 const progress = computed(() => questions.value.length ? Math.round((answeredCount.value / questions.value.length) * 100) : 0);
-const minutes = computed(() => Math.max(1, Math.round(props.form.fields.filter(answerable).length * 20 / 60)));
+const minutes = computed(() => Math.max(1, Math.round(estimateSeconds(props.form.fields, probe.value) / 60)));
 
 watch(pages, value => { if (pageIndex.value > value.length - 1) pageIndex.value = Math.max(0, value.length - 1); });
 

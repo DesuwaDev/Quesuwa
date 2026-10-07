@@ -1,6 +1,6 @@
 // Answer semantics shared by the questionnaire renderer and submission handler:
 // conditional visibility, pagination, validation and plain-text formatting.
-import { LIMITS, layoutTypes } from './constants.js';
+import { LIMITS, layoutTypes, optionTypes } from './constants.js';
 
 export function isAnswered(field, value) {
   if (field.type === 'file') return Array.isArray(value) ? value.length > 0 : Number(value) > 0;
@@ -83,6 +83,84 @@ export function paginate(fields) {
   }
   if (current.section || current.fields.length || !pages.length) pages.push(current);
   return pages;
+}
+
+// Rough seconds to read a question and answer it. Everything shown is read; answering
+// depends on the kind of question. Optional questions count half the answer time,
+// since many people skip them.
+const READ_CHARS_PER_SECOND = 10;
+const ANSWER_SECONDS = { short: 10, email: 10, phone: 10, url: 10, number: 6, date: 6, time: 6, long: 45, file: 20, rating: 4, scale: 4, nps: 4, single: 2, select: 3, multi: 4 };
+
+function fieldSeconds(field) {
+  const text = [field.label, field.description];
+  let answer = ANSWER_SECONDS[field.type] ?? 0;
+  if (optionTypes.includes(field.type)) text.push(...field.options);
+  if (field.type === 'ranking') answer = 3 * field.options.length;
+  if (field.type === 'matrix') {
+    text.push(...field.rows, ...field.columns);
+    answer = 3 * field.rows.length;
+  }
+  const chars = text.reduce((sum, item) => sum + String(item || '').length, 0);
+  return chars / READ_CHARS_PER_SECOND + answer * (field.required ? 1 : 0.5);
+}
+
+// Small seeded generator, so the same answers always give the same estimate.
+function seededRandom(seed) {
+  let state = seed >>> 0;
+  return () => {
+    state = (state + 0x6D2B79F5) >>> 0;
+    let x = Math.imul(state ^ (state >>> 15), 1 | state);
+    x ^= x + Math.imul(x ^ (x >>> 7), 61 | x);
+    return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// Stands for an answer the respondent types themselves (free text or an "other" choice):
+// it counts as answered but matches no rule value.
+const TYPED = Symbol();
+
+function sampleAnswer(field, random) {
+  if (!field.required && random() < 0.5) return undefined;
+  const choices = [...(field.options || []), ...(field.allowOther ? [TYPED] : [])];
+  const pick = () => choices[Math.floor(random() * choices.length)];
+  const between = (min, max) => String(min + Math.floor(random() * (max - min + 1)));
+  switch (field.type) {
+    case 'single':
+    case 'select': return choices.length ? pick() : undefined;
+    case 'multi': return choices.length ? [pick()] : undefined;
+    case 'ranking': return [...field.options];
+    case 'rating': return between(1, field.ratingMax || 5);
+    case 'scale': return between(field.scaleMin ?? 1, field.scaleMax || 5);
+    case 'nps': return between(0, 10);
+    case 'number': return Number.isFinite(field.min) && Number.isFinite(field.max) ? between(Math.ceil(field.min), Math.floor(field.max)) : '0';
+    case 'matrix': return field.rows.map(() => field.columns[0] || '');
+    case 'file': return 1;
+    default: return TYPED;
+  }
+}
+
+const ESTIMATE_RUNS = 120;
+
+// Expected seconds to fill in the questionnaire. Answered questions keep their answers;
+// every other question that opens or closes a branch is answered at random (all options
+// equally likely, optional ones skipped half the time) over many runs. A form with
+// branches then shows the length of a typical path, not every branch added up.
+export function estimateSeconds(fields, answers = {}) {
+  const deciding = new Set(fields.flatMap(field => [
+    ...(field.logic?.rules || []),
+    ...(field.requiredLogic?.rules || []),
+    ...(field.optionLogic || []).flatMap(entry => entry.logic?.rules || [])
+  ].map(rule => rule.fieldId)));
+  const open = fields.filter(field => deciding.has(field.id) && !isAnswered(field, answers[field.id]));
+  const runs = open.length ? ESTIMATE_RUNS : 1;
+  const random = seededRandom(1);
+  let total = 0;
+  for (let run = 0; run < runs; run++) {
+    const trial = { ...answers };
+    for (const field of open) trial[field.id] = sampleAnswer(field, random);
+    for (const field of resolveFields(fields, trial)) total += fieldSeconds(field);
+  }
+  return total / runs;
 }
 
 const problem = (error, params = {}, value = '') => ({ value, error, params });

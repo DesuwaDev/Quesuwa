@@ -104,7 +104,7 @@
 .choice-option.checked input[type="radio"] + .choice-control::after, .matrix-cell.checked .choice-control::after { content: ""; position: absolute; inset: 4px; border-radius: 50%; background: var(--on-primary); }
 .choice-option.checked input[type="checkbox"] + .choice-control::after { content: ""; position: absolute; left: 5px; top: 1px; width: 5px; height: 10px; border: solid var(--on-primary); border-width: 0 2px 2px 0; transform: rotate(45deg); }
 .choice-option input:focus-visible + .choice-control, .matrix-cell input:focus-visible + .choice-control { box-shadow: 0 0 0 3px var(--focus); }
-.choice-text { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+.choice-text { flex: 1 1 0; min-width: 0; overflow-wrap: anywhere; }
 .other-input { flex: 1 1 100%; min-height: 36px; margin-top: 2px; }
 .choice-answer > .text-button, .scale-footer .text-button { margin-top: var(--space-2); }
 

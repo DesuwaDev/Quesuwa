@@ -1580,5 +1580,6 @@
   "system.viewAll": "View all",
   "backups.snapshots": "Snapshots",
   "captcha.appearance": "Appearance",
-  "captcha.capRouteBadge": "Used when Cap fails"
+  "captcha.capRouteBadge": "Used when Cap fails",
+  "responses.applyStatus": "Apply"
 }

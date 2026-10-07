@@ -99,7 +99,21 @@ async function patch(body, messageKey) {
     else if (messageKey) notify(messageKey);
   } catch (reason) { notifyError(reason); }
 }
-const setStatus = status => { if (status !== response.value.status) patch({ status, notify: canEmail.value && notifyStatus.value }, 'responses.statusSaved'); };
+// A status is chosen first and applied with the confirm button, so a stray tap changes nothing.
+const chosenStatus = ref(null), savingStatus = ref(false);
+const shownStatus = computed(() => chosenStatus.value ?? response.value?.status);
+const chooseStatus = status => { chosenStatus.value = status === response.value.status ? null : status; };
+async function applyStatus() {
+  const status = chosenStatus.value;
+  if (!status || savingStatus.value) return;
+  savingStatus.value = true;
+  await patch({ status, notify: canEmail.value && notifyStatus.value }, 'responses.statusSaved');
+  savingStatus.value = false;
+  // A failed save keeps the choice so it can be retried.
+  if (response.value?.status === status) chosenStatus.value = null;
+}
+// A live update that reaches the chosen status settles the choice.
+watch(() => response.value?.status, value => { if (chosenStatus.value === value) chosenStatus.value = null; });
 const toggleStar = () => patch({ starred: !response.value.starred });
 async function saveNote() {
   savingNote.value = true;
@@ -171,8 +185,11 @@ onBeforeUnmount(() => { stopLive?.(); window.removeEventListener('keydown', keys
       <div class="review-panel">
         <div class="review-row">
           <span class="field-label">{{ t('responses.status') }}</span>
-          <div class="status-picker" role="radiogroup" :aria-label="t('responses.status')">
-            <button v-for="status in statuses" :key="status" type="button" role="radio" :aria-checked="response.status === status" :class="{ active: response.status === status }" :disabled="!writable" @click="setStatus(status)"><StatusBadge :status="status" /></button>
+          <div class="status-line">
+            <div class="status-picker" role="radiogroup" :aria-label="t('responses.status')">
+              <button v-for="status in statuses" :key="status" type="button" role="radio" :aria-checked="shownStatus === status" :class="{ active: shownStatus === status, current: chosenStatus && response.status === status }" :disabled="!writable" @click="chooseStatus(status)"><StatusBadge :status="status" /></button>
+            </div>
+            <button v-if="writable" type="button" class="button small status-apply" :class="{ primary: chosenStatus }" :disabled="!chosenStatus || savingStatus" @click="applyStatus"><AppIcon name="check" :size="14" />{{ t('responses.applyStatus') }}</button>
           </div>
           <label v-if="canEmail && writable" class="check-row small"><input v-model="notifyStatus" type="checkbox" />{{ t('ticket.notifyOnStatus', { email: response.contactEmail }) }}</label>
         </div>

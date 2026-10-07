@@ -1580,5 +1580,6 @@
   "system.viewAll": "查看全部",
   "backups.snapshots": "备份快照",
   "captcha.appearance": "外观",
-  "captcha.capRouteBadge": "Cap 失败时使用"
+  "captcha.capRouteBadge": "Cap 失败时使用",
+  "responses.applyStatus": "确认更改"
 }

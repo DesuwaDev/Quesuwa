@@ -1635,6 +1635,21 @@
         "kind": "literal",
         "value": "closed",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "/admin/responses/${}/follow-up",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "reissue",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "revoke",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       }
     ],
     "dynamicKeys": [
@@ -6582,6 +6597,11 @@
         "kind": "literal",
         "value": "UPDATE responses SET status=? WHERE status=?",
         "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "access_generation",
+        "reason": "SQLite table or column name used by schema migrations."
       }
     ]
   },
@@ -7766,6 +7786,31 @@
       {
         "kind": "literal",
         "value": "zip",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/responses/:id/follow-up",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "revoke",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "reissue",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "ticketLinkRevoked",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "ticketLinkReissued",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       }
     ]
@@ -9657,6 +9702,31 @@
         "kind": "literal",
         "value": "DELETE FROM messages WHERE response_id=?",
         "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "UPDATE responses SET access_hash=NULL WHERE id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT access_generation FROM responses WHERE id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "UPDATE responses SET access_generation=?, access_hash=? WHERE id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT max(created_at) AS at FROM messages WHERE response_id=? AND author='staff'",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT count(*) AS n FROM messages WHERE response_id=? AND author='respondent' AND created_at > ?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
       }
     ]
   },
@@ -10609,6 +10679,11 @@
       {
         "kind": "literal",
         "value": "environmentNotice",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "mailExcerpts",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       }
     ]

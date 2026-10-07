@@ -65,12 +65,14 @@ export function ticketRoutes({ db, forms, storage, tickets, webhooks, notifier, 
 
   // The key is checked before any upload is read.
   const authorised = (req, _res, next) => { tickets.open(req.params.id, key(req)); next(); };
-  router.post('/:id/messages', limiter(60 * 60_000, 30), authorised, messageBody, async (req, res) => {
+  // Per address this only stops floods across tickets; each ticket has its own allowance.
+  router.post('/:id/messages', limiter(60 * 60_000, 120), authorised, messageBody, async (req, res) => {
     const row = tickets.open(req.params.id, key(req));
     // Already stored by an earlier attempt whose answer was lost: report the current state.
     if (tickets.recall(row.id, req.get('idempotency-key'))) return res.status(201).json(view(row));
     const current = view(row);
     if (!current.canReply) throw fail(410, current.closed ? 'errors.ticketLocked' : 'errors.ticketClosed');
+    tickets.assertRespondentQuota(row.id);
     if (req.files?.length && !current.files.allowed) throw fail(403, 'errors.ticketFilesOff');
     const { attachments, rollback } = await storeMessageFiles(storage, req.files);
     let message;

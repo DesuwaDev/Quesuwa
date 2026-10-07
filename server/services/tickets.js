@@ -3,6 +3,8 @@ import { fail } from '../errors.js';
 import { createLive } from '../lib/live.js';
 
 export const MESSAGE_MAX = 5000;
+export const RESPONDENT_BURST = 30;
+const RESPONDENT_WINDOW_MS = 60 * 60_000;
 const digest = value => createHash('sha256').update(String(value)).digest();
 
 export function createTickets(db) {
@@ -17,12 +19,36 @@ export function createTickets(db) {
     secret = randomBytes(32).toString('hex');
     db.prepare("INSERT INTO settings(key, value) VALUES ('ticketSecret', ?)").run(JSON.stringify(secret));
   }
-  const keyFor = id => createHmac('sha256', secret).update(id).digest('base64url').slice(0, 32);
+  // Generation 0 keeps the original derivation, so links already sent keep working.
+  const keyFor = (id, generation = 0) => createHmac('sha256', secret).update(generation ? `${id}#${generation}` : id).digest('base64url').slice(0, 32);
 
-  const issueKey = id => ({ key: keyFor(id), hash: digest(keyFor(id)).toString('hex') });
+  const issueKey = (id, generation = 0) => ({ key: keyFor(id, generation), hash: digest(keyFor(id, generation)).toString('hex') });
 
   // Keys from before derivation existed cannot be recreated; those links still work.
-  const linkKey = row => row?.access_hash && timingSafeEqual(digest(keyFor(row.id)), Buffer.from(row.access_hash, 'hex')) ? keyFor(row.id) : null;
+  const linkKey = row => {
+    const key = row?.access_hash ? keyFor(row.id, row.access_generation || 0) : null;
+    return key && timingSafeEqual(digest(key), Buffer.from(row.access_hash, 'hex')) ? key : null;
+  };
+
+  // Staff can cut a follow-up link off, or replace it: a new generation invalidates every
+  // earlier link. Open respondent pages re-check their key on the change and stop.
+  function revokeLink(responseId) {
+    db.prepare('UPDATE responses SET access_hash=NULL WHERE id=?').run(responseId);
+    live.changed(responseId);
+  }
+  function reissueLink(responseId) {
+    const generation = (db.prepare('SELECT access_generation FROM responses WHERE id=?').get(responseId)?.access_generation || 0) + 1;
+    db.prepare('UPDATE responses SET access_generation=?, access_hash=? WHERE id=?').run(generation, issueKey(responseId, generation).hash, responseId);
+    live.changed(responseId);
+  }
+
+  // Respondents get a burst of messages per hour, and a staff reply starts a fresh allowance.
+  function assertRespondentQuota(responseId, now = Date.now()) {
+    const lastStaff = db.prepare("SELECT max(created_at) AS at FROM messages WHERE response_id=? AND author='staff'").get(responseId)?.at;
+    const since = new Date(Math.max(now - RESPONDENT_WINDOW_MS, lastStaff ? Date.parse(lastStaff) : 0)).toISOString();
+    const sent = db.prepare("SELECT count(*) AS n FROM messages WHERE response_id=? AND author='respondent' AND created_at > ?").get(responseId, since).n;
+    if (sent >= RESPONDENT_BURST) throw fail(429, 'errors.ticketTooFast');
+  }
 
   function open(id, key) {
     const row = typeof id === 'string' ? db.prepare('SELECT * FROM responses WHERE id=? AND deleted_at IS NULL AND access_hash IS NOT NULL').get(id) : null;
@@ -139,5 +165,5 @@ export function createTickets(db) {
     }
   };
 
-  return { issueKey, linkKey, open, messages, publicMessages, add, edit, retract, markRead, fileOf, setDelivery, find, removeFor, revision, recall, remember, changed: live.changed, wait: live.wait, release: live.release };
+  return { issueKey, linkKey, revokeLink, reissueLink, assertRespondentQuota, open, messages, publicMessages, add, edit, retract, markRead, fileOf, setDelivery, find, removeFor, revision, recall, remember, changed: live.changed, wait: live.wait, release: live.release };
 }

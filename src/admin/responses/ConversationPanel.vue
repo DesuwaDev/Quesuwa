@@ -132,6 +132,23 @@ const keys = event => { if ((event.ctrlKey || event.metaKey) && event.key === 'E
 async function copyFollowUp() {
   if (await copyText(props.response.followUpUrl)) notify('ticket.linkCopied');
 }
+// A new link makes every earlier one stop working; revoking leaves the respondent with none.
+async function changeLink(action, doneKey) {
+  try {
+    const data = await api(`/admin/responses/${props.response.id}/follow-up`, { method: 'POST', body: { action } });
+    props.response.followUpUrl = data.followUpUrl;
+    props.response.ticket = data.ticket;
+    notify(doneKey);
+  } catch (reason) { notifyError(reason); }
+}
+async function reissueLink() {
+  if (props.response.followUpUrl && !(await confirmDialog({ titleKey: 'ticket.reissueLink', messageKey: 'ticket.reissueConfirm', confirmKey: 'ticket.reissueLink' }))) return;
+  await changeLink('reissue', 'ticket.linkReissued');
+}
+async function revokeLink() {
+  if (!(await confirmDialog({ titleKey: 'ticket.revokeLink', messageKey: 'ticket.revokeConfirm', confirmKey: 'ticket.revokeLink', danger: true }))) return;
+  await changeLink('revoke', 'ticket.linkRevoked');
+}
 defineExpose({ scrollToEnd });
 </script>
 
@@ -141,9 +158,13 @@ defineExpose({ scrollToEnd });
       <AppIcon name="message" :size="16" /><strong>{{ t('ticket.conversation') }}</strong>
       <span class="spacer"></span>
       <button v-if="response.followUpUrl" type="button" class="text-button small" @click="copyFollowUp"><AppIcon name="link" :size="14" />{{ t('ticket.copyRespondentLink') }}</button>
+      <MenuButton v-if="writable && response.canIssueLink" :label="t('ticket.linkActions')" icon="more" button-class="icon-button ghost small">
+        <button type="button" class="menu-item" @click="reissueLink"><AppIcon name="link" :size="16" />{{ response.followUpUrl ? t('ticket.reissueLink') : t('ticket.issueLink') }}</button>
+        <button v-if="response.followUpUrl" type="button" class="menu-item danger" @click="revokeLink"><AppIcon name="trash" :size="16" />{{ t('ticket.revokeLink') }}</button>
+      </MenuButton>
     </header>
     <ToggleSwitch v-if="response.ticket && response.filesAllowed && writable" class="compact" :model-value="!response.filesDisabled" :label="t('ticket.respondentFiles')" :hint="t('ticket.respondentFilesHint')" @update:model-value="setFiles" />
-    <p class="muted small">{{ response.ticket ? t('ticket.adminHint') : t('ticket.emailOnlyHint') }}</p>
+    <p class="muted small">{{ response.ticket ? t('ticket.adminHint') : response.canIssueLink ? t('ticket.linkRevokedHint') : t('ticket.emailOnlyHint') }}</p>
     <div ref="thread" class="ticket-thread compact" @scroll.passive="trackScroll">
       <p v-if="!response.messages.length" class="muted small">{{ t('ticket.adminEmpty') }}</p>
       <template v-for="message in response.messages" :key="message.id">

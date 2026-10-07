@@ -181,6 +181,7 @@ onMounted(() => { loadDeliveries(); loadMessaging(); });
             <small class="hint">{{ emailFields.length ? t('formNotify.contactHint') : t('formNotify.contactMissing') }}</small>
           </label>
           <ToggleSwitch v-model="settings.sendReceipt" :label="t('formNotify.receipt')" :hint="t('formNotify.receiptHint')" :disabled="readonly || settings.contactField === 'none'" />
+          <ToggleSwitch v-model="settings.mailExcerpts" :label="t('formNotify.excerpts')" :hint="t('formNotify.excerptsHint')" :disabled="readonly || settings.contactField === 'none'" />
           <p v-if="messaging.loaded && !messaging.mail" class="hint small"><AppIcon name="info" :size="14" /><span>{{ t('formNotify.noMail') }} <a v-if="allowed('system.read')" href="/admin/notifications" @click="linkHandler('/admin/notifications')($event)">{{ t('formNotify.configure') }}</a></span></p>
         </div>
       </div>

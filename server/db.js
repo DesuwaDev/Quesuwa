@@ -99,7 +99,9 @@ const migrations = [
     addColumn(db, 'messages', 'attachments', "TEXT NOT NULL DEFAULT '[]'");
     // Staff can stop a single conversation from accepting respondent files.
     addColumn(db, 'responses', 'files_disabled', 'INTEGER NOT NULL DEFAULT 0');
-  }
+  },
+  // Reissuing a follow-up link bumps this, so every earlier link stops working.
+  db => addColumn(db, 'responses', 'access_generation', 'INTEGER NOT NULL DEFAULT 0')
 ];
 
 export function openDatabase(dataDir) {

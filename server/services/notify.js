@@ -354,7 +354,8 @@ ${signatureText ? `<p style="margin:16px 0 0;font-size:14px;line-height:1.6;colo
     const to = settingsOfForm.sendReceipt && mailReady() ? recipientFor(form, row) : '';
     if (to) {
       const locale = respondentLocale(row);
-      const { rows, more } = answerRows(locale, fields, answers, attachments);
+      // Without excerpts the receipt only confirms; the answers stay behind the follow-up link.
+      const { rows, more } = settingsOfForm.mailExcerpts ? answerRows(locale, fields, answers, attachments) : { rows: [], more: 0 };
       const params = { title: form.title, id: shortId(row.id) };
       const link = followUpLink(origin, row, form);
       const content = renderEmail(locale, {
@@ -383,7 +384,7 @@ ${signatureText ? `<p style="margin:16px 0 0;font-size:14px;line-height:1.6;colo
     const content = renderEmail(locale, {
       heading: tr(locale, reply ? 'notify.staffHeading' : 'notify.statusHeading'),
       intro: tr(locale, reply ? 'notify.staffIntro' : 'notify.statusIntro', params),
-      quote: reply ? messageText(locale, message) + '\n\n' + tr(locale, 'notify.currentStatus', params) : '',
+      quote: reply ? (normalizeSettings(form.settings).mailExcerpts ? messageText(locale, message) + '\n\n' : '') + tr(locale, 'notify.currentStatus', params) : '',
       button: link ? { text: tr(locale, 'notify.openTicket'), url: link } : null,
       footer: tr(locale, 'notify.footerRespondent', { title: form.title }),
       signature: true
@@ -444,7 +445,7 @@ ${signatureText ? `<p style="margin:16px 0 0;font-size:14px;line-height:1.6;colo
     const content = renderEmail(locale, {
       heading: tr(locale, replies.length ? 'notify.staffHeading' : 'notify.statusHeading'),
       intro: tr(locale, replies.length > 1 ? 'notify.staffIntroMany' : replies.length ? 'notify.staffIntro' : 'notify.statusIntro', params),
-      quote: lines.join('\n\n') + '\n\n' + tr(locale, 'notify.currentStatus', params),
+      quote: (normalizeSettings(form.settings).mailExcerpts ? lines.join('\n\n') + '\n\n' : '') + tr(locale, 'notify.currentStatus', params),
       button: link ? { text: tr(locale, 'notify.openTicket'), url: link } : null,
       footer: tr(locale, 'notify.footerRespondent', { title: form.title }),
       signature: true

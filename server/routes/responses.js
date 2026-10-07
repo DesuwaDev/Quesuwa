@@ -21,8 +21,9 @@ export function responseRoutes({ db, forms, storage, audit, auth, tickets, notif
     return row;
   };
   const origin = req => `${req.protocol}://${req.get('host')}`;
-  // A conversation exists when the respondent can read it (ticket) or be emailed.
-  const conversable = (form, row) => Boolean(row.access_hash) || Boolean(form && notifier.recipientFor(form, row));
+  const ticketForm = form => Boolean(form) && normalizeSettings(form.settings).ticketMode;
+  // A conversation exists when the respondent can read it (ticket, or one that can be reissued) or be emailed.
+  const conversable = (form, row) => Boolean(row.access_hash) || ticketForm(form) || Boolean(form && notifier.recipientFor(form, row));
   // Status changes are kept in the conversation as a progress timeline.
   function recordStatus(form, row, status) {
     if (status === row.status || !conversable(form, row)) return null;
@@ -48,9 +49,24 @@ export function responseRoutes({ db, forms, storage, audit, auth, tickets, notif
     const contact = form ? notifier.recipientFor(form, row) : '';
     const followUp = form ? notifier.followUpLink(origin(req), row, form) : '';
     res.json({
-      ...response, formTitle: form?.title || response.snapshot.title, contactEmail: contact, followUpUrl: followUp, conversation: Boolean(form) && conversable(form, row),
+      ...response, formTitle: form?.title || response.snapshot.title, contactEmail: contact, followUpUrl: followUp, canIssueLink: ticketForm(form), conversation: Boolean(form) && conversable(form, row),
       messages: tickets.messages(response.id), rev: tickets.revision(response.id), ...fileState(form, row)
     });
+  });
+
+  // Revoke the respondent's follow-up link, or issue a new one (earlier links stop working).
+  router.post('/responses/:id/follow-up', write, (req, res) => {
+    const row = findResponse(req.params.id);
+    if (row.deleted_at) throw fail(404, 'errors.responseNotFound');
+    const form = forms.get(row.form_id);
+    if (!ticketForm(form)) throw fail(400, 'errors.badRequest');
+    const action = req.body?.action;
+    if (action === 'revoke') tickets.revokeLink(row.id);
+    else if (action === 'reissue') tickets.reissueLink(row.id);
+    else throw fail(400, 'errors.badRequest');
+    audit(req, action === 'revoke' ? 'ticketLinkRevoked' : 'ticketLinkReissued', row.id, form.title);
+    const updated = findResponse(row.id);
+    res.json({ ticket: Boolean(updated.access_hash), followUpUrl: notifier.followUpLink(origin(req), updated, form) });
   });
 
   // Whether respondents may attach files: the questionnaire setting and this conversation's switch.

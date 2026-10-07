@@ -69,7 +69,7 @@ const printPage = () => window.print();
         </div>
         <div class="stat-tile">
           <span class="stat-label"><AppIcon name="checkCircle" :size="15" />{{ t('stats.resolved') }}</span>
-          <strong class="stat-value">{{ formatPercent(stats.byStatus.resolved || 0, stats.total) }}</strong>
+          <strong class="stat-value">{{ formatPercent((stats.byStatus.resolved || 0) + (stats.byStatus.closed || 0), stats.total) }}</strong>
           <span class="stat-foot">{{ t('stats.pendingCount', { count: formatNumber(stats.byStatus.pending || 0) }) }}</span>
         </div>
       </section>

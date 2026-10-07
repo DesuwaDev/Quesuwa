@@ -6,6 +6,7 @@ import { formatAnswer } from '../../shared/answers.js';
 import { statusKeys } from '../../shared/constants.js';
 import { fail } from '../errors.js';
 import { contactEmail } from './responses.js';
+import { environmentSummary } from '../../shared/environment.js';
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const smtpDefaults = { enabled: false, host: '', port: 465, security: 'tls', user: '', pass: '', fromName: '', fromAddress: '' };
@@ -330,6 +331,9 @@ ${signatureText ? `<p style="margin:16px 0 0;font-size:14px;line-height:1.6;colo
     if (settingsOfForm.notifyAdmins && config.events.newResponse && alertsReady()) {
       const locale = adminLocale();
       const { rows, more } = answerRows(locale, fields, answers, attachments);
+      // Diagnostics go first so triage can start from the alert itself.
+      const environment = row.environment ? environmentSummary(JSON.parse(row.environment)) : '';
+      if (environment) rows.unshift({ label: tr(locale, 'environment.title'), value: environment });
       const params = { title: form.title, id: shortId(row.id) };
       alertAdmins('response.created', { formId: form.id, eventKey: 'newResponse', title: form.title, id: row.id, subject: tr(locale, 'notify.newSubject', params), heading: tr(locale, 'notify.newHeading'), intro: tr(locale, 'notify.newIntro', params), rows, more, link: adminLink(origin, form.id, row.id) });
     }

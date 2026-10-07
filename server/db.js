@@ -82,7 +82,9 @@ const migrations = [
     // Personal API tokens (only a hash is stored).
     db.exec(`CREATE TABLE IF NOT EXISTS api_tokens (id TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, name TEXT NOT NULL,
         token_hash TEXT NOT NULL UNIQUE, prefix TEXT NOT NULL, scope TEXT NOT NULL, created_at TEXT NOT NULL, last_used_at TEXT, expires_at TEXT);`);
-  }
+  },
+  // Browser diagnostics attached by questionnaires that ask for them (JSON, empty when not collected).
+  db => addColumn(db, 'responses', 'environment', "TEXT NOT NULL DEFAULT ''")
 ];
 
 export function openDatabase(dataDir) {

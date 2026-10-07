@@ -17,6 +17,8 @@ const errorId = computed(() => error.value ? 'error-' + props.field.id : undefin
 const describedBy = computed(() => [hintId.value, errorId.value].filter(Boolean).join(' ') || undefined);
 const textTypes = ['short', 'long', 'email', 'phone', 'url', 'number', 'date', 'time'];
 const scaleTypes = ['rating', 'scale', 'nps'];
+// The note stays until the respondent changes the value that came from the link.
+const prefilled = computed(() => props.state.prefilled?.[props.field.id] !== undefined && JSON.stringify(props.state.answers[props.field.id]) === props.state.prefilled[props.field.id]);
 </script>
 
 <template>
@@ -31,6 +33,7 @@ const scaleTypes = ['rating', 'scale', 'nps'];
       <span v-if="!field.required" class="optional-tag">{{ t('common.optional') }}</span>
     </legend>
     <p v-if="field.description" :id="hintId" class="question-hint preserve">{{ field.description }}</p>
+    <p v-if="prefilled" class="prefill-note"><AppIcon name="link" :size="13" />{{ t('form.prefilled') }}</p>
     <TextAnswer v-if="textTypes.includes(field.type)" :field="field" :state="state" :disabled="disabled" :described-by="describedBy" :invalid="Boolean(error)" />
     <ChoiceAnswer v-else-if="field.type === 'single' || field.type === 'multi'" :field="field" :state="state" :seed="seed" :disabled="disabled" :described-by="describedBy" />
     <SelectAnswer v-else-if="field.type === 'select'" :field="field" :state="state" :seed="seed" :disabled="disabled" :described-by="describedBy" :invalid="Boolean(error)" />

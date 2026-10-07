@@ -1,6 +1,7 @@
 import { answerable } from '../../shared/schema.js';
 import { formatAnswer } from '../../shared/answers.js';
 import { statusKeys } from '../../shared/constants.js';
+import { environmentSummary } from '../../shared/environment.js';
 import { t } from '../i18n.js';
 import { parseResponse } from './responses.js';
 
@@ -71,6 +72,14 @@ export function streamCsv(db, res, form, filter, long) {
   }
   const snapshots = db.prepare(`SELECT DISTINCT snapshot FROM responses WHERE ${filter.where}`).all(...filter.params).map(row => JSON.parse(row.snapshot));
   const columns = wideColumns(form, snapshots);
+  // Diagnostic columns appear only when some exported response carries them.
+  if (db.prepare(`SELECT 1 FROM responses WHERE ${filter.where} AND environment<>'' LIMIT 1`).get(...filter.params)) {
+    columns.push(
+      { header: t('csv.environment'), value: response => environmentSummary(response.environment) },
+      { header: t('csv.referrer'), value: response => response.environment?.referrer || '' },
+      { header: t('csv.userAgent'), value: response => response.environment?.userAgent || '' }
+    );
+  }
   res.write(csvLine([t('csv.id'), t('csv.time'), t('csv.status'), t('csv.starred'), t('csv.duration'), t('csv.note'), ...columns.map(column => column.header)]));
   for (const row of rows()) {
     const response = parseResponse(row);
@@ -93,6 +102,7 @@ export function streamJson(db, res, form, filter) {
       durationMs: response.durationMs,
       locale: response.locale,
       formVersion: response.snapshot.version,
+      ...(response.environment ? { environment: response.environment } : {}),
       answers: response.snapshot.fields.filter(answerable).map(field => ({
         fieldId: field.id,
         type: field.type,

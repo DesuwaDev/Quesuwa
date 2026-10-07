@@ -4,6 +4,7 @@ import { randomUUID, createHash, timingSafeEqual } from 'node:crypto';
 import { normalizeSettings, answerable } from '../../shared/schema.js';
 import { visibleFields, checkAnswer } from '../../shared/answers.js';
 import { LIMITS } from '../../shared/constants.js';
+import { cleanEnvironment } from '../../shared/environment.js';
 import { normalizeLocale } from '../../i18n/core.js';
 import { fail } from '../errors.js';
 import { t } from '../i18n.js';
@@ -111,14 +112,15 @@ export function publicRoutes({ db, forms, storage, webhooks, tickets, notifier, 
     if (latest.version !== form.version) throw fail(409, 'errors.formChanged');
     storage.ensureCapacity(files.reduce((sum, file) => sum + file.size, 0));
     const duration = Number.parseInt(req.body.duration, 10);
-    const response = { id: randomUUID(), createdAt: new Date().toISOString(), answers, attachments };
+    const environment = settings.collectEnvironment ? JSON.stringify(cleanEnvironment(req.body.environment, req.get('user-agent'))) : '';
+    const response = { id: randomUUID(), createdAt: new Date().toISOString(), answers, attachments, environment: environment ? JSON.parse(environment) : null };
     const ticket = settings.ticketMode ? tickets.issueKey(response.id) : null;
     const rollback = storage.write(attachments, files.map(file => file.buffer));
     try {
-      db.prepare('INSERT INTO responses (id, form_id, snapshot, answers, attachments, created_at, status, duration_ms, locale, access_hash, last_activity_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)').run(
+      db.prepare('INSERT INTO responses (id, form_id, snapshot, answers, attachments, created_at, status, duration_ms, locale, access_hash, last_activity_at, environment) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)').run(
         response.id, form.id, JSON.stringify({ id: form.id, slug: form.slug, title: form.title, version: form.version, fields: form.fields }), JSON.stringify(answers), JSON.stringify(attachments), response.createdAt, 'pending',
         Number.isInteger(duration) && duration > 0 && duration < 7 * 24 * 3600_000 ? duration : null,
-        normalizeLocale(req.body.locale) || '', ticket?.hash ?? null, response.createdAt);
+        normalizeLocale(req.body.locale) || '', ticket?.hash ?? null, response.createdAt, environment);
     } catch (error) { rollback(); throw error; }
     if (settings.onePerDevice) res.cookie(deviceCookie(form.id), '1', { httpOnly: true, sameSite: 'lax', secure: secureCookie(req), path: '/api/forms', maxAge: 365 * 24 * 3600_000 });
     webhooks.responseCreated(form, response);

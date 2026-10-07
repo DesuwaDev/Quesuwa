@@ -1,5 +1,5 @@
 <script setup>
-import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import { t, locale, displayError } from '../i18n.js';
 import { api } from '../lib/api.js';
 import { storage } from '../lib/storage.js';
@@ -7,6 +7,11 @@ import { notify } from '../lib/feedback.js';
 import { formatDate } from '../lib/format.js';
 import { visibleFields, paginate, checkAnswer } from '../../shared/answers.js';
 import { answerable } from '../../shared/schema.js';
+import { parseAgent } from '../../shared/environment.js';
+import { route } from '../lib/router.js';
+import { readPrefill } from '../lib/prefill.js';
+import { collectEnvironment } from '../lib/environment.js';
+import { addFiles, namePasted } from './fields/files.js';
 import AppIcon from '../components/AppIcon.vue';
 import QuestionField from './QuestionField.vue';
 
@@ -16,7 +21,7 @@ const emit = defineEmits(['submitted', 'expired']);
 const settings = computed(() => props.form.settings || {});
 const draftKey = computed(() => 'quesuwa.draft.' + props.form.id);
 const canSaveDraft = computed(() => !props.preview && settings.value.saveProgress !== false);
-const state = reactive({ answers: {}, others: {}, uploads: {}, errors: {} });
+const state = reactive({ answers: {}, others: {}, uploads: {}, errors: {}, prefilled: {} });
 const pageIndex = ref(0), busy = ref(false), formError = ref(null), consent = ref(false), website = ref(''), restored = ref(false);
 const root = ref(null);
 const seed = String(Math.random());
@@ -27,6 +32,7 @@ function reset() {
   state.answers = {};
   state.uploads = {};
   state.errors = {};
+  state.prefilled = {};
   state.others = Object.fromEntries(props.form.fields.filter(field => field.allowOther).map(field => [field.id, { selected: false, text: '' }]));
   pageIndex.value = 0;
   consent.value = false;
@@ -43,6 +49,46 @@ if (canSaveDraft.value) {
     restored.value = Object.keys(draft.answers).length > 0;
   }
 }
+
+// Values from the link win over a saved draft; the question stays visible and is marked for confirmation.
+function applyPrefill() {
+  if (props.preview) return;
+  for (const [id, value] of Object.entries(readPrefill(props.form.fields, route.query))) {
+    state.answers[id] = value;
+    if (state.others[id]) state.others[id].selected = false;
+    state.prefilled[id] = JSON.stringify(value);
+  }
+}
+applyPrefill();
+
+// Diagnostics shown to the respondent before they are sent.
+const environmentPreview = computed(() => {
+  if (!settings.value.collectEnvironment) return [];
+  const env = collectEnvironment();
+  const { browser, system } = parseAgent(env.userAgent);
+  return [
+    ['environment.browser', [browser, system].filter(Boolean).join(' · ') || env.userAgent],
+    ['environment.screen', `${env.screen.replace('x', '×')} · ${env.viewport.replace('x', '×')}`],
+    ['environment.locale', [env.language, env.timeZone].filter(Boolean).join(' · ')],
+    ['environment.referrer', env.referrer]
+  ].filter(([, value]) => value);
+});
+
+// Pasting an image anywhere on the page attaches it to the file question being answered.
+function paste(event) {
+  if (busy.value) return;
+  const files = [...(event.clipboardData?.files || [])];
+  if (!files.length) return;
+  const candidates = current.value.fields.filter(field => field.type === 'file');
+  const target = event.target?.closest?.('[data-field]')?.dataset.field;
+  const field = candidates.find(item => item.id === target) || candidates[0];
+  if (!field) return;
+  event.preventDefault();
+  if (addFiles(field, state, files.map(namePasted))) notify('form.pasted', { type: 'info', params: { count: files.length, label: field.label } });
+  else focusField(field.id);
+}
+onMounted(() => window.addEventListener('paste', paste));
+onBeforeUnmount(() => window.removeEventListener('paste', paste));
 
 let saveTimer = null;
 watch(() => [state.answers, state.others], () => {
@@ -169,6 +215,7 @@ async function submit() {
     body.append('website', website.value);
     body.append('duration', String(Date.now() - started));
     body.append('locale', locale.value);
+    if (settings.value.collectEnvironment) body.append('environment', JSON.stringify(collectEnvironment()));
     if (props.accessCode) body.append('accessCode', props.accessCode);
     for (const field of questions.value) {
       if (field.type !== 'file') continue;
@@ -192,6 +239,7 @@ async function submit() {
 function discardDraft() {
   storage.remove(draftKey.value);
   reset();
+  applyPrefill();
   restored.value = false;
 }
 const outdated = computed(() => ['errors.versionConflict', 'errors.formChanged'].includes(formError.value?.code));
@@ -249,6 +297,12 @@ const outdated = computed(() => ['errors.versionConflict', 'errors.formChanged']
     </div>
 
     <div class="form-footer">
+      <details v-if="isLast && environmentPreview.length && !preview" class="environment-note">
+        <summary><AppIcon name="monitor" :size="14" />{{ t('environment.notice') }}</summary>
+        <dl>
+          <div v-for="[key, value] in environmentPreview" :key="key"><dt>{{ t(key) }}</dt><dd>{{ value }}</dd></div>
+        </dl>
+      </details>
       <p v-if="formError" class="form-error" role="alert">
         <AppIcon name="alert" :size="16" />
         <span>{{ displayError(formError) }}</span>

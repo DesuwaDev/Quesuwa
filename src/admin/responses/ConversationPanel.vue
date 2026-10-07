@@ -96,6 +96,7 @@ defineExpose({ scrollToEnd });
         </div>
       </template>
     </div>
+    <p v-if="response.status === 'closed'" class="hint small"><AppIcon name="lock" :size="14" />{{ t('ticket.lockedStaff') }}</p>
     <form v-if="writable" class="ticket-composer" @submit.prevent="send">
       <textarea v-model="reply" class="input textarea autosize" rows="2" maxlength="5000" :placeholder="t('ticket.adminPlaceholder')" :aria-label="t('ticket.adminPlaceholder')" @keydown="keys"></textarea>
       <div class="ticket-composer-foot">

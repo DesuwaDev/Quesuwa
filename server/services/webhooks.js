@@ -37,7 +37,8 @@ export function createWebhooks(db) {
         type: field.type,
         label: field.label,
         value: field.type === 'file' ? response.attachments.filter(a => a.fieldId === field.id).map(({ name, mime, size }) => ({ name, mime, size })) : response.answers[field.id] ?? null
-      }))
+      })),
+      ...(response.environment ? { environment: response.environment } : {})
     };
     send(form, 'response.created', data).catch(error => console.error(error));
   }

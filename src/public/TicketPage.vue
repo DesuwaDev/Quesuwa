@@ -132,6 +132,10 @@ const answerOf = field => field.type === 'file'
             <button type="submit" class="button primary" :disabled="sending || !draft.trim()"><AppIcon name="send" :size="16" />{{ sending ? t('form.submitting') : t('ticket.send') }}</button>
           </div>
         </form>
+        <p v-else-if="ticket.closed" class="banner ticket-locked">
+          <AppIcon name="lock" :size="16" /><span>{{ t('ticket.locked') }}</span>
+          <a v-if="ticket.formSlug" class="text-button small" :href="'/f/' + ticket.formSlug">{{ t('ticket.newReport') }}</a>
+        </p>
         <p v-else class="banner"><AppIcon name="lock" :size="16" />{{ t('ticket.closed') }}</p>
       </section>
 

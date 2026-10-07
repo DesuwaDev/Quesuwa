@@ -8,6 +8,7 @@ import { formatDate, formatDuration, formatBytes, shortId } from '../../lib/form
 import { statuses } from '../../../shared/constants.js';
 import { answerable } from '../../../shared/schema.js';
 import { isAnswered, isOtherValue } from '../../../shared/answers.js';
+import { parseAgent, environmentSummary } from '../../../shared/environment.js';
 import AppIcon from '../../components/AppIcon.vue';
 import StatusBadge from '../../components/StatusBadge.vue';
 import { answerText } from './format.js';
@@ -27,6 +28,31 @@ const files = fieldId => response.value.attachments.filter(file => file.fieldId 
 const fileUrl = file => '/api/admin/responses/' + response.value.id + '/files/' + file.id;
 const isImage = file => /^image\/(png|jpeg|webp|gif)$/.test(file.mime);
 const safeUrl = value => /^https?:\/\//i.test(value) ? value : '';
+// Browser diagnostics, when the questionnaire collected them.
+const environmentRows = computed(() => {
+  const env = response.value?.environment;
+  if (!env) return [];
+  const { browser, system } = parseAgent(env.userAgent);
+  let localTime = '';
+  try { if (env.timeZone) localTime = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short', timeZone: env.timeZone }).format(new Date(response.value.createdAt)); } catch { localTime = ''; }
+  return [
+    ['environment.browser', browser],
+    ['environment.system', [system, env.platform && !system.startsWith(env.platform) ? env.platform : ''].filter(Boolean).join(' · ')],
+    ['environment.device', [t(env.mobile ? 'environment.mobile' : 'environment.desktop'), env.touch ? t('environment.touch') : ''].filter(Boolean).join(' · ')],
+    ['environment.screenSize', env.screen && env.screen.replace('x', '×') + (env.pixelRatio ? ` @${env.pixelRatio}x` : '')],
+    ['environment.viewport', env.viewport && env.viewport.replace('x', '×')],
+    ['environment.language', env.language],
+    ['environment.timeZone', [env.timeZone, localTime && t('environment.localTime', { time: localTime })].filter(Boolean).join(' · ')],
+    ['environment.theme', env.colorScheme && t(env.colorScheme === 'dark' ? 'environment.dark' : 'environment.light')],
+    ['environment.referrer', env.referrer],
+    ['environment.page', env.page]
+  ].filter(([, value]) => value);
+});
+async function copyEnvironment() {
+  const lines = environmentRows.value.map(([key, value]) => `${t(key)}: ${value}`);
+  lines.push(`${t('environment.userAgent')}: ${response.value.environment.userAgent}`);
+  if (await copyText(lines.join('\n'))) notify('share.copied');
+}
 const languageKey = code => ({ 'zh-CN': 'language.zhCN', en: 'language.en' })[code];
 
 async function load() {
@@ -115,6 +141,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', keys));
         <span v-if="response.durationMs"><AppIcon name="activity" :size="14" />{{ t('responses.duration', { time: formatDuration(response.durationMs) }) }}</span>
         <span v-if="languageKey(response.locale)"><AppIcon name="globe" :size="14" />{{ t(languageKey(response.locale)) }}</span>
         <span v-if="response.contactEmail"><AppIcon name="mail" :size="14" /><a :href="'mailto:' + response.contactEmail">{{ response.contactEmail }}</a></span>
+        <span v-if="response.environment"><AppIcon name="monitor" :size="14" />{{ environmentSummary(response.environment) }}</span>
         <span><AppIcon name="layers" :size="14" />{{ t('responses.version', { version: response.snapshot.version }) }}</span>
         <span v-if="response.deletedAt" class="badge muted">{{ t('responses.inTrash') }}</span>
       </div>
@@ -169,6 +196,24 @@ onBeforeUnmount(() => window.removeEventListener('keydown', keys));
           <dd v-else class="preserve">{{ answerText(field, response.answers[field.id]) }}<small v-if="isOtherValue(field, response.answers[field.id])" class="answer-chip-tag">{{ t('form.other') }}</small></dd>
         </div>
       </dl>
+
+      <section v-if="response.environment" class="environment-panel">
+        <header>
+          <h3><AppIcon name="monitor" :size="16" />{{ t('environment.title') }}</h3>
+          <button type="button" class="button ghost small" @click="copyEnvironment"><AppIcon name="copy" :size="14" />{{ t('environment.copy') }}</button>
+        </header>
+        <dl>
+          <div v-for="[key, value] in environmentRows" :key="key">
+            <dt>{{ t(key) }}</dt>
+            <dd v-if="key === 'environment.referrer' && safeUrl(value)"><a :href="safeUrl(value)" target="_blank" rel="noopener noreferrer nofollow">{{ value }}</a></dd>
+            <dd v-else>{{ value }}</dd>
+          </div>
+        </dl>
+        <details>
+          <summary>{{ t('environment.userAgent') }}</summary>
+          <code class="mono">{{ response.environment.userAgent }}</code>
+        </details>
+      </section>
 
       <footer class="detail-foot">
         <button type="button" class="button ghost small" @click="copyLink"><AppIcon name="link" :size="14" />{{ t('responses.copyLink') }}</button>

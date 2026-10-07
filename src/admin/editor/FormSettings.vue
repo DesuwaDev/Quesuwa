@@ -117,6 +117,16 @@ onMounted(() => { loadDeliveries(); loadMessaging(); });
         </div>
       </div>
       <ToggleSwitch v-model="settings.ticketMode" :label="t('settings.ticketMode')" :hint="t('settings.ticketModeHint')" :disabled="readonly" />
+      <label v-if="settings.ticketMode" class="field">
+        <span class="field-label">{{ t('settings.autoClose') }}</span>
+        <select v-model.number="settings.autoCloseDays" class="input select" :disabled="readonly">
+          <option :value="0">{{ t('settings.autoCloseOff') }}</option>
+          <option v-for="days in [3, 7, 14, 30]" :key="days" :value="days">{{ t('settings.autoCloseDays', { count: days }) }}</option>
+          <option v-if="settings.autoCloseDays && ![3, 7, 14, 30].includes(settings.autoCloseDays)" :value="settings.autoCloseDays">{{ t('settings.autoCloseDays', { count: settings.autoCloseDays }) }}</option>
+        </select>
+        <small class="hint">{{ t('settings.autoCloseHint') }}</small>
+      </label>
+      <ToggleSwitch v-model="settings.collectEnvironment" :label="t('settings.collectEnvironment')" :hint="t('settings.collectEnvironmentHint')" :disabled="readonly" />
       <ToggleSwitch v-model="settings.showProgress" :label="t('settings.showProgress')" :disabled="readonly" />
       <ToggleSwitch v-model="settings.showNumbers" :label="t('settings.showNumbers')" :disabled="readonly" />
       <ToggleSwitch v-model="settings.saveProgress" :label="t('settings.saveProgress')" :hint="t('settings.saveProgressHint')" :disabled="readonly" />

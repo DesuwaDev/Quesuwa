@@ -97,6 +97,36 @@ export function createBackups(db, { dataDir, settings }) {
 }
 
 // Permanently removes responses older than each questionnaire's retention period.
+// Closes tickets that stayed resolved for each questionnaire's auto-close period without new activity.
+export function createAutoClose(db, { tickets, audit }) {
+  let last = 0;
+  function run(now = Date.now()) {
+    let closed = 0;
+    for (const row of db.prepare('SELECT id, definition FROM forms WHERE deleted_at IS NULL').all()) {
+      const settings = JSON.parse(row.definition).settings || {};
+      const days = settings.autoCloseDays;
+      if (!settings.ticketMode || !Number.isInteger(days) || days < 1) continue;
+      const cutoff = new Date(now - days * 86400_000).toISOString();
+      const stale = db.prepare("SELECT id FROM responses WHERE form_id=? AND status='resolved' AND deleted_at IS NULL AND COALESCE(last_activity_at, created_at)<?").all(row.id, cutoff);
+      if (!stale.length) continue;
+      const at = new Date(now).toISOString();
+      const close = db.prepare("UPDATE responses SET status='closed', last_activity_at=? WHERE id=? AND status='resolved'");
+      for (const item of stale) {
+        if (close.run(at, item.id).changes) tickets.add(item.id, { author: 'system', body: 'status:closed' });
+      }
+      audit(null, 'autoClose', row.id, String(stale.length));
+      closed += stale.length;
+    }
+    return closed;
+  }
+  function tick(now = Date.now()) {
+    if (now - last < 3600_000) return;
+    last = now;
+    run(now);
+  }
+  return { run, tick };
+}
+
 export function createRetention(db, { storage, tickets, audit }) {
   let last = 0;
   function run(now = Date.now()) {

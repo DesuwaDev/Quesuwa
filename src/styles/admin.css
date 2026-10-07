@@ -217,6 +217,9 @@
 .share-code code { padding: 2px 8px; border-radius: 6px; background: var(--surface); color: var(--text); letter-spacing: 0.1em; }
 .qr-card { align-items: center; }
 .qr-card .card-header { align-self: stretch; }
+.prefill-card { grid-column: 1 / -1; order: 3; display: flex; flex-direction: column; gap: var(--space-3); }
+.prefill-card .card-header { margin-bottom: 0; }
+.prefill-card .field-label code { font-size: 0.78rem; }
 .qr-frame { width: min(240px, 100%); aspect-ratio: 1; padding: 10px; border-radius: var(--radius); background: #fff; border: 1px solid var(--border); }
 .qr-frame svg { width: 100%; height: 100%; }
 
@@ -285,6 +288,14 @@
 .mini-table td { padding: 3px 0; font-weight: 550; }
 .attachment-thumb img { width: 56px; height: 56px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); }
 .detail-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding-top: var(--space-3); border-top: 1px solid var(--border); }
+.environment-panel { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-4); border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg-tint); }
+.environment-panel header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.environment-panel h3 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 0.95rem; }
+.environment-panel dl { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px 16px; margin: 0; }
+.environment-panel dt { color: var(--text-3); font-size: 0.78rem; }
+.environment-panel dd { margin: 0; font-size: 0.9rem; overflow-wrap: anywhere; }
+.environment-panel details summary { cursor: pointer; color: var(--text-3); font-size: 0.82rem; }
+.environment-panel details code { display: block; margin-top: 6px; font-size: 0.78rem; overflow-wrap: anywhere; color: var(--text-2); }
 
 /* Analytics */
 .analytics-view.refreshing .analytics-grid, .analytics-view.refreshing .question-stats-grid, .analytics-view.refreshing .tile-grid { opacity: 0.6; transition: opacity var(--fast); }

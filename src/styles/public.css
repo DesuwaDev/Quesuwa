@@ -82,6 +82,8 @@
 .optional-tag { flex: none; margin-top: 2px; padding: 1px 8px; border-radius: var(--radius-full); background: var(--surface-2); color: var(--text-3); font-size: 0.72rem; font-weight: 600; }
 .question > :not(legend) { clear: both; }
 .question-hint { margin: -4px 0 var(--space-3); color: var(--text-2); font-size: 0.9rem; }
+.prefill-note { display: flex; align-items: center; gap: 6px; margin: -4px 0 var(--space-3); padding: 6px 10px; border-radius: var(--radius-sm); background: var(--info-soft); color: var(--info); font-size: 0.84rem; }
+.prefill-note .icon { flex: none; }
 .question .field-error { margin-top: var(--space-3); }
 .statement-block { padding: var(--space-4) var(--space-6); border-left: 3px solid var(--accent-strip); }
 .statement-block h3 { font-size: 1.05rem; }
@@ -168,6 +170,7 @@ button.ranking-item:hover:not(:disabled) { border-color: var(--primary); }
 .dropzone.disabled { opacity: 0.5; pointer-events: none; }
 .dropzone strong { color: var(--text); font-size: 0.94rem; }
 .dropzone span { font-size: 0.8rem; }
+.dropzone .paste-hint { display: inline-flex; align-items: center; gap: 4px; margin-top: 2px; color: var(--text-3); }
 .dropzone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 .dropzone:focus-within { box-shadow: 0 0 0 3px var(--focus); }
 .file-list, .attachment-list { display: flex; flex-direction: column; gap: 6px; margin: 10px 0 0; padding: 0; list-style: none; }
@@ -183,6 +186,12 @@ button.ranking-item:hover:not(:disabled) { border-color: var(--primary); }
 .form-nav .button { min-height: 46px; padding: 0 22px; font-size: 0.96rem; }
 .submit-button { min-width: 160px; }
 .form-privacy { display: flex; align-items: center; justify-content: center; gap: 6px; color: var(--text-3); font-size: 0.8rem; text-align: center; }
+.environment-note { border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg-tint); font-size: 0.84rem; color: var(--text-2); }
+.environment-note summary { display: flex; align-items: center; gap: 6px; padding: 10px 12px; cursor: pointer; }
+.environment-note dl { display: grid; gap: 4px; margin: 0; padding: 0 12px 10px 32px; }
+.environment-note dl div { display: grid; grid-template-columns: minmax(84px, auto) minmax(0, 1fr); gap: 10px; }
+.environment-note dt { color: var(--text-3); }
+.environment-note dd { margin: 0; overflow-wrap: anywhere; }
 
 @media (max-width: 640px) {
   .public-main { padding-top: var(--space-5); }

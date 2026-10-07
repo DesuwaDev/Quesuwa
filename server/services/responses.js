@@ -18,6 +18,7 @@ export const parseResponse = row => ({
   ticket: Boolean(row.access_hash),
   unread: Boolean(row.unread),
   lastActivityAt: row.last_activity_at || row.created_at,
+  environment: row.environment ? JSON.parse(row.environment) : null,
   ...(row.message_count !== undefined ? { messageCount: row.message_count } : {})
 });
 

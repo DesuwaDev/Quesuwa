@@ -30,7 +30,8 @@ export function changeType(field, type) {
 }
 
 export function cloneField(field) {
-  return { ...structuredClone(field), id: uid() };
+  // Link parameters must stay unique, so copies start without one.
+  return { ...structuredClone(field), id: uid(), prefillKey: '' };
 }
 
 // Rule sets on a field: display logic, conditional required and per-option conditions.

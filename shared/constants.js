@@ -79,12 +79,15 @@ export const fieldGroups = [
 export const layoutTypes = ['section', 'statement'];
 export const choiceTypes = ['single', 'multi', 'select'];
 export const optionTypes = ['single', 'multi', 'select', 'ranking'];
+// Questions whose answer can be filled in from the link, e.g. /f/bug?site=Main.
+export const prefillTypes = ['short', 'long', 'email', 'phone', 'url', 'number', 'date', 'time', 'single', 'multi', 'select', 'rating', 'scale', 'nps'];
 export const numericTypes = ['number', 'rating', 'scale', 'nps'];
 export const textTypes = ['short', 'long', 'email', 'phone', 'url', 'date', 'time'];
 export const otherTypes = ['single', 'multi'];
 
-export const statuses = ['pending', 'inProgress', 'resolved', 'needsInfo'];
-export const statusKeys = { pending: 'status.pending', inProgress: 'status.inProgress', resolved: 'status.resolved', needsInfo: 'status.needsInfo' };
+// "closed" is final for the respondent: tickets in that state no longer accept replies.
+export const statuses = ['pending', 'inProgress', 'resolved', 'needsInfo', 'closed'];
+export const statusKeys = { pending: 'status.pending', inProgress: 'status.inProgress', resolved: 'status.resolved', needsInfo: 'status.needsInfo', closed: 'status.closed' };
 export const formStates = ['draft', 'published', 'closed'];
 export const stateKeys = { draft: 'state.draft', published: 'state.published', closed: 'state.closed' };
 

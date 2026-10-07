@@ -1,7 +1,8 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { t } from '../../i18n.js';
-import { fieldTypes, layoutTypes, optionTypes } from '../../../shared/constants.js';
+import { fieldTypes, layoutTypes, optionTypes, prefillTypes } from '../../../shared/constants.js';
+import { PREFILL_KEY } from '../../../shared/schema.js';
 import { fieldIcons } from '../../components/icons.js';
 import AppIcon from '../../components/AppIcon.vue';
 import ToggleSwitch from '../../components/ToggleSwitch.vue';
@@ -17,6 +18,14 @@ const emit = defineEmits(['activate', 'move', 'duplicate', 'remove', 'dragstart-
 const root = ref(null);
 const layout = computed(() => layoutTypes.includes(props.field.type));
 const showDescription = ref(Boolean(props.field.description));
+const showPrefill = ref(Boolean(props.field.prefillKey));
+const canPrefill = computed(() => prefillTypes.includes(props.field.type));
+const prefillError = computed(() => {
+  const key = props.field.prefillKey || '';
+  if (!key) return '';
+  if (!PREFILL_KEY.test(key)) return 'errors.prefillKey';
+  return props.fields.some(other => other !== props.field && other.prefillKey?.toLowerCase() === key.toLowerCase()) ? 'errors.prefillKeyDuplicate' : '';
+});
 const earlier = computed(() => props.fields.slice(0, props.index));
 const preview = computed(() => {
   const field = props.field;
@@ -76,6 +85,12 @@ function handleDrag(event) {
         <textarea v-model="field.description" class="input textarea autosize" rows="2" maxlength="2000" :disabled="readonly" :placeholder="t('editor.helpPlaceholder')"></textarea>
       </label>
       <FieldOptions :field="field" :fields="fields" :readonly="readonly" />
+      <label v-if="canPrefill && (showPrefill || field.prefillKey)" class="field">
+        <span class="field-label">{{ t('editor.prefillKey') }}</span>
+        <input v-model.trim="field.prefillKey" class="input mono" maxlength="32" autocomplete="off" spellcheck="false" :disabled="readonly" :placeholder="t('editor.prefillKeyPlaceholder')" :aria-invalid="Boolean(prefillError)" />
+        <small v-if="prefillError" class="field-error">{{ t(prefillError, { key: field.prefillKey, index: index + 1 }) }}</small>
+        <small v-else class="hint">{{ field.prefillKey ? t('editor.prefillKeyExample', { key: field.prefillKey }) : t('editor.prefillKeyHint') }}</small>
+      </label>
       <OptionLogicEditor v-if="optionTypes.includes(field.type)" :field="field" :earlier="earlier" :readonly="readonly" />
       <RuleSetEditor v-if="field.type !== 'statement' || field.logic" :owner="field" name="logic" :variant="field.type === 'section' ? 'section' : 'display'" :earlier="earlier" :readonly="readonly" />
       <RuleSetEditor v-if="!layout && !field.required" :owner="field" name="requiredLogic" variant="required" :earlier="earlier" :readonly="readonly" />
@@ -84,6 +99,7 @@ function handleDrag(event) {
 
     <footer v-if="active && !readonly" class="question-card-foot">
       <button v-if="!layout && !showDescription" type="button" class="text-button small" @click="showDescription = true"><AppIcon name="plus" :size="14" />{{ t('editor.addHelp') }}</button>
+      <button v-if="canPrefill && !showPrefill && !field.prefillKey" type="button" class="text-button small" @click="showPrefill = true"><AppIcon name="link" :size="14" />{{ t('editor.addPrefill') }}</button>
       <span class="spacer"></span>
       <button type="button" class="icon-button ghost" :disabled="index === 0" :title="t('editor.up')" :aria-label="t('editor.up')" @click.stop="emit('move', -1)"><AppIcon name="arrowUp" :size="16" /></button>
       <button type="button" class="icon-button ghost" :disabled="index === fields.length - 1" :title="t('editor.down')" :aria-label="t('editor.down')" @click.stop="emit('move', 1)"><AppIcon name="arrowDown" :size="16" /></button>

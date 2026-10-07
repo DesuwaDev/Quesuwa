@@ -143,6 +143,7 @@ input[type="date"].input, input[type="time"].input, input[type="datetime-local"]
 .badge.state-draft, .badge.status-pending { background: var(--warning-soft); color: var(--warning); }
 .badge.state-closed, .badge.info, .badge.status-inProgress { background: var(--info-soft); color: var(--info); }
 .badge.danger, .badge.status-needsInfo { background: var(--danger-soft); color: var(--danger); }
+.badge.status-closed { background: var(--surface-3); color: var(--text-3); }
 
 /* Cards */
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--shadow-xs); min-width: 0; }

@@ -1,46 +1,24 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { t } from '../../i18n.js';
-import { fileKinds, fileKindKeys, fileKindExtensions, LIMITS } from '../../../shared/constants.js';
+import { LIMITS } from '../../../shared/constants.js';
 import { formatBytes } from '../../lib/format.js';
 import AppIcon from '../../components/AppIcon.vue';
+import { acceptOf, addFiles, kindLabelsOf } from './files.js';
 
 const props = defineProps({ field: Object, state: Object, disabled: Boolean, describedBy: String });
 const dragging = ref(false);
-const kinds = computed(() => props.field.fileKinds?.length ? props.field.fileKinds : fileKinds);
 const maxFiles = computed(() => props.field.maxFiles || LIMITS.filesPerField);
 const maxMB = computed(() => props.field.maxFileMB || LIMITS.fileMB);
-const accept = computed(() => kinds.value.map(kind => fileKindExtensions[kind]).join(','));
+const accept = computed(() => acceptOf(props.field));
 const items = computed(() => props.state.uploads[props.field.id] || []);
-const kindLabels = computed(() => kinds.value.map(kind => t(fileKindKeys[kind])).join(t('common.listSeparator')));
-
-function groupOf(name) {
-  if (/\.(png|jpe?g|webp|gif)$/i.test(name)) return 'image';
-  if (/\.pdf$/i.test(name)) return 'pdf';
-  if (/\.(txt|log)$/i.test(name)) return 'text';
-  return '';
-}
+const kindLabels = computed(() => kindLabelsOf(props.field));
+const acceptsImages = computed(() => accept.value.includes('.png'));
+// Screenshots can be pasted on devices with a keyboard.
+const canPaste = window.matchMedia?.('(hover: hover) and (pointer: fine)').matches;
 
 function add(list) {
-  if (props.disabled) return;
-  delete props.state.errors[props.field.id];
-  const selected = [...(list || [])];
-  if (!selected.length) return;
-  if (items.value.length + selected.length > maxFiles.value) {
-    props.state.errors[props.field.id] = { code: 'errors.clientFileCount', params: { count: maxFiles.value } };
-    return;
-  }
-  for (const file of selected) {
-    if (!file.size || file.size > maxMB.value * 1024 * 1024) {
-      props.state.errors[props.field.id] = { code: 'errors.clientFileSize', params: { name: file.name, size: maxMB.value } };
-      return;
-    }
-    if (!kinds.value.includes(groupOf(file.name))) {
-      props.state.errors[props.field.id] = { code: 'errors.clientFileType', params: { name: file.name, types: kindLabels.value } };
-      return;
-    }
-  }
-  props.state.uploads[props.field.id] = [...items.value, ...selected.map(file => ({ file, url: /^image\/(png|jpeg|webp|gif)$/.test(file.type) ? URL.createObjectURL(file) : null }))];
+  if (!props.disabled) addFiles(props.field, props.state, list);
 }
 
 function remove(index) {
@@ -62,6 +40,7 @@ function drop(event) {
       <AppIcon name="upload" :size="24" />
       <strong>{{ t('form.upload') }}</strong>
       <span>{{ t('form.uploadLimits', { count: maxFiles, size: maxMB, types: kindLabels }) }}</span>
+      <span v-if="canPaste && acceptsImages" class="paste-hint"><AppIcon name="image" :size="13" />{{ t('form.pasteHint') }}</span>
       <input :id="'q-' + field.id" type="file" multiple :accept="accept" :disabled="disabled" :aria-describedby="describedBy" @change="add($event.target.files); $event.target.value = ''" />
     </label>
     <ul v-if="items.length" class="file-list">

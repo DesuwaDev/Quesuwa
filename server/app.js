@@ -23,7 +23,7 @@ import { createTickets } from './services/tickets.js';
 import { ticketRoutes } from './routes/tickets.js';
 import { createNotifier } from './services/notify.js';
 import { notificationRoutes, messagingRoutes } from './routes/notifications.js';
-import { createBackups, createRetention, startJobs } from './services/backup.js';
+import { createBackups, createRetention, createAutoClose, startJobs } from './services/backup.js';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 
@@ -77,7 +77,8 @@ export function createApp({ dataDir, password, username = 'admin', production = 
   const notifier = createNotifier(db, { settings, tickets, publicOrigin });
   const backups = createBackups(db, { dataDir, settings });
   const retention = createRetention(db, { storage, tickets, audit });
-  const stopJobs = startJobs([() => notifier.work(), () => notifier.digestTick(), () => backups.tick(), () => retention.tick()]);
+  const autoClose = createAutoClose(db, { tickets, audit });
+  const stopJobs = startJobs([() => notifier.work(), () => notifier.digestTick(), () => backups.tick(), () => retention.tick(), () => autoClose.tick()]);
   const cookieOptions = req => ({ httpOnly: true, sameSite: 'strict', secure: secureCookie(req), path: '/api/admin' });
   const context = { db, auth, audit, storage, forms, webhooks, tickets, notifier, backups, retention, limiter, cookieOptions, originAllowed, secureCookie, settings, publicOrigin };
   if (auth.setupNeeded()) console.log(t('cli.setupCode', { code: auth.setupCode() }));
@@ -110,5 +111,5 @@ export function createApp({ dataDir, password, username = 'admin', production = 
     res.sendFile(path.join(dist, 'index.html'));
   });
   app.use(errorHandler);
-  return { app, close: () => { stopJobs(); notifier.close(); db.close(); }, notifier, backups, retention, setupCode: () => auth.setupNeeded() ? auth.setupCode() : null };
+  return { app, close: () => { stopJobs(); notifier.close(); db.close(); }, notifier, backups, retention, autoClose, setupCode: () => auth.setupNeeded() ? auth.setupCode() : null };
 }

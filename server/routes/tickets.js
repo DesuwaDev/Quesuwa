@@ -18,7 +18,9 @@ export function ticketRoutes({ db, forms, tickets, webhooks, notifier, limiter }
       formTitle: form?.title || snapshot.title,
       createdAt: row.created_at,
       status: row.status,
-      canReply: open,
+      canReply: open && row.status !== 'closed',
+      closed: row.status === 'closed',
+      formSlug: form && form.state === 'published' && !form.deletedAt ? form.slug : '',
       fields: snapshot.fields.filter(answerable).map(field => ({
         id: field.id, type: field.type, label: field.label, rows: field.rows, options: field.options, allowOther: field.allowOther,
         value: field.type === 'file' ? attachments.filter(a => a.fieldId === field.id).map(({ name, size }) => ({ name, size })) : answers[field.id] ?? null
@@ -33,7 +35,8 @@ export function ticketRoutes({ db, forms, tickets, webhooks, notifier, limiter }
 
   router.post('/:id/messages', limiter(60 * 60_000, 30), (req, res) => {
     const row = tickets.open(req.params.id, key(req));
-    if (!view(row).canReply) throw fail(410, 'errors.ticketClosed');
+    const current = view(row);
+    if (!current.canReply) throw fail(410, current.closed ? 'errors.ticketLocked' : 'errors.ticketClosed');
     const message = tickets.add(row.id, { author: 'respondent', body: req.body?.body });
     if (['resolved', 'needsInfo'].includes(row.status)) tickets.add(row.id, { author: 'system', body: 'status:pending' });
     // A reply to a resolved or "needs info" ticket puts it back in the queue.

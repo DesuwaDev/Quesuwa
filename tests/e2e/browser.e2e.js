@@ -61,12 +61,37 @@ test('admin and public pages work in a real browser', { skip: !chrome ? 'Chrome 
   await page.waitForSelector('.admin-sidebar');
 
   // A published questionnaire answered from a phone.
-  const form = await page.evaluate(async () => (await fetch('/api/admin/forms', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title: 'Browser check', slug: 'browser-check', state: 'published', fields: [{ id: 'q', type: 'short', label: 'Your name', required: true }] }) })).json());
+  // A published bug report opened from a site's announcement link, answered from a phone.
+  const definition = {
+    title: 'Browser check', slug: 'browser-check', state: 'published', settings: { collectEnvironment: true },
+    fields: [
+      { id: 'site', type: 'single', label: 'Which site', options: ['Main site', 'Mirror site'], required: true, prefillKey: 'site' },
+      { id: 'q', type: 'short', label: 'Your name', required: true },
+      { id: 'shot', type: 'file', label: 'Screenshot', fileKinds: ['image'] }
+    ]
+  };
+  const form = await page.evaluate(async body => (await fetch('/api/admin/forms', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })).json(), definition);
   const visitor = await open(await browser.createBrowserContext(), phone);
-  await visitor.goto(base + '/f/browser-check', { waitUntil: 'networkidle0' });
+  await visitor.goto(base + '/f/browser-check?site=mirror%20site', { waitUntil: 'networkidle0' });
+  assert.equal(await visitor.$eval('input[type=radio]:checked', input => input.value), 'Mirror site', 'site comes from the link');
+  assert.ok(await visitor.$('[data-field="site"] .prefill-note'), 'prefilled answer asks for confirmation');
+  assert.ok(await visitor.$('.environment-note'), 'diagnostics are disclosed before sending');
   await visitor.type('input.input', 'Ada');
+  // Pasting an image anywhere attaches it to the screenshot question.
+  await visitor.evaluate(async () => {
+    const png = Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='), char => char.charCodeAt(0));
+    const data = new DataTransfer();
+    data.items.add(new File([png], 'image.png', { type: 'image/png' }));
+    document.body.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }));
+  });
+  assert.match(await visitor.$eval('.file-name', node => node.textContent), /^screenshot-\d{14}\.png/);
   await visitor.click('button.submit-button');
   await visitor.waitForSelector('.success-panel');
+  const saved = await page.evaluate(async id => (await (await fetch(`/api/admin/forms/${id}/responses`)).json()), form.id);
+  const response = (saved.items || saved)[0];
+  assert.equal(response.answers.site, 'Mirror site');
+  assert.equal(response.attachments.length, 1);
+  assert.equal(response.environment.viewport, '390x844');
   assert.ok(await overflow(visitor) <= 1, 'public form fits a phone screen');
 
   // Enrol two-step verification from the account page.

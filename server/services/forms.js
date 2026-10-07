@@ -72,6 +72,7 @@ export function createFormStore(db) {
         consentText: settings.consentText,
         accent: settings.accent,
         endsAt: settings.endsAt,
+        collectEnvironment: settings.collectEnvironment,
         protected: Boolean(settings.accessCode)
       }
     };

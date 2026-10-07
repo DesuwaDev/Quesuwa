@@ -2,7 +2,7 @@
 // Used by the server as the source of truth and by the editor for defaults.
 import {
   LIMITS, fieldTypes, layoutTypes, choiceTypes, optionTypes, numericTypes, otherTypes,
-  formStates, accents, fileKinds
+  formStates, accents, fileKinds, prefillTypes
 } from './constants.js';
 
 export const defaultSettings = Object.freeze({
@@ -14,8 +14,10 @@ export const defaultSettings = Object.freeze({
   ticketMode: false,
   notifyAdmins: true,
   sendReceipt: false,
+  collectEnvironment: false,
   contactField: '',
   retentionDays: 0,
+  autoCloseDays: 0,
   startsAt: '',
   endsAt: '',
   responseLimit: 0,
@@ -65,12 +67,13 @@ export function normalizeSettings(value = {}) {
   if (value === undefined || value === null) value = {};
   if (typeof value !== 'object' || Array.isArray(value)) throw failure(code);
   const result = { ...defaultSettings };
-  for (const key of ['listed', 'showProgress', 'showNumbers', 'saveProgress', 'onePerDevice', 'ticketMode', 'notifyAdmins', 'sendReceipt']) result[key] = bool(value[key], defaultSettings[key], code);
+  for (const key of ['listed', 'showProgress', 'showNumbers', 'saveProgress', 'onePerDevice', 'ticketMode', 'notifyAdmins', 'sendReceipt', 'collectEnvironment']) result[key] = bool(value[key], defaultSettings[key], code);
   result.startsAt = dateTime(value.startsAt, code);
   result.endsAt = dateTime(value.endsAt, code);
   if (result.startsAt && result.endsAt && result.startsAt >= result.endsAt) throw failure('errors.scheduleInvalid');
   result.responseLimit = integer(value.responseLimit, 0, 1000000, 0, code);
   result.retentionDays = integer(value.retentionDays, 0, 3650, 0, code);
+  result.autoCloseDays = integer(value.autoCloseDays, 0, 365, 0, code);
   result.submitLabel = text(value.submitLabel, 60, code);
   result.consentText = text(value.consentText, 2000, code);
   result.closedMessage = text(value.closedMessage, 1000, code);
@@ -144,6 +147,8 @@ function numberOrNull(value, index) {
   return value;
 }
 
+export const PREFILL_KEY = /^[a-zA-Z][a-zA-Z0-9_-]{0,31}$/;
+
 export function normalizeField(field, index, earlier) {
   const params = { index: index + 1 };
   if (!field || typeof field !== 'object' || Array.isArray(field) || !Object.hasOwn(fieldTypes, field.type)
@@ -205,6 +210,10 @@ export function normalizeField(field, index, earlier) {
     if (!Array.isArray(kinds) || !kinds.length || kinds.some(kind => !fileKinds.includes(kind)) || new Set(kinds).size !== kinds.length) throw failure('errors.fieldRules', params);
     result.fileKinds = fileKinds.filter(kind => kinds.includes(kind));
   }
+  if (prefillTypes.includes(type) && field.prefillKey !== undefined && field.prefillKey !== '') {
+    if (typeof field.prefillKey !== 'string' || !PREFILL_KEY.test(field.prefillKey)) throw failure('errors.prefillKey', params);
+    result.prefillKey = field.prefillKey;
+  }
   if (type !== 'statement' || field.logic || field.condition) result.logic = normalizeLogic(field, earlier, index);
   if (!result.logic) delete result.logic;
   // Optional questions can become required when conditions are met.
@@ -238,6 +247,7 @@ export function normalizeDefinition(body) {
   for (const [index, raw] of body.fields.entries()) {
     const field = normalizeField(raw, index, fields);
     if (ids.has(field.id)) throw failure('errors.fieldInvalid', { index: index + 1 });
+    if (field.prefillKey && fields.some(other => other.prefillKey?.toLowerCase() === field.prefillKey.toLowerCase())) throw failure('errors.prefillKeyDuplicate', { key: field.prefillKey });
     ids.add(field.id);
     fields.push(field);
   }
@@ -263,7 +273,7 @@ export function editableField(field) {
     description: '', required: false, placeholder: '', minLength: 0, maxLength: field.type === 'long' ? LIMITS.longText : LIMITS.shortText,
     min: null, max: null, integer: false, options: [], shuffle: false, allowOther: false, minSelect: 0, maxSelect: 0,
     ratingMax: 5, scaleMin: 1, scaleMax: 5, minLabel: '', maxLabel: '', rows: [], columns: [],
-    maxFiles: LIMITS.filesPerField, maxFileMB: LIMITS.fileMB, fileKinds: [...fileKinds], logic: null, requiredLogic: null, optionLogic: [],
+    maxFiles: LIMITS.filesPerField, maxFileMB: LIMITS.fileMB, fileKinds: [...fileKinds], prefillKey: '', logic: null, requiredLogic: null, optionLogic: [],
     ...structuredClone(field)
   };
 }

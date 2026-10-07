@@ -436,3 +436,104 @@ test('two-step sign-in, API tokens, backups and retention', async t => {
   const archive = await call(owner, '/admin/system/archive');
   assert.equal(Buffer.from(await archive.arrayBuffer()).subarray(0, 2).toString(), 'PK');
 });
+
+test('link prefill parameters and environment diagnostics', async t => {
+  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'quesuwa-env-'));
+  const password = 'environment-owner-password-1';
+  const instance = createApp({ dataDir, password, defaultLocale: 'en' });
+  const server = instance.app.listen(0, '127.0.0.1');
+  await new Promise(resolve => server.once('listening', resolve));
+  t.after(async () => { await new Promise(resolve => server.close(resolve)); instance.close(); fs.rmSync(dataDir, { recursive: true, force: true }); });
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const login = await fetch(base + '/api/admin/login', { method: 'POST', headers: { Origin: base, 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
+  const Cookie = login.headers.get('set-cookie').split(';')[0];
+  const admin = (url, method = 'GET', body) => fetch(base + '/api/admin' + url, { method, headers: { Origin: base, 'Content-Type': 'application/json', Cookie }, body: body && JSON.stringify(body) });
+  const fields = [{ id: 'site', type: 'single', label: 'Site', options: ['Main', 'Mirror'], prefillKey: 'site' }, { id: 'what', type: 'long', label: 'What happened' }];
+
+  assert.equal((await admin('/forms', 'POST', { title: 'Bad', state: 'draft', fields: [{ ...fields[0], prefillKey: '1site' }] })).status, 400);
+  assert.equal((await admin('/forms', 'POST', { title: 'Bad', state: 'draft', fields: [fields[0], { ...fields[1], prefillKey: 'SITE' }] })).status, 400);
+  // Keys are dropped for question types that cannot be prefilled.
+  const kept = await (await admin('/forms', 'POST', { title: 'Files', state: 'draft', fields: [{ id: 'f', type: 'file', label: 'Upload', prefillKey: 'upload' }] })).json();
+  assert.equal(kept.fields[0].prefillKey, undefined);
+
+  const form = await (await admin('/forms', 'POST', { title: 'Bug report', slug: 'bug', state: 'published', settings: { collectEnvironment: true }, fields })).json();
+  assert.equal(form.fields[0].prefillKey, 'site');
+  const submit = async environment => {
+    const body = new FormData();
+    body.set('answers', JSON.stringify({ site: 'Mirror', what: 'Blank page' }));
+    body.set('version', String(form.version));
+    if (environment !== undefined) body.set('environment', environment);
+    return (await fetch(base + '/api/forms/bug/responses', { method: 'POST', headers: { 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1' }, body })).json();
+  };
+  const first = await submit(JSON.stringify({ userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36', screen: '1920x1080', viewport: '1280x720', pixelRatio: 1.25, timeZone: 'Asia/Shanghai', referrer: 'javascript:alert(1)', page: '/f/bug?site=Mirror', colorScheme: 'dark', injected: 'nope', language: 'zh-CN' }));
+  const detail = await (await admin('/responses/' + first.id)).json();
+  assert.deepEqual(detail.environment, { userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36', platform: '', mobile: false, touch: false, screen: '1920x1080', viewport: '1280x720', pixelRatio: 1.25, language: 'zh-CN', timeZone: 'Asia/Shanghai', colorScheme: 'dark', referrer: '', page: '/f/bug?site=Mirror' });
+  // Missing or malformed details fall back to the request's user agent.
+  const second = await submit('{not json');
+  assert.match((await (await admin('/responses/' + second.id)).json()).environment.userAgent, /iPhone OS 17_5/);
+  const csv = await (await admin(`/forms/${form.id}/export?format=csv`)).text();
+  assert.ok(csv.includes('Chrome 128 · Windows · 1280×720 · Asia/Shanghai'));
+  assert.ok(csv.includes('Safari 17.5 · iOS 17.5'));
+
+  // Forms that do not ask for diagnostics store none.
+  await admin(`/forms/${form.id}`, 'PUT', { ...form, settings: { ...form.settings, collectEnvironment: false } });
+  const plain = await (await admin(`/forms/${form.id}`)).json();
+  const body = new FormData();
+  body.set('answers', JSON.stringify({ what: 'x' }));
+  body.set('version', String(plain.version));
+  body.set('environment', JSON.stringify({ userAgent: 'x' }));
+  const third = await (await fetch(base + '/api/forms/bug/responses', { method: 'POST', body })).json();
+  assert.equal((await (await admin('/responses/' + third.id)).json()).environment, null);
+});
+
+test('closed tickets stop replies and resolved tickets auto-close', async t => {
+  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'quesuwa-close-'));
+  const password = 'closing-owner-password-1';
+  const instance = createApp({ dataDir, password, defaultLocale: 'en' });
+  const server = instance.app.listen(0, '127.0.0.1');
+  await new Promise(resolve => server.once('listening', resolve));
+  t.after(async () => { await new Promise(resolve => server.close(resolve)); instance.close(); fs.rmSync(dataDir, { recursive: true, force: true }); });
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const login = await fetch(base + '/api/admin/login', { method: 'POST', headers: { Origin: base, 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
+  const Cookie = login.headers.get('set-cookie').split(';')[0];
+  const admin = (url, method = 'GET', body) => fetch(base + '/api/admin' + url, { method, headers: { Origin: base, 'Content-Type': 'application/json', Cookie }, body: body && JSON.stringify(body) });
+  const form = await (await admin('/forms', 'POST', { title: 'Support', slug: 'support', state: 'published', settings: { ticketMode: true, autoCloseDays: 7 }, fields: [{ id: 'q', type: 'long', label: 'Issue' }] })).json();
+  assert.equal(form.settings.autoCloseDays, 7);
+  const submit = async () => {
+    const body = new FormData();
+    body.set('answers', JSON.stringify({ q: 'Broken' }));
+    body.set('version', String(form.version));
+    return (await fetch(base + '/api/forms/support/responses', { method: 'POST', body })).json();
+  };
+  const reply = (ticket, text) => fetch(`${base}/api/tickets/${ticket.id}/messages`, { method: 'POST', headers: { Origin: base, 'Content-Type': 'application/json', 'X-Ticket-Key': ticket.key }, body: JSON.stringify({ body: text }) });
+  const view = async ticket => (await fetch(`${base}/api/tickets/${ticket.id}`, { headers: { 'X-Ticket-Key': ticket.key } })).json();
+
+  // Closing is final for the respondent until staff reopen it.
+  const first = (await submit()).ticket;
+  assert.equal((await admin(`/responses/${first.id}`, 'PATCH', { status: 'closed' })).status, 200);
+  const closed = await view(first);
+  assert.equal(closed.canReply, false);
+  assert.equal(closed.closed, true);
+  assert.equal(closed.formSlug, 'support');
+  const refused = await reply(first, 'Still broken');
+  assert.equal(refused.status, 410);
+  assert.equal((await refused.json()).code, 'errors.ticketLocked');
+  await admin(`/responses/${first.id}`, 'PATCH', { status: 'resolved' });
+  assert.equal((await reply(first, 'Back again')).status, 201);
+  assert.equal((await (await admin(`/responses/${first.id}`)).json()).status, 'pending', 'replying to a resolved ticket reopens it');
+
+  // Resolved tickets without activity for the configured period close automatically.
+  const second = (await submit()).ticket;
+  await admin(`/responses/${second.id}`, 'PATCH', { status: 'resolved' });
+  assert.equal(instance.autoClose.run(), 0, 'recently resolved tickets stay open');
+  const { DatabaseSync } = await import('node:sqlite');
+  const raw = new DatabaseSync(path.join(dataDir, 'report.sqlite'));
+  raw.prepare('UPDATE responses SET last_activity_at=? WHERE id=?').run(new Date(Date.now() - 8 * 86400_000).toISOString(), second.id);
+  raw.close();
+  assert.equal(instance.autoClose.run(), 1);
+  const detail = await (await admin(`/responses/${second.id}`)).json();
+  assert.equal(detail.status, 'closed');
+  assert.equal(detail.messages.at(-1).body, 'status:closed');
+  assert.equal((await reply(second, 'Hello?')).status, 410);
+  assert.equal((await (await admin(`/forms/${form.id}/responses?status=closed`)).json()).items.length, 1);
+});

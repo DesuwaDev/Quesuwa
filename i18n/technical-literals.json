@@ -2366,6 +2366,12 @@
         "value": "capNetworkFallback",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       }
+    ],
+    "dynamicKeys": [
+      {
+        "expression": "roleOf(id)",
+        "reason": "Key resolved from a fixed translation-key map, a reviewed key prefix or a validated API error code."
+      }
     ]
   },
   "src/admin/settings/NotificationsView.vue": {
@@ -3056,11 +3062,6 @@
       {
         "kind": "literal",
         "value": "ready",
-        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
-      },
-      {
-        "kind": "literal",
-        "value": "cap",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
@@ -4333,6 +4334,11 @@
       },
       {
         "kind": "literal",
+        "value": "meta[name=\"cap-nonce\"]",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "@cap.js/widget",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
@@ -4414,6 +4420,16 @@
       {
         "kind": "literal",
         "value": "challenge_parse_error",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "instr_timeout",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "instr_blocked",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       }
     ]
@@ -5801,6 +5817,16 @@
       },
       {
         "kind": "literal",
+        "value": "script",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "'nonce-${}' 'unsafe-eval'",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "x-powered-by",
         "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
       },
@@ -5811,6 +5837,31 @@
       },
       {
         "kind": "literal",
+        "value": "GET",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/f/",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "/admin",
+        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "/admin/",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "base64",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "blob:",
         "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
       },
@@ -5818,11 +5869,6 @@
         "kind": "literal",
         "value": "data:",
         "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
-      },
-      {
-        "kind": "literal",
-        "value": "script",
-        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
         "kind": "literal",
@@ -5872,11 +5918,6 @@
       {
         "kind": "literal",
         "value": "host",
-        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
-      },
-      {
-        "kind": "literal",
-        "value": "GET",
         "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
       },
       {
@@ -5986,8 +6027,13 @@
       },
       {
         "kind": "literal",
-        "value": "/admin",
-        "reason": "Route, file path, MIME type, selector or generated internal identifier."
+        "value": "index.html",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "utf8",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
         "kind": "literal",
@@ -6006,13 +6052,18 @@
       },
       {
         "kind": "literal",
-        "value": "index.html",
+        "value": "text",
         "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
       },
       {
         "kind": "literal",
-        "value": "text",
-        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+        "value": "html",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "${}<meta name=\"cap-nonce\" content=\"${}\">",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       }
     ]
   },
@@ -9823,6 +9874,20 @@
       {
         "kind": "literal",
         "value": "select",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      }
+    ]
+  },
+  "shared/captcha-routing.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "cap",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "unavailable",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       }
     ]

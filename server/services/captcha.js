@@ -153,13 +153,18 @@ export function createCaptcha(db, { endpoints = {} } = {}) {
     };
     const previous = config;
     config = next;
-    // A channel that is switched on must be able to verify.
-    for (const id of [next.provider, next.fallback]) {
+    // A channel that is switched on, or that Cap failures are routed to, must be able to verify.
+    const routes = [next.provider, next.fallback].includes('cap') && next.provider !== 'none' ? [next.capBlockedFallback, next.capNetworkFallback].filter(id => CAPTCHA_PROVIDERS.includes(id)) : [];
+    for (const id of [next.provider, next.fallback, ...routes]) {
       if (id !== 'none' && !ready(id)) { config = previous; throw fail(400, id === 'cap' ? 'errors.captchaCapServer' : 'errors.captchaKeys'); }
     }
     db.prepare("INSERT INTO settings(key, value) VALUES ('captcha', ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value").run(JSON.stringify(next));
     return view();
   }
+
+  // A self-hosted Cap server may send a browser check that runs as an inline script in a
+  // sandboxed frame; pages then need a per-response CSP nonce for it.
+  const needsNonce = () => channels().includes('cap') && config.providers.cap.mode === 'standalone';
 
   // Built-in Cap endpoints used by the widget.
   const builtin = () => config.providers.cap.mode === 'builtin' && channels().includes('cap');
@@ -235,5 +240,5 @@ export function createCaptcha(db, { endpoints = {} } = {}) {
     return [...list].join(' ');
   }
 
-  return { config: view, update, publicConfig, channels, builtin, challenge, redeem, verify, sources };
+  return { config: view, update, publicConfig, channels, builtin, challenge, redeem, verify, sources, needsNonce };
 }

@@ -1553,5 +1553,6 @@
   "system.recentActivity": "Recent activity",
   "system.viewAll": "View all",
   "backups.snapshots": "Snapshots",
-  "captcha.appearance": "Appearance"
+  "captcha.appearance": "Appearance",
+  "captcha.capRouteBadge": "Used when Cap fails"
 }

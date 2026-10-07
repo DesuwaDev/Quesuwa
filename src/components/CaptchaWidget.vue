@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { t, locale } from '../i18n.js';
 import { mountCaptcha } from '../lib/captcha.js';
+import { nextCaptchaChannel } from '../../shared/captcha-routing.js';
 import AppIcon from './AppIcon.vue';
 
 // Human verification before submitting. When the primary channel cannot load (blocked network,
@@ -40,9 +41,8 @@ async function mount(channel) {
 // Cap refusals and Cap network trouble follow their own routes; any other failure of the
 // primary channel moves to the general backup. A channel is never tried twice.
 function unavailable(channel, kind) {
-  const config = props.config;
-  const target = channel.provider === 'cap' && kind !== 'unavailable' ? config.capFallbacks?.[kind] : tried.length === 1 ? config.fallback : null;
-  if (target && !tried.includes(target.provider)) {
+  const target = nextCaptchaChannel(props.config, channel.provider, kind, tried);
+  if (target) {
     tried.push(target.provider);
     switched.value = true;
     mount(target);

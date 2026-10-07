@@ -2,6 +2,7 @@ import express from 'express';
 import helmet from 'helmet';
 import { rateLimit } from 'express-rate-limit';
 import fs from 'node:fs';
+import { randomBytes } from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { t, localeMiddleware, setServerLocale } from './i18n.js';
@@ -46,6 +47,7 @@ export function createApp({ dataDir, password, username = 'admin', production = 
   const captcha = createCaptcha(db, { endpoints: captchaEndpoints });
   // Verification widgets need their provider's origins; only the enabled ones are allowed.
   const captchaSources = kind => () => captcha.sources(kind) || "'self'";
+  const scriptSources = (_req, res) => [captcha.sources('script'), res.locals.cspNonce ? `'nonce-${res.locals.cspNonce}' 'unsafe-eval'` : ''].filter(Boolean).join(' ') || "'self'";
 
   const app = express();
   app.disable('x-powered-by');
@@ -53,9 +55,17 @@ export function createApp({ dataDir, password, username = 'admin', production = 
     app.set('trust proxy', values.trustProxyHops);
     setServerLocale(values.defaultLocale);
   });
+  // A self-hosted Cap server may run a browser check: an inline script in a sandboxed frame that
+  // inherits this page's CSP and uses eval. Only the pages that show the widget (questionnaires and
+  // the workspace) get a fresh nonce plus eval, and only while such a server is in use; inline
+  // scripts without the nonce stay blocked.
+  app.use((req, res, next) => {
+    if (req.method === 'GET' && (req.path.startsWith('/f/') || req.path === '/admin' || req.path.startsWith('/admin/')) && captcha.needsNonce()) res.locals.cspNonce = randomBytes(16).toString('base64');
+    next();
+  });
   app.use(helmet({ contentSecurityPolicy: { directives: {
     'img-src': ["'self'", 'blob:', 'data:', 'https:'], 'media-src': ["'self'", 'blob:'],
-    'script-src': ["'self'", captchaSources('script')], 'connect-src': ["'self'", captchaSources('connect')], 'frame-src': ["'self'", captchaSources('frame')], 'worker-src': ["'self'", captchaSources('worker')],
+    'script-src': ["'self'", scriptSources], 'connect-src': ["'self'", captchaSources('connect')], 'frame-src': ["'self'", captchaSources('frame')], 'worker-src': ["'self'", captchaSources('worker')],
     'form-action': ["'self'"], 'object-src': ["'none'"]
   } } }));
   app.use('/api', (_req, res, next) => { res.set('Cache-Control', 'no-store'); next(); });
@@ -116,9 +126,19 @@ export function createApp({ dataDir, password, username = 'admin', production = 
   app.use(express.static(dist, { index: false }));
   // Private follow-up pages must never be indexed.
   app.use('/t/', (_req, res, next) => { res.set('X-Robots-Tag', 'noindex, nofollow'); next(); });
+  // The page shell is tiny and may carry a per-response nonce, so it is never cached.
+  let shell = null;
+  function pageShell() {
+    const file = path.join(dist, 'index.html');
+    const modified = fs.statSync(file).mtimeMs;
+    if (!shell || shell.modified !== modified) shell = { modified, html: fs.readFileSync(file, 'utf8') };
+    return shell.html;
+  }
   app.get(['/', '/admin', '/admin/*rest', '/f/:slug', '/t/:id'], (_req, res) => {
     if (!fs.existsSync(path.join(dist, 'index.html'))) return res.status(503).type('text').send(t('errors.frontendMissing'));
-    res.sendFile(path.join(dist, 'index.html'));
+    const nonce = res.locals.cspNonce;
+    const html = pageShell();
+    res.set('Cache-Control', 'no-store').type('html').send(nonce ? html.replace(/<head[^>]*>/i, match => `${match}<meta name="cap-nonce" content="${nonce}">`) : html);
   });
   app.use(errorHandler);
   return { app, release: () => tickets.release(), close: () => { stopJobs(); notifier.close(); db.close(); }, notifier, backups, retention, autoClose, setupCode: () => auth.setupNeeded() ? auth.setupCode() : null };

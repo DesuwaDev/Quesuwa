@@ -121,6 +121,9 @@ async function mountCap(host, channel, options) {
   const { default: wasmUrl } = await import('@cap.js/wasm/browser/cap_wasm_bg.wasm?url');
   window.CAP_CUSTOM_WASM_URL = wasmUrl;
   window.CAP_CUSTOM_FETCH = capFetch;
+  // Lets the browser check a self-hosted Cap server may send run under the page's CSP.
+  const nonce = document.querySelector('meta[name="cap-nonce"]')?.content;
+  if (nonce) window.CAP_SCRIPT_NONCE = nonce;
   await import('@cap.js/widget');
   const widget = document.createElement('cap-widget');
   const endpoint = new URL(channel.endpoint, location.href).href;
@@ -145,7 +148,8 @@ async function mountCap(host, channel, options) {
     options.onToken('');
     const code = event.detail?.code;
     if (CAP_UNAVAILABLE.includes(code)) failed('unavailable');
-    else if (['network_error', 'challenge_parse_error'].includes(code)) failed('network');
+    else if (['network_error', 'challenge_parse_error', 'instr_timeout'].includes(code)) failed('network');
+    else if (code === 'instr_blocked') failed('blocked');
   });
   host.replaceChildren(widget);
   return {

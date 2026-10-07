@@ -15,7 +15,10 @@ const form = ref(null), saved = ref(''), status = ref({ ready: {}, accepted: [] 
 const revealed = ref({});
 const test = ref(null), testing = ref(false), testResult = ref(null), widgetKey = ref(0);
 const dirty = computed(() => Boolean(form.value) && JSON.stringify(form.value) !== saved.value);
-const shown = computed(() => form.value ? [form.value.provider, form.value.fallback].filter(id => PROVIDERS.includes(id)) : []);
+// Every channel in use gets its settings: primary, backup, and channels Cap failures are routed to.
+const routed = computed(() => usesCap.value ? [form.value.capBlockedFallback, form.value.capNetworkFallback].filter(id => PROVIDERS.includes(id)) : []);
+const shown = computed(() => form.value ? [...new Set([form.value.provider, form.value.fallback, ...routed.value])].filter(id => PROVIDERS.includes(id)) : []);
+const roleOf = id => id === form.value.provider ? 'captcha.primaryBadge' : id === form.value.fallback ? 'captcha.fallbackBadge' : 'captcha.capRouteBadge';
 const usesCap = computed(() => form.value && (form.value.provider === 'cap' || form.value.fallback === 'cap'));
 const standalone = id => id !== 'cap' || form.value.providers.cap.mode === 'standalone';
 
@@ -83,7 +86,7 @@ onMounted(load);
 
       <div class="captcha-sections">
       <fieldset v-for="id in shown" :key="id" class="captcha-provider">
-        <legend><strong>{{ NAMES[id] }}</strong><span class="badge" :class="status.ready[id] ? 'success' : 'muted'">{{ id === form.provider ? t('captcha.primaryBadge') : t('captcha.fallbackBadge') }}</span></legend>
+        <legend><strong>{{ NAMES[id] }}</strong><span class="badge" :class="status.ready[id] ? 'success' : 'muted'">{{ t(roleOf(id)) }}</span></legend>
         <template v-if="id === 'cap'">
           <div class="chip-group">
             <label class="radio-chip"><input v-model="form.providers.cap.mode" type="radio" value="builtin" />{{ t('captcha.capBuiltin') }}</label>

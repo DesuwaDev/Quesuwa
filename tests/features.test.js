@@ -862,6 +862,7 @@ test('human verification before submitting', async t => {
   assert.match(policy, /script-src 'self' https:\/\/challenges\.cloudflare\.com 'wasm-unsafe-eval'/);
   assert.match(policy, /frame-src 'self' https:\/\/challenges\.cloudflare\.com/);
   assert.match(policy, /worker-src 'self' blob:/);
+  assert.doesNotMatch((await fetch(base + '/f/guarded')).headers.get('content-security-policy'), /nonce-|'unsafe-eval'/, 'built-in Cap needs no inline script');
 
   // Submissions need a valid token from the primary or the backup channel.
   assert.equal(await code(await submit('guarded', form.version)), 'errors.captchaRequired');
@@ -901,6 +902,19 @@ test('human verification before submitting', async t => {
   assert.equal(kept.turnstile.secret, 'secret-t');
   assert.equal(kept.hcaptcha.siteKey, 'site-h');
 
+  // A Cap failure route must point at a channel that can verify.
+  assert.equal(await code(await configure({ provider: 'cap', fallback: 'none', capBlockedFallback: 'recaptchaV3', providers: { cap: { mode: 'builtin' }, recaptchaV3: { secret: '' } } })), 'errors.captchaKeys');
+  assert.equal((await (await admin('/system/captcha')).json()).config.providers.recaptchaV3.secret, 'secret-3', 'a rejected save changes nothing');
+
+  // Which channel the browser moves to, for every kind of failure.
+  const { nextCaptchaChannel } = await import('../shared/captcha-routing.js');
+  const routing = { fallback: { provider: 'turnstile' }, capFallbacks: { blocked: { provider: 'hcaptcha' }, network: null } };
+  assert.equal(nextCaptchaChannel(routing, 'cap', 'blocked', ['cap'])?.provider, 'hcaptcha');
+  assert.equal(nextCaptchaChannel(routing, 'cap', 'network', ['cap']), null, 'Cap network trouble set to fail outright');
+  assert.equal(nextCaptchaChannel(routing, 'cap', 'unavailable', ['cap'])?.provider, 'turnstile', 'broken Cap scripts use the general backup');
+  assert.equal(nextCaptchaChannel({ ...routing, fallback: { provider: 'turnstile' } }, 'turnstile', 'unavailable', ['turnstile']), null, 'never the same channel twice');
+  assert.equal(nextCaptchaChannel(routing, 'hcaptcha', 'unavailable', ['cap', 'hcaptcha']), null, 'a backup that fails does not chain further');
+
   // Cap failures route on their own: refusals fail outright, network trouble uses the general backup.
   await configure({ provider: 'cap', fallback: 'turnstile', capBlockedFallback: 'none', capNetworkFallback: 'default', providers: { cap: { mode: 'builtin' } } });
   let routes = (await (await fetch(base + '/api/captcha')).json());
@@ -920,6 +934,18 @@ test('human verification before submitting', async t => {
   await configure({ provider: 'cap', fallback: 'none', providers: { cap: { mode: 'standalone', serverUrl: 'https://cap.example.test/', verificationServerUrl: at('internal'), siteKey: 'abc', secret: 'cap-secret', timeout: '5' } } });
   assert.equal((await (await fetch(base + '/api/captcha')).json()).primary.endpoint, 'https://cap.example.test/abc/');
   assert.match((await fetch(base + '/')).headers.get('content-security-policy'), /connect-src 'self' https:\/\/cap\.example\.test/);
+  // A self-hosted Cap server's browser check runs inline: pages that show the widget get a
+  // fresh nonce (and eval for that check); other pages keep the strict policy.
+  const shellNonce = response => /'nonce-([^']+)'/.exec(response.headers.get('content-security-policy'))?.[1];
+  const shell = await fetch(base + '/f/guarded');
+  const nonce = shellNonce(shell);
+  assert.ok(nonce);
+  assert.match(shell.headers.get('content-security-policy'), /'unsafe-eval'/);
+  assert.equal(shell.headers.get('cache-control'), 'no-store');
+  if (fs.existsSync(new URL('../dist/index.html', import.meta.url))) assert.ok((await shell.text()).includes(`<meta name="cap-nonce" content="${nonce}">`));
+  assert.notEqual(shellNonce(await fetch(base + '/f/guarded')), nonce, 'a new nonce for every page');
+  assert.ok(shellNonce(await fetch(base + '/admin/system')));
+  for (const url of ['/', '/t/00000000-0000-0000-0000-000000000000', '/api/health']) assert.doesNotMatch((await fetch(base + url)).headers.get('content-security-policy'), /nonce-|'unsafe-eval'/, url);
   assert.equal((await submit('guarded', form.version, { 'X-Captcha-Token': 'good-cap', 'X-Captcha-Provider': 'cap' })).status, 201);
   assert.deepEqual(calls.at(-1).fields, { secret: 'cap-secret', response: 'good-cap' });
   assert.equal((await (await admin('/system/captcha')).json()).config.providers.cap.mode, 'standalone');

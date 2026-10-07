@@ -173,6 +173,8 @@ input[type="date"].input, input[type="time"].input, input[type="datetime-local"]
 }
 .menu-popover.start { right: auto; left: 0; }
 .menu-popover.up { top: auto; bottom: calc(100% + 6px); }
+/* Menus placed in the page root by MenuButton; above dialogs (100), below toasts (200). */
+.menu-popover.floating { position: fixed; z-index: 150; right: auto; bottom: auto; }
 .menu-item {
   display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border: 0; border-radius: var(--radius-xs);
   background: transparent; color: var(--text); font-size: 0.9rem; text-align: left; text-decoration: none; cursor: pointer;

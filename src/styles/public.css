@@ -307,7 +307,7 @@ button.bubble-tag { cursor: pointer; }
 .cap-box.compact { --cap-widget-width: 220px; }
 .captcha-card { display: flex; flex-direction: column; gap: var(--space-4); }
 .captcha-card .card-header { margin-bottom: 0; }
-.captcha-provider { display: flex; flex-direction: column; gap: var(--space-3); margin: 0; padding: var(--space-3) var(--space-4) var(--space-4); border: 1px solid var(--border); border-radius: var(--radius); min-width: 0; }
+.captcha-provider { display: flex; flex-direction: column; gap: var(--space-3); margin: 0; width: 100%; padding: var(--space-3) var(--space-4) var(--space-4); border: 1px solid var(--border); border-radius: var(--radius); min-width: 0; }
 .captcha-provider legend { display: inline-flex; align-items: center; gap: 8px; padding: 0 6px; }
 .captcha-test { display: flex; flex-direction: column; gap: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--border); }
 .captcha-test .captcha-box { align-items: flex-start; }

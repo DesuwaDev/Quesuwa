@@ -198,7 +198,7 @@ test('admin and public pages work in a real browser', { skip: !chrome ? 'Chrome 
   await second.waitForSelector('.admin-main');
 
   // Every admin page renders at both sizes.
-  const pages = ['/admin', '/admin/forms', `/admin/forms/${form.id}/edit`, `/admin/forms/${form.id}/settings`, `/admin/forms/${form.id}/share`, `/admin/forms/${form.id}/responses`, `/admin/forms/${form.id}/analytics`, '/admin/notifications', '/admin/users', '/admin/system', '/admin/account'];
+  const pages = ['/admin', '/admin/forms', `/admin/forms/${form.id}/edit`, `/admin/forms/${form.id}/settings`, `/admin/forms/${form.id}/share`, `/admin/forms/${form.id}/responses`, `/admin/forms/${form.id}/analytics`, '/admin/notifications', '/admin/users', '/admin/system', '/admin/system?tab=settings', '/admin/system?tab=backup', '/admin/system?tab=captcha', '/admin/system?tab=activity', '/admin/account'];
   for (const [tab, label] of [[second, 'phone'], [page, 'desktop']]) {
     for (const url of pages) {
       await tab.goto(base + url, { waitUntil: 'domcontentloaded' });

@@ -55,7 +55,7 @@ onMounted(load);
 </script>
 
 <template>
-  <section class="card span-2 captcha-card">
+  <section class="card captcha-card">
     <header class="card-header">
       <h2><AppIcon name="shield" :size="18" />{{ t('captcha.title') }}</h2>
       <span v-if="form" class="badge" :class="dirty ? 'warning' : status.accepted.length ? 'success' : 'muted'">{{ dirty ? t('captcha.unsaved') : status.accepted.length ? t('captcha.live', { channels: status.accepted.map(id => NAMES[id]).join(' / ') }) : t('captcha.off') }}</span>
@@ -81,6 +81,7 @@ onMounted(load);
         </label>
       </div>
 
+      <div class="captcha-sections">
       <fieldset v-for="id in shown" :key="id" class="captcha-provider">
         <legend><strong>{{ NAMES[id] }}</strong><span class="badge" :class="status.ready[id] ? 'success' : 'muted'">{{ id === form.provider ? t('captcha.primaryBadge') : t('captcha.fallbackBadge') }}</span></legend>
         <template v-if="id === 'cap'">
@@ -158,7 +159,7 @@ onMounted(load);
         <a v-if="standalone(id)" class="text-button small" :href="CONSOLES[id]" target="_blank" rel="noopener noreferrer"><AppIcon name="external" :size="14" />{{ id === 'cap' ? t('captcha.capDocs') : t('captcha.getKeys') }}</a>
       </fieldset>
 
-      <fieldset v-if="usesCap" class="captcha-provider">
+      <fieldset v-if="usesCap && form.provider !== 'none'" class="captcha-provider">
         <legend><strong>{{ t('captcha.capFailure') }}</strong></legend>
         <div class="inline-fields">
           <label v-for="field in ['capBlockedFallback', 'capNetworkFallback']" :key="field" class="field">
@@ -173,7 +174,9 @@ onMounted(load);
         <p class="hint small">{{ t('captcha.capFailureHint') }}</p>
       </fieldset>
 
-      <div v-if="form.provider !== 'none'" class="inline-fields">
+      <fieldset v-if="form.provider !== 'none'" class="captcha-provider">
+        <legend><strong>{{ t('captcha.appearance') }}</strong></legend>
+        <div class="inline-fields">
         <label class="field">
           <span class="field-label">{{ t('captcha.theme') }}</span>
           <select v-model="form.theme" class="input select">
@@ -189,6 +192,8 @@ onMounted(load);
             <option value="compact">{{ t('captcha.sizeCompact') }}</option>
           </select>
         </label>
+        </div>
+      </fieldset>
       </div>
       <div><button type="button" class="button primary small" :disabled="saving || !dirty" @click="save">{{ t('common.save') }}</button></div>
 

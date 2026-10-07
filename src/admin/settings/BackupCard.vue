@@ -37,52 +37,55 @@ onMounted(load);
 </script>
 
 <template>
-  <section class="card span-2 backup-card">
+  <section class="card backup-card">
     <header class="card-header">
-      <h2><AppIcon name="shield" :size="18" />{{ t('system.backup') }}</h2>
+      <h2><AppIcon name="archive" :size="18" />{{ t('system.backup') }}</h2>
       <a class="button small" href="/api/admin/system/archive" download><AppIcon name="download" :size="14" />{{ t('backups.archive') }}</a>
     </header>
-    <template v-if="state">
-      <p class="muted small">{{ t('backups.intro') }}</p>
-      <form class="backup-settings" @submit.prevent="save">
-        <ToggleSwitch v-model="form.enabled" :label="t('backups.auto')" :hint="t('backups.autoHint', { zone: timezone })" />
-        <div class="inline-fields">
-          <label class="field">
-            <span class="field-label">{{ t('backups.hour') }}</span>
-            <select v-model.number="form.hour" class="input select" :disabled="!form.enabled">
-              <option v-for="hour in 24" :key="hour" :value="hour - 1">{{ String(hour - 1).padStart(2, '0') }}:00</option>
-            </select>
-          </label>
-          <label class="field">
-            <span class="field-label">{{ t('backups.keep') }}</span>
-            <input v-model.number="form.keep" class="input" type="number" min="1" max="60" step="1" />
-          </label>
-        </div>
-        <div class="button-row">
-          <button type="submit" class="button primary small" :disabled="saving || !dirty">{{ t('common.save') }}</button>
-          <button type="button" class="button small" :disabled="running" @click="run"><AppIcon name="play" :size="14" />{{ running ? t('backups.running') : t('backups.runNow') }}</button>
-        </div>
-      </form>
-      <p v-if="state.status" class="small status-line" :class="state.status.ok ? 'muted' : 'field-error'">
-        <AppIcon :name="state.status.ok ? 'checkCircle' : 'alert'" :size="14" />
-        {{ state.status.ok ? t('backups.lastOk', { time: formatDate(state.status.at), count: state.status.copied }) : t('backups.lastFailed', { time: formatDate(state.status.at), error: state.status.error }) }}
-      </p>
-      <ul v-if="state.items.length" class="backup-list">
-        <li v-for="item in state.items" :key="item.name">
-          <AppIcon name="database" :size="16" />
-          <span class="session-main"><strong class="mono">{{ item.name }}</strong><small class="muted">{{ formatDate(item.createdAt) }} · {{ formatBytes(item.size) }}</small></span>
-          <a class="icon-button ghost small" :href="'/api/admin/system/backups/' + item.name" download :aria-label="t('responses.download', { name: item.name })"><AppIcon name="download" :size="14" /></a>
-        </li>
-      </ul>
-      <p v-else class="muted small">{{ t('backups.none') }}</p>
-      <details class="samples-disclosure">
-        <summary>{{ t('backups.restoreTitle') }}</summary>
-        <ul class="tips-list">
+    <div v-if="state" class="backup-layout">
+      <div class="backup-main">
+        <p class="muted small">{{ t('backups.intro') }}</p>
+        <form class="backup-settings" @submit.prevent="save">
+          <ToggleSwitch v-model="form.enabled" :label="t('backups.auto')" :hint="t('backups.autoHint', { zone: timezone })" />
+          <div class="inline-fields">
+            <label class="field">
+              <span class="field-label">{{ t('backups.hour') }}</span>
+              <select v-model.number="form.hour" class="input select" :disabled="!form.enabled">
+                <option v-for="hour in 24" :key="hour" :value="hour - 1">{{ String(hour - 1).padStart(2, '0') }}:00</option>
+              </select>
+            </label>
+            <label class="field">
+              <span class="field-label">{{ t('backups.keep') }}</span>
+              <input v-model.number="form.keep" class="input" type="number" min="1" max="60" step="1" />
+            </label>
+          </div>
+          <div class="button-row">
+            <button type="submit" class="button primary small" :disabled="saving || !dirty">{{ t('common.save') }}</button>
+            <button type="button" class="button small" :disabled="running" @click="run"><AppIcon name="play" :size="14" />{{ running ? t('backups.running') : t('backups.runNow') }}</button>
+          </div>
+        </form>
+        <p v-if="state.status" class="small status-line" :class="state.status.ok ? 'muted' : 'field-error'">
+          <AppIcon :name="state.status.ok ? 'checkCircle' : 'alert'" :size="14" />
+          {{ state.status.ok ? t('backups.lastOk', { time: formatDate(state.status.at), count: state.status.copied }) : t('backups.lastFailed', { time: formatDate(state.status.at), error: state.status.error }) }}
+        </p>
+      </div>
+      <div class="backup-side">
+        <h3 class="subheading"><AppIcon name="database" :size="16" />{{ t('backups.snapshots') }}</h3>
+        <ul v-if="state.items.length" class="backup-list">
+          <li v-for="item in state.items" :key="item.name">
+            <AppIcon name="database" :size="16" />
+            <span class="session-main"><strong class="mono">{{ item.name }}</strong><small class="muted">{{ formatDate(item.createdAt) }} · {{ formatBytes(item.size) }}</small></span>
+            <a class="icon-button ghost small" :href="'/api/admin/system/backups/' + item.name" download :aria-label="t('responses.download', { name: item.name })"><AppIcon name="download" :size="14" /></a>
+          </li>
+        </ul>
+        <p v-else class="muted small">{{ t('backups.none') }}</p>
+        <h3 class="subheading"><AppIcon name="restore" :size="16" />{{ t('backups.restoreTitle') }}</h3>
+        <ol class="tips-list">
           <li>{{ t('backups.restore1') }}</li>
           <li>{{ t('backups.restore2') }}</li>
           <li>{{ t('system.backupTip2') }}</li>
-        </ul>
-      </details>
-    </template>
+        </ol>
+      </div>
+    </div>
   </section>
 </template>

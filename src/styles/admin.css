@@ -382,6 +382,44 @@
   .mail-frame { height: 380px; }
 }
 
+/* System page: tabbed sections */
+.system-page > .tabs { margin-bottom: var(--space-4); }
+.system-page > .banner { margin-bottom: var(--space-4); }
+.system-overview { display: flex; flex-direction: column; gap: var(--space-4); }
+.system-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); }
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-4); }
+.summary-card { display: flex; flex-direction: column; gap: var(--space-2); }
+.summary-head { display: flex; align-items: center; gap: 8px; color: var(--text-2); }
+.summary-head h2 { margin: 0; color: var(--text); font-size: 1rem; }
+.summary-status { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 0; font-size: 0.92rem; }
+.summary-meta { margin: 0; color: var(--text-3); font-size: 0.84rem; }
+.summary-card .meter-caption { margin: 0; }
+.summary-link { align-self: flex-start; margin-top: auto; padding-top: var(--space-2); }
+.recent-list { margin: 0; padding: 0 var(--space-5) var(--space-2); list-style: none; }
+.recent-list li { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: 10px 0; border-top: 1px solid var(--border); font-size: 0.9rem; }
+.recent-action { display: flex; flex-direction: column; min-width: 0; }
+.recent-action small { font-size: 0.8rem; }
+.recent-meta { display: flex; align-items: center; gap: 10px; flex: none; color: var(--text-3); font-size: 0.82rem; white-space: nowrap; }
+.settings-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4) var(--space-5); }
+.backup-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-4) var(--space-6); }
+.backup-main, .backup-side { display: flex; flex-direction: column; gap: var(--space-3); min-width: 0; }
+.backup-side .subheading { margin: 0; }
+/* Channel groups flow into two balanced columns on wide screens, one on narrow ones. */
+.captcha-sections { columns: 2 380px; column-gap: var(--space-4); }
+.captcha-sections > .captcha-provider { break-inside: avoid; margin-bottom: var(--space-4); }
+.captcha-test .subheading, .backup-side .subheading { padding-top: 0; border-top: 0; margin-top: 0; }
+@media (max-width: 900px) {
+  .backup-layout { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 760px) {
+  .system-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .settings-fields { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 480px) {
+  .recent-list { padding: 0 var(--space-4) var(--space-2); }
+  .recent-list li { flex-direction: column; align-items: flex-start; gap: 2px; }
+}
+
 /* Login */
 .login-screen { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; background: radial-gradient(900px 500px at 80% -10%, var(--primary-soft), transparent 70%), radial-gradient(700px 400px at -10% 110%, var(--primary-soft), transparent 70%), var(--bg); }
 .login-top { display: flex; align-items: center; justify-content: space-between; padding: var(--space-4) var(--space-5); }

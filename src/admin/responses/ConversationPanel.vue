@@ -172,8 +172,9 @@ defineExpose({ scrollToEnd });
       <AppIcon name="message" :size="16" /><strong>{{ t('ticket.conversation') }}</strong>
       <span class="spacer"></span>
       <button v-if="response.followUpUrl" type="button" class="text-button small" @click="copyFollowUp"><AppIcon name="link" :size="14" />{{ t('ticket.copyRespondentLink') }}</button>
-      <MenuButton v-if="writable && response.canIssueLink" :label="t('ticket.linkActions')" icon="more" button-class="icon-button ghost small">
-        <button type="button" class="menu-item" @click="reissueLink"><AppIcon name="link" :size="16" />{{ response.followUpUrl ? t('ticket.reissueLink') : t('ticket.issueLink') }}</button>
+      <span v-if="response.canIssueLink" class="badge" :class="response.followUpUrl ? 'success' : 'muted'">{{ response.followUpUrl ? t('ticket.linkActive') : t('ticket.linkRevokedBadge') }}</span>
+      <MenuButton v-if="writable && response.canIssueLink" :label="t('ticket.linkActions')" icon="link" :text="t('ticket.manageLink')" button-class="button ghost small">
+        <button type="button" class="menu-item" @click="reissueLink"><AppIcon name="refresh" :size="16" />{{ response.followUpUrl ? t('ticket.reissueLink') : t('ticket.issueLink') }}</button>
         <button v-if="response.followUpUrl" type="button" class="menu-item danger" @click="revokeLink"><AppIcon name="trash" :size="16" />{{ t('ticket.revokeLink') }}</button>
       </MenuButton>
     </header>

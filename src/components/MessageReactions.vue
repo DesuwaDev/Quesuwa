@@ -56,7 +56,7 @@ function pick(emoji) {
 function keydown(event) {
   if (event.key === 'Escape') { event.stopPropagation(); close(); trigger.value?.focus(); return; }
   if (event.key === 'Tab') return close();
-  const step = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: 5, ArrowUp: -5 }[event.key];
+  const step = { ArrowRight: 1, ArrowLeft: -1 }[event.key];
   if (!step) return;
   event.preventDefault();
   const items = [...(palette.value?.querySelectorAll('button') || [])];

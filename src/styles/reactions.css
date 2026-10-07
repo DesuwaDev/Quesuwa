@@ -21,11 +21,16 @@
 .bubble:hover .reaction-add, .bubble:focus-within .reaction-add, .reaction-add[aria-expanded="true"] { opacity: 1; }
 @media (hover: none) { .reactions.empty .reaction-add { opacity: 0.55; } }
 
-.reaction-palette { position: fixed; z-index: 150; display: grid; grid-template-columns: repeat(5, 44px); gap: 4px; padding: 10px; border-radius: var(--radius-lg); border: 1px solid var(--border); background: var(--surface); box-shadow: var(--shadow-lg); }
-.reaction-option { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 12px; background: transparent; cursor: pointer; transition: transform var(--fast), background var(--fast); }
-.reaction-option .reaction-emoji { font-size: 28px; }
+/* One compact row, a little larger for fingers; wraps only on very narrow screens. */
+.reaction-palette { position: fixed; z-index: 150; display: flex; flex-wrap: wrap; gap: 2px; max-width: calc(100vw - 16px); padding: 4px; border-radius: var(--radius-full); border: 1px solid var(--border); background: var(--surface); box-shadow: var(--shadow-md); }
+.reaction-option { display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 0; border-radius: var(--radius-full); background: transparent; cursor: pointer; transition: transform var(--fast), background var(--fast); }
+.reaction-option .reaction-emoji { font-size: 20px; }
+@media (pointer: coarse) {
+  .reaction-option { width: 36px; height: 36px; }
+  .reaction-option .reaction-emoji { font-size: 22px; }
+}
 .reaction-option:hover, .reaction-option:focus-visible { background: var(--surface-2); transform: scale(1.12); outline: none; }
 .reaction-option.mine { background: var(--primary-soft); }
-@media (max-width: 360px) {
-  .reaction-palette { grid-template-columns: repeat(4, 44px); }
+@media (max-width: 320px) {
+  .reaction-palette { border-radius: var(--radius-lg); }
 }

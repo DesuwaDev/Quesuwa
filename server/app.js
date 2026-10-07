@@ -135,10 +135,11 @@ export function createApp({ dataDir, password, username = 'admin', production = 
     return shell.html;
   }
   app.get(['/', '/admin', '/admin/*rest', '/f/:slug', '/t/:id'], (_req, res) => {
+    res.set('Cache-Control', 'no-store');
     if (!fs.existsSync(path.join(dist, 'index.html'))) return res.status(503).type('text').send(t('errors.frontendMissing'));
     const nonce = res.locals.cspNonce;
     const html = pageShell();
-    res.set('Cache-Control', 'no-store').type('html').send(nonce ? html.replace(/<head[^>]*>/i, match => `${match}<meta name="cap-nonce" content="${nonce}">`) : html);
+    res.type('html').send(nonce ? html.replace(/<head[^>]*>/i, match => `${match}<meta name="cap-nonce" content="${nonce}">`) : html);
   });
   app.use(errorHandler);
   return { app, release: () => tickets.release(), close: () => { stopJobs(); notifier.close(); db.close(); }, notifier, backups, retention, autoClose, setupCode: () => auth.setupNeeded() ? auth.setupCode() : null };

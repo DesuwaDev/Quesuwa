@@ -10,28 +10,76 @@ import { formatAnswer } from '../../shared/answers.js';
 import AppIcon from '../components/AppIcon.vue';
 import StatusBadge from '../components/StatusBadge.vue';
 import { statusKeys } from '../../shared/constants.js';
+import { startLive, sendKey } from '../lib/live.js';
+import { trackReads } from '../lib/read-receipts.js';
+import RichText from '../components/RichText.vue';
+import MessageAttachments from '../components/MessageAttachments.vue';
+import ComposerFiles from '../components/ComposerFiles.vue';
 
 const props = defineProps({ id: { type: String, required: true } });
 const key = ref(keyFromLocation() || savedTickets().find(item => item.id === props.id)?.key || '');
 const ticket = ref(null), error = ref(null), loading = ref(false), draft = ref(''), sending = ref(false), manual = ref('');
-const thread = ref(null);
+const thread = ref(null), files = ref([]), picker = ref(null);
 const headers = () => ({ 'X-Ticket-Key': key.value });
+const ticketPath = () => '/tickets/' + encodeURIComponent(props.id);
+
+// Attachments are fetched with the key in a header and shown from blob URLs.
+async function ticketFile(file, inline) {
+  const response = await fetch('/api' + ticketPath() + '/files/' + encodeURIComponent(file.id) + (inline ? '?inline=1' : ''), { headers: headers() });
+  if (!response.ok) throw new Error(String(response.status));
+  return URL.createObjectURL(await response.blob());
+}
+
+const reads = trackReads(ids => api(ticketPath() + '/read', { method: 'POST', headers: headers(), body: { ids } }));
 
 async function scrollToEnd() {
   await nextTick();
   thread.value?.scrollTo({ top: thread.value.scrollHeight, behavior: 'smooth' });
+}
+// Only follow new messages when the reader is already at the bottom of the thread.
+const nearBottom = () => !thread.value || thread.value.scrollTop + thread.value.clientHeight >= thread.value.scrollHeight - 80;
+
+// Replies that arrive while the tab is in the background show up as "(2) …" in the title.
+const unseen = ref(0);
+const baseTitle = () => ticket.value ? ticket.value.formTitle + ' · ' + t('app.brand') : t('app.brand');
+const updateTitle = () => { document.title = (unseen.value ? `(${unseen.value}) ` : '') + baseTitle(); };
+
+function apply(data, { follow = false } = {}) {
+  const known = new Set((ticket.value?.messages || []).map(message => message.id));
+  const incoming = ticket.value ? data.messages.filter(message => !known.has(message.id) && message.author !== 'respondent') : [];
+  const stick = follow || nearBottom();
+  ticket.value = data;
+  if (incoming.length && document.visibilityState !== 'visible') unseen.value += incoming.length;
+  updateTitle();
+  if (stick && (incoming.length || follow)) scrollToEnd();
+  nextTick(() => reads.observe(thread.value));
+}
+
+let stopLive = null;
+const connection = ref('online');
+const outbox = sendKey();
+function watchTicket() {
+  if (stopLive || !ticket.value) return;
+  stopLive = startLive(async signal => {
+    try {
+      return await api(ticketPath() + '/wait?rev=' + encodeURIComponent(ticket.value.rev), { headers: headers(), signal });
+    } catch (reason) {
+      if (reason.code === 'errors.ticketNotFound') { error.value = reason; stopLive?.(); stopLive = null; }
+      throw reason;
+    }
+  }, data => apply(data), { onStatus: value => { connection.value = value; } });
 }
 
 async function load(quiet = false) {
   if (!key.value) return;
   if (!quiet) loading.value = true;
   try {
-    const previous = ticket.value?.messages.length;
-    ticket.value = await api('/tickets/' + encodeURIComponent(props.id), { headers: headers() });
+    const data = await api('/tickets/' + encodeURIComponent(props.id), { headers: headers() });
+    const first = !ticket.value;
+    apply(data, { follow: first });
     error.value = null;
     rememberTicket({ id: props.id, key: key.value, title: ticket.value.formTitle });
-    document.title = ticket.value.formTitle + ' · ' + t('app.brand');
-    if (previous !== ticket.value.messages.length) scrollToEnd();
+    watchTicket();
   } catch (reason) {
     error.value = reason;
     if (reason.code === 'errors.ticketNotFound') forgetTicket(props.id);
@@ -39,12 +87,20 @@ async function load(quiet = false) {
 }
 
 async function send() {
-  if (!draft.value.trim()) return;
+  if (!draft.value.trim() && !files.value.length) return;
   sending.value = true;
   try {
-    ticket.value = await api('/tickets/' + encodeURIComponent(props.id) + '/messages', { method: 'POST', headers: headers(), body: { body: draft.value } });
+    let body = { body: draft.value };
+    if (files.value.length) {
+      body = new FormData();
+      body.append('body', draft.value);
+      for (const file of files.value) body.append('files', file);
+    }
+    const sendId = outbox.for(draft.value + '|' + files.value.map(file => file.name + file.size).join());
+    apply(await api(ticketPath() + '/messages', { method: 'POST', headers: { ...headers(), 'Idempotency-Key': sendId }, body }), { follow: true });
+    outbox.done();
     draft.value = '';
-    scrollToEnd();
+    files.value = [];
   } catch (reason) { notify(reason.code || 'errors.operation', { type: 'error', params: reason.params || {} }); }
   finally { sending.value = false; }
 }
@@ -60,10 +116,16 @@ async function copyLink() {
   if (await copyText(ticketLink(props.id, key.value))) notify('ticket.linkCopied');
 }
 
+function onPaste(event) {
+  const list = event.clipboardData?.files;
+  if (list?.length && ticket.value?.files.allowed && picker.value?.add(list, true)) event.preventDefault();
+}
+function onDrop(event) { if (ticket.value?.files.allowed) picker.value?.add(event.dataTransfer?.files); }
+
 const keydown = event => { if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') send(); };
-const onVisible = () => { if (document.visibilityState === 'visible' && ticket.value) load(true); };
+const onVisible = () => { if (document.visibilityState === 'visible' && unseen.value) { unseen.value = 0; updateTitle(); } };
 onMounted(() => { load(); document.addEventListener('visibilitychange', onVisible); });
-onBeforeUnmount(() => document.removeEventListener('visibilitychange', onVisible));
+onBeforeUnmount(() => { stopLive?.(); reads.stop(); document.removeEventListener('visibilitychange', onVisible); });
 
 const answerOf = field => field.type === 'file'
   ? (field.value || []).map(file => `${file.name} (${formatBytes(file.size)})`).join(t('common.listSeparator'))
@@ -118,18 +180,22 @@ const answerOf = field => field.type === 'file'
               <span>{{ t('ticket.statusEvent', { status: t(statusKeys[message.body.replace(/^status:/, '')] || 'status.pending') }) }}</span>
               <time :datetime="message.createdAt" :title="formatDate(message.createdAt)">{{ relativeTime(message.createdAt) }}</time>
             </div>
-            <div v-else class="bubble" :class="message.author === 'staff' ? 'from-staff' : 'from-me'">
+            <div v-else class="bubble" :class="message.author === 'staff' ? 'from-staff' : 'from-me'" :data-read-id="message.author === 'staff' ? message.id : undefined">
               <span class="bubble-author">{{ message.author === 'staff' ? t('ticket.staff', { name: message.authorName }) : t('ticket.me') }}</span>
-              <p class="preserve">{{ message.body }}</p>
+              <RichText v-if="message.body" :text="message.body" />
+              <MessageAttachments :files="message.attachments" :source="ticketFile" />
               <time class="bubble-time" :datetime="message.createdAt" :title="formatDate(message.createdAt)">{{ relativeTime(message.createdAt) }}</time>
             </div>
           </template>
         </div>
-        <form v-if="ticket.canReply" class="ticket-composer" @submit.prevent="send">
-          <textarea v-model="draft" class="input textarea autosize" rows="2" maxlength="5000" :placeholder="t('ticket.replyPlaceholder')" :aria-label="t('ticket.replyPlaceholder')" @keydown="keydown"></textarea>
+        <p v-if="connection === 'offline'" class="banner warning live-offline" role="status"><AppIcon name="alert" :size="16" /><span>{{ t('ticket.offline') }}</span></p>
+        <form v-if="ticket.canReply" class="ticket-composer" @submit.prevent="send" @dragover.prevent @drop.prevent="onDrop">
+          <textarea v-model="draft" class="input textarea autosize" rows="2" maxlength="5000" :placeholder="t('ticket.replyPlaceholder')" :aria-label="t('ticket.replyPlaceholder')" @keydown="keydown" @paste="onPaste"></textarea>
+          <ComposerFiles v-if="ticket.files.allowed" ref="picker" v-model="files" :max="ticket.files.max" :max-m-b="ticket.files.maxMB" />
           <div class="ticket-composer-foot">
-            <small class="muted">{{ t('ticket.sendHint') }}</small>
-            <button type="submit" class="button primary" :disabled="sending || !draft.trim()"><AppIcon name="send" :size="16" />{{ sending ? t('form.submitting') : t('ticket.send') }}</button>
+            <button v-if="ticket.files.allowed" type="button" class="icon-button ghost" :aria-label="t('ticket.attach')" :title="t('ticket.attach')" :disabled="files.length >= ticket.files.max" @click="picker?.pick()"><AppIcon name="paperclip" :size="18" /></button>
+            <small class="muted">{{ ticket.files.allowed ? t('ticket.composeHintFiles') : t('ticket.composeHint') }}</small>
+            <button type="submit" class="button primary" :disabled="sending || (!draft.trim() && !files.length)"><AppIcon name="send" :size="16" />{{ sending ? t('form.submitting') : t('ticket.send') }}</button>
           </div>
         </form>
         <p v-else-if="ticket.closed" class="banner ticket-locked">

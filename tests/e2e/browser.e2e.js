@@ -41,11 +41,12 @@ test('admin and public pages work in a real browser', { skip: !chrome ? 'Chrome 
     const page = await context.newPage();
     await page.evaluateOnNewDocument(() => { try { localStorage.setItem('quesuwa.locale', 'en'); } catch { /* about:blank has no storage. */ } });
     page.on('pageerror', error => errors.push(`${page.url()}: ${error.message}`));
-    page.on('console', message => { if (message.type() === 'error' && !/status of 40[13]/.test(message.text())) errors.push(`${page.url()}: ${message.text()}`); });
+    page.on('console', message => { if (message.type() === 'error' && !/status of 40[13]|ERR_INTERNET_DISCONNECTED/.test(message.text())) errors.push(`${page.url()}: ${message.text()}`); });
     await page.setViewport(viewport);
     return page;
   }
-  const settle = page => page.waitForNetworkIdle({ idleTime: 300, timeout: 15_000 }).catch(() => {});
+  // Pages with live updates always keep one long-poll request open.
+  const settle = page => page.waitForNetworkIdle({ idleTime: 300, timeout: 15_000, concurrency: 1 }).catch(() => {});
   const overflow = page => page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   const code = (secret, offset = 0) => hotp(secret, Math.floor(Date.now() / 30_000) + offset);
   const phone = { width: 390, height: 844, isMobile: true, hasTouch: true, deviceScaleFactor: 2 };
@@ -92,7 +93,88 @@ test('admin and public pages work in a real browser', { skip: !chrome ? 'Chrome 
   assert.equal(response.answers.site, 'Mirror site');
   assert.equal(response.attachments.length, 1);
   assert.equal(response.environment.viewport, '390x844');
+
+  // Ticket conversations update live on both sides without reloading.
+  const support = await page.evaluate(async () => (await fetch('/api/admin/forms', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title: 'Support', slug: 'support', state: 'published', settings: { ticketMode: true }, fields: [{ id: 'q', type: 'long', label: 'Issue' }] }) })).json());
+  const ticket = await visitor.evaluate(async version => {
+    const body = new FormData();
+    body.set('answers', JSON.stringify({ q: 'Live check' }));
+    body.set('version', String(version));
+    return (await (await fetch('/api/forms/support/responses', { method: 'POST', body })).json()).ticket;
+  }, support.version);
+  await visitor.goto(`${base}/t/${ticket.id}#k=${ticket.key}`, { waitUntil: 'networkidle2' });
+  await visitor.waitForSelector('.ticket-composer');
+  await page.goto(`${base}/admin/forms/${support.id}/responses?r=${ticket.id}`, { waitUntil: 'networkidle2' });
+  await page.waitForSelector('.ticket-admin');
+  await page.evaluate(async id => (await fetch(`/api/admin/responses/${id}/messages`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ body: 'Staff says hi' }) })).json(), ticket.id);
+  await visitor.waitForFunction(() => [...document.querySelectorAll('.bubble.from-staff p')].some(node => node.textContent === 'Staff says hi'), { timeout: 8000 });
+  await visitor.type('.ticket-composer textarea', 'Respondent answers');
+  await visitor.click('.ticket-composer button[type=submit]');
+  await page.waitForFunction(() => [...document.querySelectorAll('.ticket-admin .bubble p')].some(node => node.textContent === 'Respondent answers'), { timeout: 8000 });
+  // A phone that drops off the network shows a hint and catches up by itself once back online.
+  await visitor.setOfflineMode(true);
+  await visitor.waitForSelector('.live-offline', { timeout: 8000 });
+  await page.evaluate(async id => (await fetch(`/api/admin/responses/${id}/messages`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ body: 'Sent while you were away' }) })).json(), ticket.id);
+  await visitor.setOfflineMode(false);
+  await visitor.waitForFunction(() => [...document.querySelectorAll('.bubble.from-staff p')].some(node => node.textContent === 'Sent while you were away'), { timeout: 10000 });
+  await visitor.waitForFunction(() => !document.querySelector('.live-offline'), { timeout: 10000 });
+
+  // Markdown, pasted screenshots, read receipts, and silent staff edits and retractions.
+  await page.evaluate(async id => (await fetch(`/api/admin/responses/${id}/messages`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ body: 'Try **this** guide: [docs](https://example.com/docs)' }) })).json(), ticket.id);
+  await visitor.waitForFunction(() => [...document.querySelectorAll('.bubble.from-staff .rich-text strong')].some(node => node.textContent === 'this'), { timeout: 8000 });
+  assert.equal(await visitor.$eval('.bubble.from-staff:last-of-type .rich-text a', link => link.getAttribute('href') + '|' + link.rel), 'https://example.com/docs|noopener noreferrer nofollow');
+  await visitor.bringToFront();
+  await page.waitForFunction(() => [...document.querySelectorAll('.ticket-admin .read-receipt.read')].length >= 1, { timeout: 10000 });
+  await visitor.focus('.ticket-composer textarea');
+  await visitor.evaluate(() => {
+    const png = Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII='), char => char.charCodeAt(0));
+    const data = new DataTransfer();
+    data.items.add(new File([png], 'image.png', { type: 'image/png' }));
+    document.querySelector('.ticket-composer textarea').dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }));
+  });
+  await visitor.waitForSelector('.composer-file-list li');
+  await visitor.click('.ticket-composer button[type=submit]');
+  await visitor.waitForSelector('.bubble.from-me .message-image img', { timeout: 8000 });
+  await page.waitForSelector('.ticket-admin .message-image img', { timeout: 8000 });
+
+  // Staff correct the respondent's message from the message menu.
+  const target = await page.$$eval('.ticket-admin .bubble.from-staff', bubbles => bubbles.findIndex(bubble => bubble.textContent.includes('Respondent answers')));
+  const bubbles = await page.$$('.ticket-admin .bubble.from-staff');
+  await (await bubbles[target].$('.bubble-menu .menu-trigger')).click();
+  await page.click('.menu-popover .menu-item');
+  await page.waitForSelector('.bubble-edit textarea');
+  await page.$eval('.bubble-edit textarea', area => { area.value = ''; area.dispatchEvent(new Event('input')); });
+  await page.type('.bubble-edit textarea', 'Respondent answers (corrected)');
+  await page.click('.bubble-edit button[type=submit]');
+  await page.waitForFunction(() => [...document.querySelectorAll('.ticket-admin .bubble-tag')].some(tag => tag.textContent.trim() === 'Edited'), { timeout: 8000 });
+  await visitor.waitForFunction(() => [...document.querySelectorAll('.bubble.from-me')].some(bubble => bubble.textContent.includes('Respondent answers (corrected)')), { timeout: 8000 });
+  assert.equal(await visitor.$('.bubble-tag'), null, 'the respondent sees no edit marker');
+
+  // Retracting a staff message removes it from the respondent's page.
+  const staffIndex = await page.$$eval('.ticket-admin .bubble.from-me', items => items.findIndex(item => item.textContent.includes('Staff says hi')));
+  await (await (await page.$$('.ticket-admin .bubble.from-me'))[staffIndex].$('.bubble-menu .menu-trigger')).click();
+  await page.click('.menu-popover .menu-item.danger');
+  await page.waitForSelector('.modal-actions .button.danger');
+  await page.click('.modal-actions .button.danger');
+  await page.waitForSelector('.ticket-admin .bubble.retracted');
+  await visitor.waitForFunction(() => ![...document.querySelectorAll('.bubble.from-staff')].some(bubble => bubble.textContent.includes('Staff says hi')), { timeout: 8000 });
   assert.ok(await overflow(visitor) <= 1, 'public form fits a phone screen');
+
+  // Built-in Cap: the real widget solves a proof-of-work challenge under the site's CSP.
+  await page.evaluate(async () => {
+    await (await fetch('/api/admin/system/captcha', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ provider: 'cap', providers: { cap: { mode: 'builtin', strength: 'low' } } }) })).json();
+    await (await fetch('/api/admin/forms', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title: 'Guarded', slug: 'guarded', state: 'published', settings: { captcha: true }, fields: [{ id: 'q', type: 'short', label: 'Name' }] }) })).json();
+  });
+  const guarded = await open(await browser.createBrowserContext(), phone);
+  await guarded.goto(base + '/f/guarded', { waitUntil: 'networkidle0' });
+  await guarded.type('input.input', 'Bot or not');
+  await guarded.click('button.submit-button');
+  await guarded.waitForSelector('.form-error');
+  await guarded.waitForSelector('cap-widget');
+  await guarded.click('cap-widget');
+  await guarded.waitForFunction(() => document.querySelector('cap-widget')?.shadowRoot?.querySelector('[data-state="done"], .done') || document.querySelector('cap-widget input[name="captcha-token"]')?.value, { timeout: 30000 });
+  await guarded.click('button.submit-button');
+  await guarded.waitForSelector('.success-panel', { timeout: 15000 });
 
   // Enrol two-step verification from the account page.
   await page.goto(base + '/admin/account', { waitUntil: 'networkidle0' });

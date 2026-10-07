@@ -16,6 +16,10 @@ const slugPrefix = '/f/';
 const slugValid = computed(() => /^[a-z0-9][a-z0-9-]{1,63}$/.test(props.draft.slug));
 const linkChanged = computed(() => props.form.state === 'published' && props.draft.slug !== props.form.slug);
 const deliveries = ref([]), testing = ref(false), testResult = ref(null);
+// Whether the workspace has a verification channel; the per-form switch depends on it.
+const captchaChannel = ref(undefined);
+const captchaNames = { cap: 'Cap', turnstile: 'Cloudflare Turnstile', hcaptcha: 'hCaptcha', recaptcha: 'reCAPTCHA v2', recaptchaV3: 'reCAPTCHA v3' };
+api('/captcha').then(config => { captchaChannel.value = config?.primary.provider || null; }).catch(() => { captchaChannel.value = null; });
 const webhookSaved = computed(() => Boolean(props.form.settings?.webhookUrl) && props.form.settings.webhookUrl === settings.value.webhookUrl);
 const scheduleInvalid = computed(() => settings.value.startsAt && settings.value.endsAt && settings.value.startsAt >= settings.value.endsAt);
 
@@ -86,6 +90,11 @@ onMounted(() => { loadDeliveries(); loadMessaging(); });
         <small class="hint">{{ t('settings.limitHint') }}</small>
       </label>
       <ToggleSwitch v-model="settings.onePerDevice" :label="t('settings.onePerDevice')" :hint="t('settings.onePerDeviceHint')" :disabled="readonly" />
+      <ToggleSwitch v-model="settings.captcha" :label="t('settings.captcha')" :hint="captchaChannel ? t('settings.captchaHint', { provider: captchaNames[captchaChannel] }) : ''" :disabled="readonly" />
+      <p v-if="settings.captcha && captchaChannel === null" class="banner warning small">
+        <AppIcon name="alert" :size="14" /><span>{{ t('settings.captchaMissing') }}</span>
+        <a v-if="allowed('system.read')" class="text-button small" href="/admin/system" @click="linkHandler('/admin/system')($event)">{{ t('settings.captchaSetup') }}</a>
+      </p>
       <label class="field">
         <span class="field-label">{{ t('settings.accessCode') }}</span>
         <span class="input-affix">
@@ -117,6 +126,7 @@ onMounted(() => { loadDeliveries(); loadMessaging(); });
         </div>
       </div>
       <ToggleSwitch v-model="settings.ticketMode" :label="t('settings.ticketMode')" :hint="t('settings.ticketModeHint')" :disabled="readonly" />
+      <ToggleSwitch v-if="settings.ticketMode" v-model="settings.ticketFiles" :label="t('settings.ticketFiles')" :hint="t('settings.ticketFilesHint')" :disabled="readonly" />
       <label v-if="settings.ticketMode" class="field">
         <span class="field-label">{{ t('settings.autoClose') }}</span>
         <select v-model.number="settings.autoCloseDays" class="input select" :disabled="readonly">

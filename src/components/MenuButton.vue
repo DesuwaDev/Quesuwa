@@ -17,9 +17,17 @@ async function toggle() {
   open.value = true;
   document.addEventListener('pointerdown', onDocument, true);
   await nextTick();
-  // Open upwards when the menu would overflow the bottom of the viewport.
+  // Open upwards when the menu would overflow the bottom of the viewport or of a scrolling panel it sits in.
   const rect = menu.value?.getBoundingClientRect();
-  up.value = Boolean(rect && rect.bottom > window.innerHeight - 8 && rect.top - rect.height > 60);
+  let bottom = window.innerHeight - 8, top = 60;
+  for (let parent = root.value?.parentElement; parent; parent = parent.parentElement) {
+    if (!/(auto|scroll)/.test(getComputedStyle(parent).overflowY)) continue;
+    const box = parent.getBoundingClientRect();
+    bottom = Math.min(bottom, box.bottom - 4);
+    top = Math.max(top, box.top);
+    break;
+  }
+  up.value = Boolean(rect && rect.bottom > bottom && rect.top - rect.height > top);
   menu.value?.querySelector('button:not([disabled]), a')?.focus({ preventScroll: true });
 }
 function keydown(event) {

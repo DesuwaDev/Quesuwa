@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { fileTypeFromBuffer } from 'file-type';
 import { fail } from '../errors.js';
 
-const allowedMime = ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'application/pdf'];
+const allowedMime = ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'application/pdf', 'video/mp4', 'video/webm', 'video/quicktime'];
 
 export function cleanName(raw) {
   // Browsers send UTF-8 filenames, while multipart headers default to Latin-1.
@@ -35,12 +35,16 @@ export function createStorage(db, { dataDir, quotaMB }) {
     for (const row of rows) for (const file of JSON.parse(row.attachments)) insert.run(file.id);
   }
 
-  const usedBytes = () => db.prepare("SELECT COALESCE(SUM(json_extract(a.value,'$.size')),0) AS bytes FROM responses r, json_each(r.attachments) a").get().bytes;
+  // Questionnaire uploads and conversation attachments share one quota.
+  const usedBytes = () => db.prepare("SELECT COALESCE(SUM(json_extract(a.value,'$.size')),0) AS bytes FROM responses r, json_each(r.attachments) a").get().bytes
+    + db.prepare("SELECT COALESCE(SUM(json_extract(a.value,'$.size')),0) AS bytes FROM messages m, json_each(m.attachments) a").get().bytes;
 
   function usage() {
     let bytes = 0, files = 0;
-    for (const row of db.prepare('SELECT attachments FROM responses').iterate()) {
-      for (const file of JSON.parse(row.attachments)) { bytes += file.size; files++; }
+    for (const table of ['responses', 'messages']) {
+      for (const row of db.prepare(`SELECT attachments FROM ${table}`).iterate()) {
+        for (const file of JSON.parse(row.attachments || '[]')) { bytes += file.size; files++; }
+      }
     }
     let databaseBytes = 0;
     for (const suffix of ['', '-wal']) {
@@ -63,9 +67,22 @@ export function createStorage(db, { dataDir, quotaMB }) {
       if (decoded.includes('\0')) throw fail(400, 'errors.textFile');
       mime = 'text/plain';
     } else throw fail(400, 'errors.fileType');
-    const group = mime.startsWith('image/') ? 'image' : mime === 'application/pdf' ? 'pdf' : 'text';
+    const group = mime.startsWith('image/') ? 'image' : mime.startsWith('video/') ? 'video' : mime === 'application/pdf' ? 'pdf' : 'text';
     if (field.fileKinds && !field.fileKinds.includes(group)) throw fail(400, 'errors.fileType');
     return { id: randomUUID(), fieldId: field.id, name: cleanName(file.originalname), mime, size: file.size };
+  }
+
+  // Sends a stored file. Raster images and videos may be shown inline; everything else downloads.
+  function send(res, file, inline) {
+    res.set('X-Content-Type-Options', 'nosniff');
+    const done = error => { if (error && !res.headersSent) res.status(404).end(); };
+    if (inline && /^(image\/(png|jpeg|webp|gif)|video\/(mp4|webm|quicktime))$/.test(file.mime)) {
+      res.set('Content-Security-Policy', "default-src 'none'; img-src 'self'; media-src 'self'; style-src 'unsafe-inline'; sandbox");
+      res.set('Cache-Control', 'private, max-age=300');
+      return res.type(file.mime).sendFile(filePath(file.id), done);
+    }
+    res.set('Content-Type', file.mime);
+    res.download(filePath(file.id), file.name, done);
   }
 
   function ensureCapacity(incomingBytes) {
@@ -87,5 +104,5 @@ export function createStorage(db, { dataDir, quotaMB }) {
   }
 
   cleanup();
-  return { filePath, cleanup, queue, usage, inspect, ensureCapacity, write };
+  return { filePath, cleanup, queue, usage, inspect, ensureCapacity, write, send };
 }

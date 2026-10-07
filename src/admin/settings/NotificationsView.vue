@@ -26,6 +26,7 @@ function adopt(config) {
     telegram: { ...config.telegram, token: '', clearToken: false, chatIdsText: config.telegram.chatIds.join('\n') },
     digest: { ...config.digest },
     appearance: { ...config.appearance },
+    conversation: { ...config.conversation },
     templates: config.templates.map(item => ({ ...item }))
   };
   baseline.value = JSON.stringify(form.value);
@@ -50,6 +51,7 @@ function payload() {
     telegram: { ...telegram, chatIds: chatIdsText.split(/[\s,;，；]+/).map(item => item.trim()).filter(Boolean) },
     digest: value.digest,
     appearance: value.appearance,
+    conversation: value.conversation,
     templates: value.templates.filter(item => item.title.trim() || item.body.trim())
   };
 }
@@ -98,6 +100,11 @@ watch(() => form.value && [previewKind.value, JSON.stringify(form.value.appearan
   previewTimer = setTimeout(renderPreview, 350);
 });
 onBeforeUnmount(() => clearTimeout(previewTimer));
+// The longest delay can never be shorter than the quiet period.
+watch(() => form.value?.conversation.delayMinutes, delay => {
+  const value = form.value?.conversation;
+  if (value && delay > value.maxMinutes) value.maxMinutes = [5, 10, 15, 30, 60, 120].find(minutes => minutes >= delay);
+});
 const colorValid = computed(() => /^#[0-9a-fA-F]{6}$/.test(form.value?.appearance.color || ''));
 
 const useCurrentSite = () => { form.value.siteUrl = window.location.origin; };
@@ -188,6 +195,29 @@ onMounted(load);
           </label>
           <button type="button" class="button small" :disabled="dirty || !testTo || testing === 'mail'" @click="test('mail')"><AppIcon name="send" :size="14" />{{ testing === 'mail' ? t('common.loading') : t('notifyCenter.test') }}</button>
         </div>
+      </section>
+
+      <section class="card settings-card">
+        <header class="card-header"><h2><AppIcon name="message" :size="18" />{{ t('notifyCenter.conversation') }}</h2></header>
+        <p class="muted small">{{ t('notifyCenter.conversationIntro') }}</p>
+        <div class="inline-fields">
+          <label class="field">
+            <span class="field-label">{{ t('notifyCenter.conversationDelay') }}</span>
+            <select v-model.number="form.conversation.delayMinutes" class="input select">
+              <option :value="0">{{ t('notifyCenter.conversationImmediate') }}</option>
+              <option v-for="minutes in [1, 2, 3, 5, 10, 15, 30]" :key="minutes" :value="minutes">{{ t('notifyCenter.minutes', { count: minutes }) }}</option>
+            </select>
+            <small class="hint">{{ t('notifyCenter.conversationDelayHint') }}</small>
+          </label>
+          <label class="field">
+            <span class="field-label">{{ t('notifyCenter.conversationMax') }}</span>
+            <select v-model.number="form.conversation.maxMinutes" class="input select" :disabled="!form.conversation.delayMinutes">
+              <option v-for="minutes in [5, 10, 15, 30, 60, 120]" :key="minutes" :value="minutes" :disabled="minutes < form.conversation.delayMinutes">{{ t('notifyCenter.minutes', { count: minutes }) }}</option>
+            </select>
+            <small class="hint">{{ t('notifyCenter.conversationMaxHint') }}</small>
+          </label>
+        </div>
+        <ToggleSwitch v-model="form.conversation.skipIfSeen" :label="t('notifyCenter.conversationSkipSeen')" :hint="t('notifyCenter.conversationSkipSeenHint')" :disabled="!form.conversation.delayMinutes" />
       </section>
 
       <section class="card settings-card">

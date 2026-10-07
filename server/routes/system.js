@@ -38,7 +38,7 @@ export function overviewRoutes({ db }) {
   return router;
 }
 
-export function systemRoutes({ db, storage, settings, audit, publicOrigin, backups }) {
+export function systemRoutes({ db, storage, settings, audit, publicOrigin, backups, captcha }) {
   const router = Router();
   router.get('/', (req, res) => {
     const page = Math.max(1, Number.parseInt(req.query.page, 10) || 1);
@@ -57,6 +57,17 @@ export function systemRoutes({ db, storage, settings, audit, publicOrigin, backu
       events: { total, page, pageSize: 25, items: db.prepare('SELECT action, target, detail, actor, created_at AS createdAt FROM audit ORDER BY id DESC LIMIT 25 OFFSET ?').all((page - 1) * 25) }
     });
   });
+  // Human verification: channels, keys (write-only secrets) and a live test of the saved setup.
+  router.get('/captcha', (_req, res) => res.json({ config: captcha.config(), public: captcha.publicConfig() }));
+  router.put('/captcha', (req, res) => {
+    const config = captcha.update(req.body);
+    audit(req, 'captchaSettings', 'system', config.provider);
+    res.json({ config, public: captcha.publicConfig() });
+  });
+  router.post('/captcha/verify', async (req, res) => {
+    res.json({ ok: await captcha.verify(req.body?.provider || '', req.body?.token, req.ip) });
+  });
+
   router.get('/backups', (_req, res) => res.json({ config: backups.config(), status: backups.status(), items: backups.list() }));
   router.put('/backups', (req, res) => {
     const config = backups.update(req.body);

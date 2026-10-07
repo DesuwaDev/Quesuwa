@@ -27,6 +27,10 @@ const server = instance.app.listen(port, host, () => console.log(t('cli.listenin
 server.requestTimeout = 120000;
 server.headersTimeout = 30000;
 server.maxHeadersCount = 100;
-function stop() { server.close(() => { instance.close(); process.exit(0); }); }
+function stop() {
+  // Waiting conversation requests are answered first so shutdown is immediate.
+  instance.release();
+  server.close(() => { instance.close(); process.exit(0); });
+}
 process.on('SIGTERM', stop);
 process.on('SIGINT', stop);

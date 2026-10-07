@@ -524,6 +524,36 @@
       },
       {
         "kind": "literal",
+        "value": "Cap",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "Cloudflare Turnstile",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "hCaptcha",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "reCAPTCHA v2",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "reCAPTCHA v3",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/captcha",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
         "value": "ABCDEFGHJKLMNPQRSTUVWXYZ23456789",
         "reason": "Character set for generated random codes."
       },
@@ -586,6 +616,11 @@
         "kind": "literal",
         "value": "system.read",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/admin/system",
+        "reason": "Route, URL, file path or query string fragment."
       },
       {
         "kind": "literal",
@@ -1438,7 +1473,27 @@
     "literals": [
       {
         "kind": "literal",
+        "value": "2-digit",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "updated",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "/api/admin/responses/${}/conversation-files/${}${}",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "?inline=1",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "numeric",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
@@ -1463,7 +1518,17 @@
       },
       {
         "kind": "literal",
+        "value": "info",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "error",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "files",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
@@ -1502,6 +1567,26 @@
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
+        "kind": "template",
+        "value": "/admin/responses/${}/messages/${}",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "PATCH",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "DELETE",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "template",
+        "value": "/admin/responses/${}/messages/${}/restore",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
         "kind": "literal",
         "value": "Enter",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
@@ -1534,6 +1619,16 @@
       {
         "kind": "literal",
         "value": "mail",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "checkCircle",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "circle",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
@@ -1650,7 +1745,27 @@
       },
       {
         "kind": "literal",
+        "value": "online",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "visible",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/wait?rev=",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
         "value": "PATCH",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "info",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
@@ -1730,7 +1845,17 @@
       },
       {
         "kind": "literal",
+        "value": "visibilitychange",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "mailto:",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "offline",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
@@ -2071,6 +2196,175 @@
         "kind": "literal",
         "value": "/api/admin/system/backups/",
         "reason": "Route, URL, file path or query string fragment."
+      }
+    ]
+  },
+  "src/admin/settings/CaptchaCard.vue": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "cap",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "turnstile",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "hcaptcha",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "recaptcha",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "recaptchaV3",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "Cap",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "Cloudflare Turnstile",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "hCaptcha",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "Google reCAPTCHA v2",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "Google reCAPTCHA v3",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "https://dash.cloudflare.com/?to=/:account/turnstile",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "https://dashboard.hcaptcha.com/sites",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "https://www.google.com/recaptcha/admin",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "https://capjs.js.org/guide/standalone/",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "standalone",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/admin/system/captcha",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "PUT",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "missing",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/admin/system/captcha/verify",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "POST",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "ok",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "rejected",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "warning",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "success",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "muted",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "none",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "builtin",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "text",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "password",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "eyeOff",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "eye",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "capBlockedFallback",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "capNetworkFallback",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       }
     ]
   },
@@ -2633,6 +2927,55 @@
       }
     ]
   },
+  "src/components/CaptchaWidget.vue": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "token",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "loading",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "unavailable",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "ready",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "cap",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "failed",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "recaptchaV3",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "blocked",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "network",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      }
+    ]
+  },
   "src/components/charts/ColumnChart.vue": {
     "literals": [
       {
@@ -2678,6 +3021,21 @@
         "kind": "literal",
         "value": "nps-",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      }
+    ]
+  },
+  "src/components/ComposerFiles.vue": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "update:modelValue",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      }
+    ],
+    "dynamicKeys": [
+      {
+        "expression": "fileKindKeys[kind]",
+        "reason": "Key resolved from a fixed translation-key map, a reviewed key prefix or a validated API error code."
       }
     ]
   },
@@ -3346,6 +3704,35 @@
       }
     ]
   },
+  "src/components/MessageAttachments.vue": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "image",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "video",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "file",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "blob:",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "a",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      }
+    ]
+  },
   "src/components/ModalFrame.vue": {
     "literals": [
       {
@@ -3416,6 +3803,155 @@
       {
         "expression": "label",
         "reason": "Key resolved from a fixed translation-key map, a reviewed key prefix or a validated API error code."
+      }
+    ]
+  },
+  "src/components/RichText.vue": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "text",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "code",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "strong",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "em",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "del",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "a",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "_blank",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "noopener noreferrer nofollow",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "link",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "md-image-link",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "img",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "lazy",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "no-referrer",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "md-image",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "image",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "br",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "RichText",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "div",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "rich-text",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "pre",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "quote",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "blockquote",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "heading",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "p",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "md-heading",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "list",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "ol",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "ul",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "li",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       }
     ]
   },
@@ -3571,6 +4107,205 @@
         "kind": "literal",
         "value": "/admin/login",
         "reason": "Route, URL, file path or query string fragment."
+      }
+    ]
+  },
+  "src/lib/captcha.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "script",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "dark",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "auto",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "zh-CN",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "en",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "template",
+        "value": "https://js.hcaptcha.com/1/api.js?render=explicit&recaptchacompat=off&hl=${}",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "light",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "${}/recaptcha/api.js?render=explicit&hl=${}",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "div",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "${}/recaptcha/api.js?render=${}&hl=${}",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "submit",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "blocked",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "unavailable",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "object",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "string",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "network",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "missing_endpoint",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "challenge_unsupported",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "wasm_load_failed",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "worker_spawn_failed",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "@cap.js/wasm/browser/cap_wasm_bg.wasm?url",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "@cap.js/widget",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "cap-widget",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "data-cap-api-endpoint",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "data-cap-hidden-field-name",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "captcha-token",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "data-cap-worker-count",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "data-cap-disable-haptics",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "data-cap-i18n-${}",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "cap-box",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "compact",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "challenge",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "redeem",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "solve",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "reset",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "error",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "network_error",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "challenge_parse_error",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       }
     ]
   },
@@ -3735,6 +4470,40 @@
       }
     ]
   },
+  "src/lib/live.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "online",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "offline",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "AbortError",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "visible",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "visibilitychange",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "pageshow",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      }
+    ]
+  },
   "src/lib/messaging.js": {
     "literals": [
       {
@@ -3765,6 +4534,25 @@
         "kind": "literal",
         "value": "multi",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      }
+    ]
+  },
+  "src/lib/read-receipts.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "visible",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "visibilitychange",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "[data-read-id]",
+        "reason": "DOM selector or media query."
       }
     ]
   },
@@ -4205,6 +4993,11 @@
       {
         "kind": "literal",
         "value": "text",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "video",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
@@ -4754,17 +5547,27 @@
     "literals": [
       {
         "kind": "literal",
-        "value": "smooth",
-        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
-      },
-      {
-        "kind": "literal",
         "value": "/tickets/",
         "reason": "Route, URL, file path or query string fragment."
       },
       {
         "kind": "literal",
-        "value": "/messages",
+        "value": "/api",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "/files/",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "?inline=1",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "/read",
         "reason": "Route, URL, file path or query string fragment."
       },
       {
@@ -4774,17 +5577,52 @@
       },
       {
         "kind": "literal",
+        "value": "smooth",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "respondent",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "visible",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "online",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/wait?rev=",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "body",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "files",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/messages",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
         "value": "error",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
         "kind": "literal",
         "value": "Enter",
-        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
-      },
-      {
-        "kind": "literal",
-        "value": "visible",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
@@ -4819,6 +5657,11 @@
       },
       {
         "kind": "literal",
+        "value": "offline",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "/f/",
         "reason": "Route, URL, file path or query string fragment."
       }
@@ -4844,17 +5687,17 @@
       },
       {
         "kind": "literal",
+        "value": "'self'",
+        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "x-powered-by",
         "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
       },
       {
         "kind": "literal",
         "value": "trust proxy",
-        "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
-      },
-      {
-        "kind": "literal",
-        "value": "'self'",
         "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
       },
       {
@@ -4866,6 +5709,26 @@
         "kind": "literal",
         "value": "data:",
         "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "script",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "connect",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "frame",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "worker",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
         "kind": "literal",
@@ -4936,6 +5799,11 @@
         "kind": "literal",
         "value": "/api/forms",
         "reason": "Route, file path, MIME type, selector or generated internal identifier."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/captcha",
+        "reason": "Route, URL, file path or query string fragment."
       },
       {
         "kind": "literal",
@@ -5451,6 +6319,46 @@
         "reason": "SQLite table or column name used by schema migrations."
       },
       {
+        "kind": "template",
+        "value": "CREATE TABLE IF NOT EXISTS conversation_batches (response_id TEXT NOT NULL, audience TEXT NOT NULL, since TEXT NOT NULL,\n        first_at INTEGER NOT NULL, last_at INTEGER NOT NULL, origin TEXT NOT NULL DEFAULT '', PRIMARY KEY (response_id, audience));",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "edited_at",
+        "reason": "SQLite table or column name used by schema migrations."
+      },
+      {
+        "kind": "literal",
+        "value": "edited_by",
+        "reason": "SQLite table or column name used by schema migrations."
+      },
+      {
+        "kind": "literal",
+        "value": "original_body",
+        "reason": "SQLite table or column name used by schema migrations."
+      },
+      {
+        "kind": "literal",
+        "value": "deleted_by",
+        "reason": "SQLite table or column name used by schema migrations."
+      },
+      {
+        "kind": "literal",
+        "value": "read_at",
+        "reason": "SQLite table or column name used by schema migrations."
+      },
+      {
+        "kind": "literal",
+        "value": "attachments",
+        "reason": "SQLite table or column name used by schema migrations."
+      },
+      {
+        "kind": "literal",
+        "value": "files_disabled",
+        "reason": "SQLite table or column name used by schema migrations."
+      },
+      {
         "kind": "literal",
         "value": "report.sqlite",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
@@ -5633,6 +6541,39 @@
         "kind": "literal",
         "value": "SIGINT",
         "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      }
+    ]
+  },
+  "server/lib/live.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "string",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "close",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      }
+    ]
+  },
+  "server/lib/message-files.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "files",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "multipart/form-data",
+        "reason": "HTTP header name, MIME type or protocol value."
+      },
+      {
+        "kind": "literal",
+        "value": "message",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       }
     ]
   },
@@ -5895,6 +6836,20 @@
         "kind": "literal",
         "value": "DELETE FROM sessions WHERE user_id=? AND substr(token,1,16)=?",
         "reason": "SQLite statement, clause or column definition; values are bound separately."
+      }
+    ]
+  },
+  "server/routes/captcha.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "/cap/challenge",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "/cap/redeem",
+        "reason": "Route, URL, file path or query string fragment."
       }
     ]
   },
@@ -6185,6 +7140,16 @@
       },
       {
         "kind": "literal",
+        "value": "x-captcha-token",
+        "reason": "HTTP header name, MIME type or protocol value."
+      },
+      {
+        "kind": "literal",
+        "value": "x-captcha-provider",
+        "reason": "HTTP header name, MIME type or protocol value."
+      },
+      {
+        "kind": "literal",
         "value": "object",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
@@ -6320,6 +7285,11 @@
       },
       {
         "kind": "literal",
+        "value": "/responses/:id/wait",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
         "value": "/responses/:id/read",
         "reason": "Route, URL, file path or query string fragment."
       },
@@ -6330,12 +7300,57 @@
       },
       {
         "kind": "literal",
+        "value": "/responses/:id/conversation-files/:fileId",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "/responses/:id/messages/:messageId",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "messageEdited",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "messageRetracted",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/responses/:id/messages/:messageId/restore",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "messageRestored",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "/responses/:id/messages",
         "reason": "Route, URL, file path or query string fragment."
       },
       {
         "kind": "literal",
+        "value": "idempotency-key",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "true",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "staff",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "queued",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
@@ -6347,6 +7362,11 @@
         "kind": "literal",
         "value": "UPDATE responses SET unread=0, last_activity_at=?, status=COALESCE(?, status) WHERE id=?",
         "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "respondent",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
         "kind": "literal",
@@ -6370,22 +7390,22 @@
       },
       {
         "kind": "literal",
-        "value": "respondent",
-        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
-      },
-      {
-        "kind": "literal",
         "value": "status",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
         "kind": "literal",
-        "value": "string",
+        "value": "boolean",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
         "kind": "literal",
-        "value": "boolean",
+        "value": "UPDATE responses SET files_disabled=? WHERE id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "string",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
@@ -6639,17 +7659,32 @@
       },
       {
         "kind": "literal",
+        "value": "/captcha",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "captchaSettings",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "system",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/captcha/verify",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
         "value": "/backups",
         "reason": "Route, URL, file path or query string fragment."
       },
       {
         "kind": "literal",
         "value": "backupSettings",
-        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
-      },
-      {
-        "kind": "literal",
-        "value": "system",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
@@ -6723,18 +7758,33 @@
       },
       {
         "kind": "literal",
-        "value": "staff",
-        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+        "value": "/:id",
+        "reason": "Route, URL, file path or query string fragment."
       },
       {
         "kind": "literal",
-        "value": "/:id",
+        "value": "/:id/files/:fileId",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "/:id/read",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "/:id/wait",
         "reason": "Route, URL, file path or query string fragment."
       },
       {
         "kind": "literal",
         "value": "/:id/messages",
         "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "idempotency-key",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
         "kind": "literal",
@@ -7056,6 +8106,291 @@
       }
     ]
   },
+  "server/services/captcha.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "cap",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "turnstile",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "hcaptcha",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "recaptcha",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "recaptchaV3",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "auto",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "light",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "dark",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "normal",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "compact",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "global",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "china",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "https://www.google.com",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "https://www.recaptcha.net",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "https://api.hcaptcha.com/siteverify",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "builtin",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "medium",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "none",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "default",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "string",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "http:",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "https:",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT value FROM settings WHERE key='captcha'",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "blocked",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "network",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/captcha/cap/",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "object",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "standalone",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "serverUrl",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "verificationServerUrl",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "INSERT INTO settings(key, value) VALUES ('captcha', ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "siteverify",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/recaptcha/api/siteverify",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "POST",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "application/json",
+        "reason": "HTTP header name, MIME type or protocol value."
+      },
+      {
+        "kind": "literal",
+        "value": "application/x-www-form-urlencoded",
+        "reason": "HTTP header name, MIME type or protocol value."
+      },
+      {
+        "kind": "literal",
+        "value": "error",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "captcha siteverify unreachable",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "submit",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "number",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "script",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "'wasm-unsafe-eval'",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "worker",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "blob:",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "connect",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "frame",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "https://challenges.cloudflare.com",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "style",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "https://hcaptcha.com",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "https://*.hcaptcha.com",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "/recaptcha/",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "https://recaptcha.google.com/recaptcha/",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "https://www.gstatic.com/recaptcha/",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "https://www.gstatic.cn/recaptcha/",
+        "reason": "Route, URL, file path or query string fragment."
+      }
+    ],
+    "dynamicKeys": [
+      {
+        "expression": "id === 'cap' ? 'errors.captchaCapServer' : 'errors.captchaKeys'",
+        "reason": "Key resolved from a fixed translation-key map, a reviewed key prefix or a validated API error code."
+      }
+    ]
+  },
   "server/services/exports.js": {
     "literals": [
       {
@@ -7255,6 +8590,11 @@
       },
       {
         "kind": "literal",
+        "value": "conversation",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "INSERT INTO settings(key, value) VALUES ('notifications', ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value",
         "reason": "SQLite statement, clause or column definition; values are bound separately."
       },
@@ -7430,6 +8770,11 @@
       },
       {
         "kind": "literal",
+        "value": "staff",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "message.created",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
@@ -7457,6 +8802,51 @@
         "kind": "literal",
         "value": "status.changed",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "INSERT INTO conversation_batches(response_id, audience, since, first_at, last_at, origin) VALUES (?,?,?,?,?,?)\n      ON CONFLICT(response_id, audience) DO UPDATE SET last_at=excluded.last_at",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT first_at, last_at FROM conversation_batches WHERE response_id=? AND audience=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT * FROM responses WHERE id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "queued",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "seen",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "system",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "respondent",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT * FROM conversation_batches",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "DELETE FROM conversation_batches WHERE response_id=? AND audience=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
       },
       {
         "kind": "template",
@@ -7791,6 +9181,21 @@
       },
       {
         "kind": "literal",
+        "value": "video/mp4",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "video/webm",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "video/quicktime",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "utf-8",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
@@ -7831,7 +9236,22 @@
       },
       {
         "kind": "literal",
-        "value": "SELECT attachments FROM responses",
+        "value": "SELECT COALESCE(SUM(json_extract(a.value,'$.size')),0) AS bytes FROM messages m, json_each(m.attachments) a",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "responses",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "messages",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "SELECT attachments FROM ${}",
         "reason": "SQLite statement, clause or column definition; values are bound separately."
       },
       {
@@ -7866,6 +9286,16 @@
       },
       {
         "kind": "literal",
+        "value": "video/",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "video",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "pdf",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
@@ -7873,6 +9303,41 @@
         "kind": "literal",
         "value": "text",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "X-Content-Type-Options",
+        "reason": "HTTP header name, MIME type or protocol value."
+      },
+      {
+        "kind": "literal",
+        "value": "nosniff",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "Content-Security-Policy",
+        "reason": "HTTP header name, MIME type or protocol value."
+      },
+      {
+        "kind": "literal",
+        "value": "default-src 'none'; img-src 'self'; media-src 'self'; style-src 'unsafe-inline'; sandbox",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "Cache-Control",
+        "reason": "HTTP header name, MIME type or protocol value."
+      },
+      {
+        "kind": "literal",
+        "value": "private, max-age=300",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "Content-Type",
+        "reason": "HTTP header name, MIME type or protocol value."
       },
       {
         "kind": "literal",
@@ -7919,9 +9384,19 @@
         "reason": "SQLite statement, clause or column definition; values are bound separately."
       },
       {
-        "kind": "literal",
-        "value": "SELECT id, author, author_name AS authorName, body, created_at AS createdAt, delivery FROM messages WHERE response_id=? ORDER BY created_at, rowid",
+        "kind": "template",
+        "value": "id, author, author_name AS authorName, body, created_at AS createdAt, delivery, edited_at AS editedAt, edited_by AS editedBy,\n    original_body AS originalBody, deleted_at AS deletedAt, deleted_by AS deletedBy, read_at AS readAt, attachments",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "SELECT ${} FROM messages WHERE response_id=? ORDER BY created_at, rowid",
         "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "staff",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
         "kind": "literal",
@@ -7930,7 +9405,27 @@
       },
       {
         "kind": "literal",
-        "value": "INSERT INTO messages(id,response_id,author,user_id,author_name,body,created_at,delivery) VALUES (?,?,?,?,?,?,?,?)",
+        "value": "INSERT INTO messages(id,response_id,author,user_id,author_name,body,created_at,delivery,attachments) VALUES (?,?,?,?,?,?,?,?,?)",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT * FROM messages WHERE id=? AND response_id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "UPDATE messages SET body=?, edited_at=?, edited_by=?, original_body=COALESCE(original_body, body) WHERE id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "UPDATE messages SET deleted_at=?, deleted_by=? WHERE id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "UPDATE messages SET read_at=? WHERE id=? AND response_id=? AND author<>'respondent' AND read_at IS NULL AND deleted_at IS NULL",
         "reason": "SQLite statement, clause or column definition; values are bound separately."
       },
       {
@@ -7940,7 +9435,37 @@
       },
       {
         "kind": "literal",
-        "value": "SELECT id, author, author_name AS authorName, body, created_at AS createdAt, delivery FROM messages WHERE id=? AND response_id=?",
+        "value": "SELECT response_id FROM messages WHERE id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT status, unread, files_disabled FROM responses WHERE id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT id, delivery, edited_at, deleted_at, read_at FROM messages WHERE response_id=? ORDER BY created_at, rowid",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "sha1",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "SELECT ${} FROM messages WHERE id=? AND response_id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT attachments FROM messages WHERE response_id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "INSERT OR IGNORE INTO file_cleanup(id) VALUES (?)",
         "reason": "SQLite statement, clause or column definition; values are bound separately."
       },
       {
@@ -8407,6 +9932,11 @@
       },
       {
         "kind": "literal",
+        "value": "video",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": ".png,.jpg,.jpeg,.webp,.gif",
         "reason": "DOM selector or media query."
       },
@@ -8418,6 +9948,11 @@
       {
         "kind": "literal",
         "value": ".txt,.log",
+        "reason": "DOM selector or media query."
+      },
+      {
+        "kind": "literal",
+        "value": ".mp4,.webm,.mov",
         "reason": "DOM selector or media query."
       }
     ]
@@ -8546,6 +10081,70 @@
       }
     ]
   },
+  "shared/markdown.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "code",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "image",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "link",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "url",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "strong",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "del",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "em",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "text",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "paragraph",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "quote",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "list",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "heading",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      }
+    ]
+  },
   "shared/schema.js": {
     "literals": [
       {
@@ -8621,6 +10220,16 @@
       {
         "kind": "literal",
         "value": "collectEnvironment",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "ticketFiles",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "captcha",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {

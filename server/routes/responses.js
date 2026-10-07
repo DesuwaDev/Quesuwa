@@ -7,6 +7,8 @@ import { parseResponse, responseFilter } from '../services/responses.js';
 import { computeStatistics, parseOffset } from '../services/statistics.js';
 import { streamCsv, streamJson, zipEntries } from '../services/exports.js';
 import { writeZip, ZIP_MAX_BYTES, ZIP_MAX_ENTRIES } from '../lib/zip.js';
+import { messageBody, storeMessageFiles } from '../lib/message-files.js';
+import { normalizeSettings } from '../../shared/schema.js';
 
 const exportName = (form, extension) => `${form.slug}-${new Date().toISOString().slice(0, 10)}.${extension}`;
 
@@ -45,27 +47,82 @@ export function responseRoutes({ db, forms, storage, audit, auth, tickets, notif
     const form = forms.get(response.formId);
     const contact = form ? notifier.recipientFor(form, row) : '';
     const followUp = form ? notifier.followUpLink(origin(req), row, form) : '';
-    res.json({ ...response, formTitle: form?.title || response.snapshot.title, contactEmail: contact, followUpUrl: followUp, conversation: Boolean(form) && conversable(form, row), messages: tickets.messages(response.id) });
+    res.json({
+      ...response, formTitle: form?.title || response.snapshot.title, contactEmail: contact, followUpUrl: followUp, conversation: Boolean(form) && conversable(form, row),
+      messages: tickets.messages(response.id), rev: tickets.revision(response.id), ...fileState(form, row)
+    });
+  });
+
+  // Whether respondents may attach files: the questionnaire setting and this conversation's switch.
+  const fileState = (form, row) => ({ filesAllowed: Boolean(form) && normalizeSettings(form.settings).ticketFiles, filesDisabled: Boolean(row.files_disabled) });
+
+  // What an open conversation needs to stay current; the admin view long-polls for it.
+  const liveState = row => ({ rev: tickets.revision(row.id), status: row.status, unread: Boolean(row.unread), lastActivityAt: row.last_activity_at || row.created_at, messages: tickets.messages(row.id), filesDisabled: Boolean(row.files_disabled) });
+  router.get('/responses/:id/wait', (req, res) => {
+    const row = findResponse(req.params.id);
+    tickets.wait(req, res, row.id, () => {
+      const state = liveState(findResponse(row.id));
+      return { rev: state.rev, body: state };
+    });
   });
 
   router.post('/responses/:id/read', (req, res) => {
-    db.prepare('UPDATE responses SET unread=0 WHERE id=?').run(findResponse(req.params.id).id);
+    const id = findResponse(req.params.id).id;
+    db.prepare('UPDATE responses SET unread=0 WHERE id=?').run(id);
+    tickets.changed(id);
     res.json({ ok: true });
   });
 
+  // Conversation attachments, including those of retracted messages, for staff.
+  router.get('/responses/:id/conversation-files/:fileId', (req, res) => {
+    const file = tickets.fileOf(findResponse(req.params.id).id, req.params.fileId, { staff: true });
+    if (!file) throw fail(404, 'errors.fileNotFound');
+    storage.send(res, file, req.query.inline === '1');
+  });
+
+  // Staff may correct or retract any message; the respondent sees only the result, with no marker.
+  router.patch('/responses/:id/messages/:messageId', write, (req, res) => {
+    const row = findResponse(req.params.id);
+    const message = tickets.edit(row.id, req.params.messageId, req.body?.body, req.user.displayName || req.user.username);
+    audit(req, 'messageEdited', row.id, message.author);
+    res.json({ message });
+  });
+  router.delete('/responses/:id/messages/:messageId', write, (req, res) => {
+    const row = findResponse(req.params.id);
+    const message = tickets.retract(row.id, req.params.messageId, req.user.displayName || req.user.username);
+    audit(req, 'messageRetracted', row.id, message.author);
+    res.json({ message });
+  });
+  router.post('/responses/:id/messages/:messageId/restore', write, (req, res) => {
+    const row = findResponse(req.params.id);
+    const message = tickets.retract(row.id, req.params.messageId, '', false);
+    audit(req, 'messageRestored', row.id, message.author);
+    res.json({ message });
+  });
+
   // Staff reply, optionally changing the status and emailing the respondent in the same step.
-  router.post('/responses/:id/messages', write, async (req, res) => {
+  // Accepts JSON, or multipart when files are attached.
+  router.post('/responses/:id/messages', write, messageBody, async (req, res) => {
     const row = findResponse(req.params.id);
     const form = forms.get(row.form_id);
     if (row.deleted_at || !form || !conversable(form, row)) throw fail(404, 'errors.ticketNotFound');
-    const status = req.body?.status;
+    const repeated = tickets.recall(row.id, req.get('idempotency-key'));
+    if (repeated) return res.json({ message: tickets.find(row.id, repeated), event: null, delivery: null, response: parseResponse(row), repeated: true });
+    const status = req.body?.status || undefined;
     if (status !== undefined && !statuses.includes(status)) throw fail(400, 'errors.statusInvalid');
-    const email = req.body?.email === true && Boolean(notifier.recipientFor(form, row)) && notifier.status().mail;
-    const message = tickets.add(row.id, { author: 'staff', userId: req.user.id, authorName: req.user.displayName || req.user.username, body: req.body?.body, delivery: email ? 'pending' : '' });
+    const email = (req.body?.email === true || req.body?.email === 'true') && Boolean(notifier.recipientFor(form, row)) && notifier.status().mail;
+    const { attachments, rollback } = await storeMessageFiles(storage, req.files);
+    // With batching on, the email waits until the conversation pauses and covers every message since.
+    const later = email && notifier.batching();
+    let message;
+    try { message = tickets.add(row.id, { author: 'staff', userId: req.user.id, authorName: req.user.displayName || req.user.username, body: req.body?.body, delivery: later ? 'queued' : email ? 'pending' : '', attachments }); }
+    catch (error) { rollback(); throw error; }
+    tickets.remember(row.id, req.get('idempotency-key'), message.id);
     const event = status ? recordStatus(form, row, status) : null;
     db.prepare('UPDATE responses SET unread=0, last_activity_at=?, status=COALESCE(?, status) WHERE id=?').run(message.createdAt, status ?? null, row.id);
     let delivery = null;
-    if (email) {
+    if (later) delivery = { ok: true, queued: true, dueAt: notifier.queueConversation(row.id, 'respondent', message.createdAt, origin(req)) };
+    else if (email) {
       delivery = await notifier.emailRespondent({ form, row: findResponse(row.id), origin: origin(req), kind: 'message', message, status: status ?? row.status });
       message.delivery = delivery.ok ? 'sent' : 'failed';
       tickets.setDelivery(message.id, message.delivery);
@@ -91,6 +148,11 @@ export function responseRoutes({ db, forms, storage, audit, auth, tickets, notif
     const status = body.status ?? row.status;
     const note = body.note ?? row.note;
     const starred = body.starred ?? Boolean(row.starred);
+    if (body.filesDisabled !== undefined) {
+      if (typeof body.filesDisabled !== 'boolean') throw fail(400, 'errors.badRequest');
+      db.prepare('UPDATE responses SET files_disabled=? WHERE id=?').run(body.filesDisabled ? 1 : 0, row.id);
+      tickets.changed(row.id);
+    }
     if (!statuses.includes(status)) throw fail(400, 'errors.statusInvalid');
     if (typeof note !== 'string' || note.length > 10000) throw fail(400, 'errors.noteInvalid');
     if (typeof starred !== 'boolean') throw fail(400, 'errors.badRequest');
@@ -98,12 +160,16 @@ export function responseRoutes({ db, forms, storage, audit, auth, tickets, notif
     const event = form ? recordStatus(form, row, status) : null;
     db.prepare('UPDATE responses SET status=?, note=?, starred=?, last_activity_at=COALESCE(?, last_activity_at) WHERE id=?').run(status, note.trim(), starred ? 1 : 0, event?.createdAt ?? null, row.id);
     let delivery = null;
-    if (event && body.notify === true && notifier.status().mail && notifier.recipientFor(form, row)) {
+    if (event && body.notify === true && notifier.status().mail && notifier.recipientFor(form, row) && notifier.batching()) {
+      tickets.setDelivery(event.id, event.delivery = 'queued');
+      delivery = { ok: true, queued: true, dueAt: notifier.queueConversation(row.id, 'respondent', event.createdAt, origin(req)) };
+    } else if (event && body.notify === true && notifier.status().mail && notifier.recipientFor(form, row)) {
       delivery = await notifier.emailRespondent({ form, row: findResponse(row.id), origin: origin(req), kind: 'status', status });
       event.delivery = delivery.ok ? 'sent' : 'failed';
       tickets.setDelivery(event.id, event.delivery);
     }
-    res.json({ ...parseResponse(findResponse(row.id)), event, delivery });
+    const updated = findResponse(row.id);
+    res.json({ ...parseResponse(updated), filesDisabled: Boolean(updated.files_disabled), event, delivery });
   });
 
   router.post('/forms/:id/responses/batch', write, (req, res) => {

@@ -239,6 +239,76 @@ button.ranking-item:hover:not(:disabled) { border-color: var(--primary); }
 .timeline-event { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 4px 10px; align-self: center; padding: 4px 12px; border-radius: var(--radius-full); background: var(--surface-2); color: var(--text-2); font-size: 0.78rem; }
 .timeline-event time { color: var(--text-3); }
 .bubble-foot { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 6px 10px; }
+.bubble { min-width: 0; overflow-wrap: anywhere; }
+.bubble-head { display: flex; align-items: center; gap: 6px; min-height: 22px; }
+.bubble-head .bubble-menu { margin-left: auto; margin-right: -8px; }
+.bubble-tag { display: inline-flex; align-items: center; padding: 0 6px; height: 18px; border: 0; border-radius: var(--radius-full); background: var(--surface-3); color: var(--text-2); font-size: 0.7rem; font-weight: 600; cursor: default; }
+button.bubble-tag { cursor: pointer; }
+.bubble-tag.danger { background: var(--danger-soft); color: var(--danger); }
+.bubble.retracted { opacity: 0.6; outline: 1px dashed var(--border-strong); }
+.bubble.retracted .rich-text { text-decoration: line-through; text-decoration-color: var(--text-3); }
+.bubble-edit { display: flex; flex-direction: column; gap: 6px; min-width: min(420px, 70vw); }
+.bubble-edit-actions { display: flex; justify-content: flex-end; gap: 6px; }
+.bubble-original { padding: 6px 10px; border-left: 3px solid var(--border-strong); background: var(--surface); border-radius: 6px; }
+.read-receipt { display: inline-flex; align-items: center; gap: 4px; font-size: 0.72rem; color: var(--text-3); }
+.read-receipt.read { color: var(--success); }
+
+/* Markdown in messages */
+.rich-text { display: flex; flex-direction: column; gap: 6px; font-size: 0.94rem; line-height: 1.6; }
+.rich-text p, .rich-text ul, .rich-text ol, .rich-text blockquote, .rich-text pre { margin: 0; }
+.rich-text ul, .rich-text ol { padding-left: 1.4em; }
+.rich-text blockquote { padding: 2px 10px; border-left: 3px solid var(--border-strong); color: var(--text-2); }
+.rich-text code { padding: 1px 5px; border-radius: 5px; background: var(--surface); font-family: var(--font-mono); font-size: 0.86em; }
+.rich-text pre { padding: 8px 10px; border-radius: 8px; background: var(--surface); overflow-x: auto; }
+.rich-text pre code { padding: 0; background: none; white-space: pre; }
+.rich-text a { color: var(--primary); text-decoration: underline; text-underline-offset: 2px; word-break: break-all; }
+.rich-text .md-heading { font-weight: 700; font-size: 1.02rem; }
+.rich-text .md-image-link { display: inline-block; max-width: 100%; }
+.rich-text .md-image { display: block; max-width: min(100%, 360px); max-height: 320px; border-radius: 8px; border: 1px solid var(--border); object-fit: contain; background: var(--surface); }
+
+/* Attachments in messages and in the composer */
+.message-files { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+.message-image { display: block; line-height: 0; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); background: var(--surface); }
+.message-image img { width: 140px; height: 140px; object-fit: cover; }
+.message-video { width: min(320px, 100%); max-height: 240px; border-radius: 8px; background: #000; }
+.message-file { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 0.84rem; text-align: left; cursor: pointer; }
+.message-file:hover { border-color: var(--border-strong); }
+.message-file-name { display: flex; flex-direction: column; min-width: 0; overflow-wrap: anywhere; }
+.message-file-name small { color: var(--text-3); font-size: 0.72rem; }
+.composer-files { display: contents; }
+.composer-file-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.composer-file-list li { display: flex; align-items: center; gap: 8px; max-width: 100%; padding: 4px 4px 4px 6px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-2); font-size: 0.82rem; }
+.composer-file-list img { width: 36px; height: 36px; border-radius: 6px; object-fit: cover; }
+.composer-file-name { display: flex; flex-direction: column; min-width: 0; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.composer-file-name small { color: var(--text-3); font-size: 0.72rem; }
+.ticket-composer-foot > small { flex: 1 1 160px; }
+@media (max-width: 640px) {
+  .bubble { max-width: 92%; }
+  .message-image img { width: 110px; height: 110px; }
+  .bubble-edit { min-width: 0; width: 100%; }
+}
 .delivery { display: inline-flex; align-items: center; gap: 4px; font-size: 0.72rem; font-weight: 600; color: var(--text-3); }
 .delivery.sent { color: var(--success); }
 .delivery.failed { color: var(--danger); }
+.delivery.queued { color: var(--info); }
+
+/* Human verification */
+.captcha-box { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.captcha-host { display: flex; justify-content: center; max-width: 100%; min-height: 0; }
+.captcha-host:empty { display: none; }
+.captcha-status { display: inline-flex; align-items: center; gap: 6px; margin: 0; text-align: center; }
+.cap-box {
+  --cap-background: var(--surface); --cap-border-color: var(--border-strong); --cap-color: var(--text);
+  --cap-checkbox-background: var(--surface-2); --cap-checkbox-border: 1px solid var(--border-strong);
+  --cap-spinner-color: var(--primary); --cap-spinner-background-color: var(--surface-3); --cap-focus-ring: var(--primary);
+  --cap-border-radius: 12px; --cap-font: inherit; --cap-widget-width: 280px;
+  max-width: 100%;
+}
+.cap-box.compact { --cap-widget-width: 220px; }
+.captcha-card { display: flex; flex-direction: column; gap: var(--space-4); }
+.captcha-card .card-header { margin-bottom: 0; }
+.captcha-provider { display: flex; flex-direction: column; gap: var(--space-3); margin: 0; padding: var(--space-3) var(--space-4) var(--space-4); border: 1px solid var(--border); border-radius: var(--radius); min-width: 0; }
+.captcha-provider legend { display: inline-flex; align-items: center; gap: 8px; padding: 0 6px; }
+.captcha-test { display: flex; flex-direction: column; gap: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--border); }
+.captcha-test .captcha-box { align-items: flex-start; }
+.badge.warning { background: var(--warning-soft); color: var(--warning); }

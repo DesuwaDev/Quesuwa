@@ -15,6 +15,7 @@ import { answerText } from './format.js';
 import ConversationPanel from './ConversationPanel.vue';
 import { storage } from '../../lib/storage.js';
 import { messaging, loadMessaging } from '../../lib/messaging.js';
+import { startLive } from '../../lib/live.js';
 
 const props = defineProps({ responseId: String, form: Object, hasPrevious: Boolean, hasNext: Boolean, writable: Boolean });
 const emit = defineEmits(['close', 'previous', 'next', 'updated', 'removed']);
@@ -55,14 +56,32 @@ async function copyEnvironment() {
 }
 const languageKey = code => ({ 'zh-CN': 'language.zhCN', en: 'language.en' })[code];
 
+async function markRead() {
+  if (!response.value?.unread) return;
+  response.value.unread = false;
+  emit('updated', { id: response.value.id, unread: false });
+  try { await api('/admin/responses/' + props.responseId + '/read', { method: 'POST', body: {} }); } catch { /* Retried on the next visit. */ }
+}
+
+// Conversations update live: new respondent replies, status changes and email delivery results.
+let stopLive = null;
+const connection = ref('online');
+function applyLive(state) {
+  const current = response.value;
+  if (!current) return;
+  Object.assign(current, { messages: state.messages, status: state.status, unread: state.unread, lastActivityAt: state.lastActivityAt, rev: state.rev, filesDisabled: state.filesDisabled });
+  emit('updated', { id: current.id, status: state.status, unread: state.unread, lastActivityAt: state.lastActivityAt, messageCount: state.messages.length });
+  if (state.unread && document.visibilityState === 'visible') markRead();
+}
+const onVisible = () => { if (document.visibilityState === 'visible') markRead(); };
+
 async function load() {
   try {
     response.value = await api('/admin/responses/' + props.responseId);
     note.value = response.value.note;
-    if (response.value.unread) {
-      await api('/admin/responses/' + props.responseId + '/read', { method: 'POST', body: {} });
-      response.value.unread = false;
-      emit('updated', { id: response.value.id, unread: false });
+    if (document.visibilityState === 'visible') markRead();
+    if (response.value.conversation && !stopLive) {
+      stopLive = startLive(signal => api('/admin/responses/' + props.responseId + '/wait?rev=' + encodeURIComponent(response.value.rev), { signal }), applyLive, { onStatus: value => { connection.value = value; } });
     }
   } catch (reason) { error.value = reason; }
 }
@@ -74,7 +93,8 @@ async function patch(body, messageKey) {
     if (event) response.value.messages.push(event);
     note.value = updated.note;
     emit('updated', updated);
-    if (delivery && !delivery.ok) notify('ticket.emailFailed', { type: 'error', params: { error: delivery.error || '—' }, timeout: 8000 });
+    if (delivery?.queued) notify('ticket.statusQueued', { type: 'info', timeout: 6000 });
+    else if (delivery && !delivery.ok) notify('ticket.emailFailed', { type: 'error', params: { error: delivery.error || '—' }, timeout: 8000 });
     else if (delivery) notify('ticket.statusEmailed', { params: { email: response.value.contactEmail } });
     else if (messageKey) notify(messageKey);
   } catch (reason) { notifyError(reason); }
@@ -115,8 +135,8 @@ function keys(event) {
   else if ((event.key === 'ArrowLeft' || event.key === 'k') && props.hasPrevious) emit('previous');
   else if ((event.key === 'ArrowRight' || event.key === 'j') && props.hasNext) emit('next');
 }
-onMounted(() => { load(); loadMessaging(); window.addEventListener('keydown', keys); });
-onBeforeUnmount(() => window.removeEventListener('keydown', keys));
+onMounted(() => { load(); loadMessaging(); window.addEventListener('keydown', keys); document.addEventListener('visibilitychange', onVisible); });
+onBeforeUnmount(() => { stopLive?.(); window.removeEventListener('keydown', keys); document.removeEventListener('visibilitychange', onVisible); });
 </script>
 
 <template>
@@ -146,7 +166,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', keys));
         <span v-if="response.deletedAt" class="badge muted">{{ t('responses.inTrash') }}</span>
       </div>
 
-      <ConversationPanel v-if="response.conversation" :response="response" :writable="writable" @updated="emit('updated', $event)" />
+      <ConversationPanel v-if="response.conversation" :response="response" :writable="writable" :offline="connection === 'offline'" @updated="emit('updated', $event)" />
 
       <div class="review-panel">
         <div class="review-row">

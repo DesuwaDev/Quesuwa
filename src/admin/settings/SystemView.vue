@@ -9,6 +9,7 @@ import AppIcon from '../../components/AppIcon.vue';
 import PaginationBar from '../../components/PaginationBar.vue';
 import { appVersion } from '../../lib/version.js';
 import BackupCard from './BackupCard.vue';
+import CaptchaCard from './CaptchaCard.vue';
 
 const zones = (() => { try { return Intl.supportedValuesOf('timeZone'); } catch { return []; } })();
 
@@ -129,6 +130,7 @@ function actionLabel(action) {
           <p v-if="data.pendingCleanup" class="banner warning"><AppIcon name="alert" :size="16" />{{ t('system.cleanupPending', { count: data.pendingCleanup }) }}</p>
         </section>
         <BackupCard :timezone="data.settings.values.timezone" />
+        <CaptchaCard />
       </div>
 
       <section class="card flush">

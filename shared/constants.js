@@ -10,6 +10,7 @@ export const LIMITS = Object.freeze({
   fileFields: 2,
   filesPerField: 3,
   fileMB: 10,
+  messageFiles: 5,
   title: 120,
   description: 3000,
   thanks: 1000,
@@ -104,9 +105,9 @@ export const can = (role, permission) => Boolean(grants[role]?.includes(permissi
 export const accents = ['coral', 'blue', 'green', 'amber', 'violet', 'slate'];
 export const accentKeys = { coral: 'accent.coral', blue: 'accent.blue', green: 'accent.green', amber: 'accent.amber', violet: 'accent.violet', slate: 'accent.slate' };
 
-export const fileKinds = ['image', 'pdf', 'text'];
-export const fileKindKeys = { image: 'settings.images', pdf: 'settings.pdf', text: 'settings.textFiles' };
-export const fileKindExtensions = { image: '.png,.jpg,.jpeg,.webp,.gif', pdf: '.pdf', text: '.txt,.log' };
+export const fileKinds = ['image', 'pdf', 'text', 'video'];
+export const fileKindKeys = { image: 'settings.images', pdf: 'settings.pdf', text: 'settings.textFiles', video: 'settings.videos' };
+export const fileKindExtensions = { image: '.png,.jpg,.jpeg,.webp,.gif', pdf: '.pdf', text: '.txt,.log', video: '.mp4,.webm,.mov' };
 
 export const logicOperators = {
   equals: 'logic.equals',

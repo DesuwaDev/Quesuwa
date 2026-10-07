@@ -14,6 +14,7 @@ import { collectEnvironment } from '../lib/environment.js';
 import { addFiles, namePasted } from './fields/files.js';
 import AppIcon from '../components/AppIcon.vue';
 import QuestionField from './QuestionField.vue';
+import CaptchaWidget from '../components/CaptchaWidget.vue';
 
 const props = defineProps({ form: { type: Object, required: true }, preview: Boolean, accessCode: String });
 const emit = defineEmits(['submitted', 'expired']);
@@ -23,7 +24,9 @@ const draftKey = computed(() => 'quesuwa.draft.' + props.form.id);
 const canSaveDraft = computed(() => !props.preview && settings.value.saveProgress !== false);
 const state = reactive({ answers: {}, others: {}, uploads: {}, errors: {}, prefilled: {} });
 const pageIndex = ref(0), busy = ref(false), formError = ref(null), consent = ref(false), website = ref(''), restored = ref(false);
-const root = ref(null);
+const root = ref(null), captchaRef = ref(null);
+// Human verification is asked for on the last page, right before sending.
+const needsCaptcha = computed(() => Boolean(props.form.captcha) && !props.preview);
 const seed = String(Math.random());
 const started = Date.now();
 
@@ -205,6 +208,11 @@ async function submit() {
   }
   if (settings.value.consentText && !consent.value) { formError.value = { code: 'errors.consent', params: {} }; return; }
   if (props.preview) { notify('form.previewValid', { type: 'info' }); return; }
+  let verification = null;
+  if (needsCaptcha.value) {
+    verification = await captchaRef.value?.getToken();
+    if (!verification) { formError.value = { code: 'errors.captchaRequired', params: {} }; return; }
+  }
   busy.value = true;
   try {
     const body = new FormData();
@@ -221,10 +229,13 @@ async function submit() {
       if (field.type !== 'file') continue;
       for (const { file } of state.uploads[field.id] || []) body.append(field.id, file);
     }
-    const data = await api('/forms/' + encodeURIComponent(props.form.slug) + '/responses', { method: 'POST', body });
+    const headers = verification ? { 'X-Captcha-Token': verification.token, 'X-Captcha-Provider': verification.provider } : {};
+    const data = await api('/forms/' + encodeURIComponent(props.form.slug) + '/responses', { method: 'POST', body, headers });
     storage.remove(draftKey.value);
     emit('submitted', data);
   } catch (error) {
+    // Verification tokens are single-use; start a fresh one for the next attempt.
+    captchaRef.value?.reset();
     formError.value = error;
     const fieldId = error.params?.fieldId;
     if (fieldId && props.form.fields.some(field => field.id === fieldId)) {
@@ -297,6 +308,7 @@ const outdated = computed(() => ['errors.versionConflict', 'errors.formChanged']
     </div>
 
     <div class="form-footer">
+      <CaptchaWidget v-if="isLast && needsCaptcha" ref="captchaRef" :config="form.captcha" />
       <details v-if="isLast && environmentPreview.length && !preview" class="environment-note">
         <summary><AppIcon name="monitor" :size="14" />{{ t('environment.notice') }}</summary>
         <dl>

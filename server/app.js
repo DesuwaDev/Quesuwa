@@ -17,6 +17,8 @@ import { userRoutes } from './routes/users.js';
 import { formRoutes } from './routes/forms.js';
 import { responseRoutes } from './routes/responses.js';
 import { publicRoutes } from './routes/public.js';
+import { captchaRoutes } from './routes/captcha.js';
+import { createCaptcha } from './services/captcha.js';
 import { overviewRoutes, systemRoutes } from './routes/system.js';
 import { createSettings } from './services/settings.js';
 import { createTickets } from './services/tickets.js';
@@ -29,7 +31,7 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 
 // Options left undefined are configured in the web UI (System → Settings);
 // defined options come from the environment and lock the matching setting.
-export function createApp({ dataDir, password, username = 'admin', production = false, publicOrigin = '', trustProxyHops, maxStorageMB, defaultLocale }) {
+export function createApp({ dataDir, password, username = 'admin', production = false, publicOrigin = '', trustProxyHops, maxStorageMB, defaultLocale, captchaEndpoints }) {
   if (password && password.length < 16) throw new Error(t('cli.passwordRequired'));
   if (publicOrigin) {
     let origin;
@@ -41,6 +43,9 @@ export function createApp({ dataDir, password, username = 'admin', production = 
   fs.mkdirSync(dataDir, { recursive: true });
   const db = openDatabase(dataDir);
   const settings = createSettings(db, { maxStorageMB, trustProxyHops, defaultLocale: defaultLocale || undefined });
+  const captcha = createCaptcha(db, { endpoints: captchaEndpoints });
+  // Verification widgets need their provider's origins; only the enabled ones are allowed.
+  const captchaSources = kind => () => captcha.sources(kind) || "'self'";
 
   const app = express();
   app.disable('x-powered-by');
@@ -48,7 +53,11 @@ export function createApp({ dataDir, password, username = 'admin', production = 
     app.set('trust proxy', values.trustProxyHops);
     setServerLocale(values.defaultLocale);
   });
-  app.use(helmet({ contentSecurityPolicy: { directives: { 'img-src': ["'self'", 'blob:', 'data:'], 'script-src': ["'self'"], 'connect-src': ["'self'"], 'form-action': ["'self'"], 'object-src': ["'none'"] } } }));
+  app.use(helmet({ contentSecurityPolicy: { directives: {
+    'img-src': ["'self'", 'blob:', 'data:', 'https:'], 'media-src': ["'self'", 'blob:'],
+    'script-src': ["'self'", captchaSources('script')], 'connect-src': ["'self'", captchaSources('connect')], 'frame-src': ["'self'", captchaSources('frame')], 'worker-src': ["'self'", captchaSources('worker')],
+    'form-action': ["'self'"], 'object-src': ["'none'"]
+  } } }));
   app.use('/api', (_req, res, next) => { res.set('Cache-Control', 'no-store'); next(); });
   app.use(localeMiddleware);
   app.use(express.json({ limit: '1mb' }));
@@ -74,16 +83,17 @@ export function createApp({ dataDir, password, username = 'admin', production = 
   const forms = createFormStore(db);
   const webhooks = createWebhooks(db);
   const tickets = createTickets(db);
-  const notifier = createNotifier(db, { settings, tickets, publicOrigin });
+  const notifier = createNotifier(db, { settings, tickets, forms, publicOrigin });
   const backups = createBackups(db, { dataDir, settings });
   const retention = createRetention(db, { storage, tickets, audit });
   const autoClose = createAutoClose(db, { tickets, audit });
-  const stopJobs = startJobs([() => notifier.work(), () => notifier.digestTick(), () => backups.tick(), () => retention.tick(), () => autoClose.tick()]);
+  const stopJobs = startJobs([() => notifier.work(), () => notifier.conversationTick(), () => notifier.digestTick(), () => backups.tick(), () => retention.tick(), () => autoClose.tick()]);
   const cookieOptions = req => ({ httpOnly: true, sameSite: 'strict', secure: secureCookie(req), path: '/api/admin' });
-  const context = { db, auth, audit, storage, forms, webhooks, tickets, notifier, backups, retention, limiter, cookieOptions, originAllowed, secureCookie, settings, publicOrigin };
+  const context = { db, auth, audit, storage, forms, webhooks, tickets, notifier, backups, retention, captcha, limiter, cookieOptions, originAllowed, secureCookie, settings, publicOrigin };
   if (auth.setupNeeded()) console.log(t('cli.setupCode', { code: auth.setupCode() }));
 
   app.use('/api/forms', publicRoutes(context));
+  app.use('/api/captcha', captchaRoutes(context));
   app.use('/api/tickets', ticketRoutes(context));
   app.use('/api/admin', publicAccountRoutes(context));
   app.use('/api/admin', auth.requireUser, (req, _res, next) => {
@@ -111,5 +121,5 @@ export function createApp({ dataDir, password, username = 'admin', production = 
     res.sendFile(path.join(dist, 'index.html'));
   });
   app.use(errorHandler);
-  return { app, close: () => { stopJobs(); notifier.close(); db.close(); }, notifier, backups, retention, autoClose, setupCode: () => auth.setupNeeded() ? auth.setupCode() : null };
+  return { app, release: () => tickets.release(), close: () => { stopJobs(); notifier.close(); db.close(); }, notifier, backups, retention, autoClose, setupCode: () => auth.setupNeeded() ? auth.setupCode() : null };
 }

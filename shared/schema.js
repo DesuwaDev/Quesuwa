@@ -15,6 +15,8 @@ export const defaultSettings = Object.freeze({
   notifyAdmins: true,
   sendReceipt: false,
   collectEnvironment: false,
+  ticketFiles: true,
+  captcha: false,
   contactField: '',
   retentionDays: 0,
   autoCloseDays: 0,
@@ -67,7 +69,7 @@ export function normalizeSettings(value = {}) {
   if (value === undefined || value === null) value = {};
   if (typeof value !== 'object' || Array.isArray(value)) throw failure(code);
   const result = { ...defaultSettings };
-  for (const key of ['listed', 'showProgress', 'showNumbers', 'saveProgress', 'onePerDevice', 'ticketMode', 'notifyAdmins', 'sendReceipt', 'collectEnvironment']) result[key] = bool(value[key], defaultSettings[key], code);
+  for (const key of ['listed', 'showProgress', 'showNumbers', 'saveProgress', 'onePerDevice', 'ticketMode', 'notifyAdmins', 'sendReceipt', 'collectEnvironment', 'ticketFiles', 'captcha']) result[key] = bool(value[key], defaultSettings[key], code);
   result.startsAt = dateTime(value.startsAt, code);
   result.endsAt = dateTime(value.endsAt, code);
   if (result.startsAt && result.endsAt && result.startsAt >= result.endsAt) throw failure('errors.scheduleInvalid');

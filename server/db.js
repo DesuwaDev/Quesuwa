@@ -84,7 +84,22 @@ const migrations = [
         token_hash TEXT NOT NULL UNIQUE, prefix TEXT NOT NULL, scope TEXT NOT NULL, created_at TEXT NOT NULL, last_used_at TEXT, expires_at TEXT);`);
   },
   // Browser diagnostics attached by questionnaires that ask for them (JSON, empty when not collected).
-  db => addColumn(db, 'responses', 'environment', "TEXT NOT NULL DEFAULT ''")
+  db => addColumn(db, 'responses', 'environment', "TEXT NOT NULL DEFAULT ''"),
+  db => {
+    // Conversation emails waiting to be combined while people keep talking.
+    db.exec(`CREATE TABLE IF NOT EXISTS conversation_batches (response_id TEXT NOT NULL, audience TEXT NOT NULL, since TEXT NOT NULL,
+        first_at INTEGER NOT NULL, last_at INTEGER NOT NULL, origin TEXT NOT NULL DEFAULT '', PRIMARY KEY (response_id, audience));`);
+    // Staff edits and retractions (kept for staff, invisible to respondents), read receipts and attachments.
+    addColumn(db, 'messages', 'edited_at', 'TEXT');
+    addColumn(db, 'messages', 'edited_by', "TEXT NOT NULL DEFAULT ''");
+    addColumn(db, 'messages', 'original_body', 'TEXT');
+    addColumn(db, 'messages', 'deleted_at', 'TEXT');
+    addColumn(db, 'messages', 'deleted_by', "TEXT NOT NULL DEFAULT ''");
+    addColumn(db, 'messages', 'read_at', 'TEXT');
+    addColumn(db, 'messages', 'attachments', "TEXT NOT NULL DEFAULT '[]'");
+    // Staff can stop a single conversation from accepting respondent files.
+    addColumn(db, 'responses', 'files_disabled', 'INTEGER NOT NULL DEFAULT 0');
+  }
 ];
 
 export function openDatabase(dataDir) {

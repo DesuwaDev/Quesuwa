@@ -13,7 +13,7 @@ const digest = value => createHash('sha256').update(String(value)).digest();
 const codeMatches = (expected, given) => typeof given === 'string' && given.length <= 64 && timingSafeEqual(digest(expected), digest(given));
 const deviceCookie = formId => 'quesuwa_done_' + formId.replaceAll('-', '').slice(0, 16);
 
-export function publicRoutes({ db, forms, storage, webhooks, tickets, notifier, limiter, secureCookie }) {
+export function publicRoutes({ db, forms, storage, webhooks, tickets, notifier, limiter, secureCookie, captcha }) {
   const router = Router();
   const alreadySubmitted = (req, form) => normalizeSettings(form.settings).onePerDevice && new RegExp(`(?:^|;\\s*)${deviceCookie(form.id)}=1(?:;|$)`).test(req.headers.cookie || '');
 
@@ -22,6 +22,9 @@ export function publicRoutes({ db, forms, storage, webhooks, tickets, notifier, 
     if (!settings.accessCode) return;
     if (!codeMatches(settings.accessCode, req.body?.accessCode)) throw fail(403, 'errors.accessCode', { protected: true, title: form.title });
   }
+
+  // Forms that ask for human verification carry the widget configuration.
+  const view = form => ({ ...forms.publicView(form), captcha: normalizeSettings(form.settings).captcha ? captcha.publicConfig() : null });
 
   function load(slug) {
     const form = forms.bySlug(slug);
@@ -43,14 +46,14 @@ export function publicRoutes({ db, forms, storage, webhooks, tickets, notifier, 
     const settings = normalizeSettings(form.settings);
     // Protected forms only reveal their questions through the rate-limited access endpoint.
     if (settings.accessCode) return res.json({ locked: true, id: form.id, slug: form.slug, title: form.title, settings: { accent: settings.accent } });
-    res.json(forms.publicView(form));
+    res.json(view(form));
   });
 
   // Separate endpoint so wrong access codes are rate limited.
   router.post('/:slug/access', limiter(15 * 60_000, 30), (req, res) => {
     const form = load(req.params.slug);
     access(req, form);
-    res.json(forms.publicView(form));
+    res.json(view(form));
   });
 
   let activeUploads = 0;
@@ -65,12 +68,21 @@ export function publicRoutes({ db, forms, storage, webhooks, tickets, notifier, 
   };
   const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: LIMITS.fileMB * 1024 * 1024, files: LIMITS.fileFields * LIMITS.filesPerField, fields: 10, fieldSize: 2 * 1024 * 1024, parts: 20 } }).any();
 
-  router.post('/:slug/responses', limiter(60 * 60_000, 20), uploadSlots, (req, res, next) => {
+  router.post('/:slug/responses', limiter(60 * 60_000, 20), uploadSlots, async (req, res, next) => {
     if (!req.is('multipart/form-data')) return next(fail(415, 'errors.multipart'));
     const form = forms.bySlug(req.params.slug);
     if (!form || form.state !== 'published' || form.deletedAt) return next(fail(404, 'errors.formNotOpen'));
     forms.assertOpen(form);
     if (alreadySubmitted(req, form)) return next(fail(409, 'errors.alreadySubmitted'));
+    // Human verification happens before any upload is read. The token travels in headers.
+    if (normalizeSettings(form.settings).captcha && captcha.publicConfig()) {
+      const token = req.get('x-captcha-token');
+      if (!token) return next(fail(400, 'errors.captchaRequired'));
+      let passed = false;
+      try { passed = await captcha.verify(req.get('x-captcha-provider') || '', token, req.ip); }
+      catch (error) { return next(error); }
+      if (!passed) return next(fail(400, 'errors.captchaFailed'));
+    }
     req.questionnaire = form;
     upload(req, res, next);
   }, async (req, res) => {

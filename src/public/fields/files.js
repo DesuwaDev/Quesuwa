@@ -6,10 +6,11 @@ export const kindsOf = field => field.fileKinds?.length ? field.fileKinds : file
 export const acceptOf = field => kindsOf(field).map(kind => fileKindExtensions[kind]).join(',');
 export const kindLabelsOf = field => kindsOf(field).map(kind => t(fileKindKeys[kind])).join(t('common.listSeparator'));
 
-function groupOf(name) {
+export function groupOf(name) {
   if (/\.(png|jpe?g|webp|gif)$/i.test(name)) return 'image';
   if (/\.pdf$/i.test(name)) return 'pdf';
   if (/\.(txt|log)$/i.test(name)) return 'text';
+  if (/\.(mp4|webm|mov)$/i.test(name)) return 'video';
   return '';
 }
 

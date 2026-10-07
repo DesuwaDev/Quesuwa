@@ -247,6 +247,7 @@ test('notifications: admin alerts, Telegram, receipts and respondent emails', as
     alertMail: { ...smtpProfile, recipients: ['team@example.test'] },
     mail: { ...smtpProfile, replyTo: 'support@example.test' },
     telegram: { enabled: true, token: '12345:abcdefghijklmnopqrstuvwxyz', chatIds: ['42'], apiBase: `http://127.0.0.1:${telegram.address().port}` },
+    conversation: { delayMinutes: 0 },
     templates: [{ title: 'Thanks', body: 'Thanks for the details.' }]
   });
   assert.equal(res.status, 200);
@@ -536,4 +537,408 @@ test('closed tickets stop replies and resolved tickets auto-close', async t => {
   assert.equal(detail.messages.at(-1).body, 'status:closed');
   assert.equal((await reply(second, 'Hello?')).status, 410);
   assert.equal((await (await admin(`/forms/${form.id}/responses?status=closed`)).json()).items.length, 1);
+});
+
+test('conversations update live through long polling', async t => {
+  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'quesuwa-live-'));
+  const password = 'live-owner-password-1';
+  const instance = createApp({ dataDir, password, defaultLocale: 'en' });
+  const server = instance.app.listen(0, '127.0.0.1');
+  await new Promise(resolve => server.once('listening', resolve));
+  t.after(async () => { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); instance.close(); fs.rmSync(dataDir, { recursive: true, force: true }); });
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const login = await fetch(base + '/api/admin/login', { method: 'POST', headers: { Origin: base, 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
+  const Cookie = login.headers.get('set-cookie').split(';')[0];
+  const admin = (url, method = 'GET', body) => fetch(base + '/api/admin' + url, { method, headers: { Origin: base, 'Content-Type': 'application/json', Cookie }, body: body && JSON.stringify(body) });
+  const form = await (await admin('/forms', 'POST', { title: 'Support', slug: 'support', state: 'published', settings: { ticketMode: true }, fields: [{ id: 'q', type: 'long', label: 'Issue' }] })).json();
+  const body = new FormData();
+  body.set('answers', JSON.stringify({ q: 'Broken' }));
+  body.set('version', String(form.version));
+  const { ticket } = await (await fetch(base + '/api/forms/support/responses', { method: 'POST', body })).json();
+  const headers = { 'X-Ticket-Key': ticket.key };
+  const view = await (await fetch(`${base}/api/tickets/${ticket.id}`, { headers })).json();
+  assert.ok(view.rev);
+
+  // An outdated revision answers immediately.
+  const stale = await fetch(`${base}/api/tickets/${ticket.id}/wait?rev=old`, { headers });
+  assert.equal(stale.status, 200);
+  assert.equal((await stale.json()).rev, view.rev);
+
+  // A current revision waits until staff reply, then returns the new message.
+  const started = Date.now();
+  const waiting = fetch(`${base}/api/tickets/${ticket.id}/wait?rev=${view.rev}`, { headers });
+  await new Promise(resolve => setTimeout(resolve, 300));
+  await admin(`/responses/${ticket.id}/messages`, 'POST', { body: 'Looking into it' });
+  const woke = await waiting;
+  assert.equal(woke.status, 200);
+  const updated = await woke.json();
+  assert.ok(Date.now() - started < 5000, 'woken by the reply, not by the timeout');
+  assert.equal(updated.messages.at(-1).body, 'Looking into it');
+  assert.notEqual(updated.rev, view.rev);
+
+  // Staff see respondent replies the same way.
+  const detail = await (await admin(`/responses/${ticket.id}`)).json();
+  const staffWait = admin(`/responses/${ticket.id}/wait?rev=${detail.rev}`);
+  await new Promise(resolve => setTimeout(resolve, 300));
+  await fetch(`${base}/api/tickets/${ticket.id}/messages`, { method: 'POST', headers: { ...headers, Origin: base, 'Content-Type': 'application/json' }, body: JSON.stringify({ body: 'Thanks!' }) });
+  const state = await (await staffWait).json();
+  assert.equal(state.messages.at(-1).body, 'Thanks!');
+  assert.equal(state.unread, true);
+  assert.equal(state.status, 'pending');
+  // Bad keys never get to wait.
+  assert.equal((await fetch(`${base}/api/tickets/${ticket.id}/wait?rev=x`, { headers: { 'X-Ticket-Key': 'wrong' } })).status, 404);
+
+  // A send retried after a lost answer is stored once, for respondents and staff alike.
+  const resend = () => fetch(`${base}/api/tickets/${ticket.id}/messages`, { method: 'POST', headers: { ...headers, Origin: base, 'Content-Type': 'application/json', 'Idempotency-Key': 'retry-key-0001' }, body: JSON.stringify({ body: 'Sent twice' }) });
+  assert.equal((await resend()).status, 201);
+  const again = await resend();
+  assert.equal(again.status, 201);
+  assert.equal((await again.json()).messages.filter(message => message.body === 'Sent twice').length, 1);
+  const staffSend = () => fetch(`${base}/api/admin/responses/${ticket.id}/messages`, { method: 'POST', headers: { Origin: base, 'Content-Type': 'application/json', Cookie, 'Idempotency-Key': 'staff-key-0001' }, body: JSON.stringify({ body: 'Staff twice' }) });
+  const firstStaff = await (await staffSend()).json();
+  const secondStaff = await (await staffSend()).json();
+  assert.equal(secondStaff.repeated, true);
+  assert.equal(secondStaff.message.id, firstStaff.message.id);
+  const final = await (await admin(`/responses/${ticket.id}`)).json();
+  assert.equal(final.messages.filter(message => message.body === 'Staff twice').length, 1);
+});
+
+test('conversation emails are combined while people keep talking', async t => {
+  const { createServer } = await import('node:net');
+  const mails = [];
+  const smtp = createServer(socket => {
+    let data = false, buffer = '', current = { to: [], body: '' };
+    socket.write('220 sink\r\n');
+    socket.on('data', chunk => {
+      buffer += chunk.toString('utf8');
+      let index;
+      while ((index = buffer.indexOf('\r\n')) >= 0) {
+        const line = buffer.slice(0, index);
+        buffer = buffer.slice(index + 2);
+        if (data) {
+          if (line === '.') { data = false; mails.push(current); current = { to: [], body: '' }; socket.write('250 ok\r\n'); }
+          else current.body += line + '\n';
+          continue;
+        }
+        const command = line.slice(0, 4).toUpperCase();
+        if (command === 'RCPT') current.to.push(line.replace(/^RCPT TO:<(.*)>.*$/i, '$1'));
+        if (command === 'DATA') { data = true; socket.write('354 go\r\n'); }
+        else if (command === 'QUIT') socket.end('221 bye\r\n');
+        else socket.write('250 ok\r\n');
+      }
+    });
+  });
+  await new Promise(r => smtp.listen(0, '127.0.0.1', r));
+  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'quesuwa-batch-'));
+  const password = 'batching-owner-password-1';
+  const instance = createApp({ dataDir, password, defaultLocale: 'en' });
+  const server = instance.app.listen(0, '127.0.0.1');
+  await new Promise(resolve => server.once('listening', resolve));
+  t.after(async () => { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); instance.close(); smtp.close(); fs.rmSync(dataDir, { recursive: true, force: true }); });
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const login = await fetch(base + '/api/admin/login', { method: 'POST', headers: { Origin: base, 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
+  const Cookie = login.headers.get('set-cookie').split(';')[0];
+  const admin = (url, method = 'GET', body) => fetch(base + '/api/admin' + url, { method, headers: { Origin: base, 'Content-Type': 'application/json', Cookie }, body: body && JSON.stringify(body) });
+  const profile = { enabled: true, host: '127.0.0.1', port: smtp.address().port, security: 'none', fromAddress: 'noreply@example.test' };
+  assert.equal((await admin('/notifications', 'PUT', { conversation: { delayMinutes: 30, maxMinutes: 15 } })).status, 400);
+  await admin('/notifications', 'PUT', { alertMail: { ...profile, recipients: ['team@example.test'] }, mail: profile, events: { newResponse: false, ticketReply: true }, conversation: { delayMinutes: 2, maxMinutes: 15, skipIfSeen: true } });
+  const form = await (await admin('/forms', 'POST', { title: 'Support', slug: 'support', state: 'published', settings: { ticketMode: true }, fields: [{ id: 'q', type: 'long', label: 'Issue' }, { id: 'mail', type: 'email', label: 'Email' }] })).json();
+  const body = new FormData();
+  body.set('answers', JSON.stringify({ q: 'Broken', mail: 'user@example.test' }));
+  body.set('version', String(form.version));
+  const { ticket } = await (await fetch(base + '/api/forms/support/responses', { method: 'POST', body })).json();
+  const later = minutes => Date.now() + minutes * 60_000;
+  const settle = () => new Promise(resolve => setTimeout(resolve, 300));
+
+  // Three quick staff replies become one email once the conversation pauses.
+  for (const text of ['First note', 'Second note', 'Third note']) {
+    const reply = await (await admin(`/responses/${ticket.id}/messages`, 'POST', { body: text, email: true })).json();
+    assert.equal(reply.delivery.queued, true);
+    assert.equal(reply.message.delivery, 'queued');
+  }
+  await instance.notifier.conversationTick(later(1));
+  assert.equal(mails.length, 0, 'still inside the quiet period');
+  await instance.notifier.conversationTick(later(3));
+  await settle();
+  assert.equal(mails.length, 1);
+  const combined = mails[0].body.replace(/=\n/g, '');
+  assert.ok(['First note', 'Second note', 'Third note'].every(text => combined.includes(text)));
+  assert.match(mails[0].body, /3 new replies/);
+  let detail = await (await admin(`/responses/${ticket.id}`)).json();
+  assert.deepEqual(detail.messages.filter(message => message.author === 'staff').map(message => message.delivery), ['sent', 'sent', 'sent']);
+
+  // A reply the respondent already saw on the follow-up page is not emailed.
+  const seenLive = await (await admin(`/responses/${ticket.id}/messages`, 'POST', { body: 'Seen live', email: true })).json();
+  // Opening the page alone is not reading; the page reports messages that were on screen.
+  await fetch(`${base}/api/tickets/${ticket.id}`, { headers: { 'X-Ticket-Key': ticket.key } });
+  await fetch(`${base}/api/tickets/${ticket.id}/read`, { method: 'POST', headers: { Origin: base, 'Content-Type': 'application/json', 'X-Ticket-Key': ticket.key }, body: JSON.stringify({ ids: [seenLive.message.id] }) });
+  await instance.notifier.conversationTick(later(3));
+  await settle();
+  assert.equal(mails.length, 1);
+  detail = await (await admin(`/responses/${ticket.id}`)).json();
+  assert.equal(detail.messages.at(-1).delivery, 'seen');
+
+  // Respondent replies reach the team as one alert, and not at all once someone has read them.
+  const respond = text => fetch(`${base}/api/tickets/${ticket.id}/messages`, { method: 'POST', headers: { Origin: base, 'Content-Type': 'application/json', 'X-Ticket-Key': ticket.key }, body: JSON.stringify({ body: text }) });
+  await respond('Still broken');
+  await respond('Here is more detail');
+  await settle();
+  assert.equal(mails.length, 1, 'no alert per message');
+  await instance.notifier.conversationTick(later(3));
+  await settle();
+  await instance.notifier.work();
+  await settle();
+  assert.equal(mails.length, 2);
+  assert.deepEqual(mails[1].to, ['team@example.test']);
+  assert.match(mails[1].body, /2 new replies/);
+  await respond('One more thing');
+  await admin(`/responses/${ticket.id}/read`, 'POST', {});
+  await instance.notifier.conversationTick(later(3));
+  await instance.notifier.work();
+  await settle();
+  assert.equal(mails.length, 2, 'already read, so no alert');
+});
+
+test('conversation editing, read receipts and attachments', async t => {
+  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'quesuwa-conv-'));
+  const password = 'conversation-owner-password-1';
+  const instance = createApp({ dataDir, password, defaultLocale: 'en' });
+  const server = instance.app.listen(0, '127.0.0.1');
+  await new Promise(resolve => server.once('listening', resolve));
+  t.after(async () => { server.closeAllConnections(); await new Promise(resolve => server.close(resolve)); instance.close(); fs.rmSync(dataDir, { recursive: true, force: true }); });
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const login = await fetch(base + '/api/admin/login', { method: 'POST', headers: { Origin: base, 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
+  const Cookie = login.headers.get('set-cookie').split(';')[0];
+  const admin = (url, method = 'GET', body) => fetch(base + '/api/admin' + url, { method, headers: { Origin: base, ...(body instanceof FormData ? {} : { 'Content-Type': 'application/json' }), Cookie }, body: body instanceof FormData ? body : body && JSON.stringify(body) });
+  const form = await (await admin('/forms', 'POST', { title: 'Support', slug: 'support', state: 'published', settings: { ticketMode: true }, fields: [{ id: 'q', type: 'long', label: 'Issue' }] })).json();
+  const submit = async () => {
+    const body = new FormData();
+    body.set('answers', JSON.stringify({ q: 'Broken' }));
+    body.set('version', String(form.version));
+    return (await (await fetch(base + '/api/forms/support/responses', { method: 'POST', body })).json()).ticket;
+  };
+  const ticket = await submit();
+  const keyHeaders = { 'X-Ticket-Key': ticket.key };
+  const respondent = (url = '', init = {}) => fetch(`${base}/api/tickets/${ticket.id}${url}`, { ...init, headers: { Origin: base, ...keyHeaders, ...(init.body && !(init.body instanceof FormData) ? { 'Content-Type': 'application/json' } : {}), ...(init.headers || {}) } });
+  const view = async () => (await respondent()).json();
+
+  // Editing: the respondent sees only the new text; staff keep the original and a marker.
+  const asked = await (await respondent('/messages', { method: 'POST', body: JSON.stringify({ body: 'Pasword reset broken' }) })).json();
+  const typo = asked.messages.at(-1);
+  const staffReply = await (await admin(`/responses/${ticket.id}/messages`, 'POST', { body: 'We will **check** it' })).json();
+  assert.equal((await admin(`/responses/${ticket.id}/messages/${typo.id}`, 'PATCH', { body: 'Password reset broken' })).status, 200);
+  let mine = (await view()).messages.find(message => message.id === typo.id);
+  assert.equal(mine.body, 'Password reset broken');
+  assert.deepEqual(Object.keys(mine).sort(), ['attachments', 'author', 'authorName', 'body', 'createdAt', 'id']);
+  let staffSide = (await (await admin(`/responses/${ticket.id}`)).json()).messages.find(message => message.id === typo.id);
+  assert.equal(staffSide.originalBody, 'Pasword reset broken');
+  assert.ok(staffSide.editedAt && staffSide.editedBy);
+  const systemEvent = (await (await admin(`/responses/${ticket.id}`, 'PATCH', { status: 'inProgress' })).json()).event;
+  assert.equal((await admin(`/responses/${ticket.id}/messages/${systemEvent.id}`, 'PATCH', { body: 'x' })).status, 404);
+
+  // Retracting hides a message from the respondent only; restoring brings it back.
+  assert.equal((await admin(`/responses/${ticket.id}/messages/${staffReply.message.id}`, 'DELETE')).status, 200);
+  assert.ok(!(await view()).messages.some(message => message.id === staffReply.message.id));
+  staffSide = (await (await admin(`/responses/${ticket.id}`)).json()).messages.find(message => message.id === staffReply.message.id);
+  assert.ok(staffSide.deletedAt);
+  assert.equal((await respondent('/read', { method: 'POST', body: JSON.stringify({ ids: [staffReply.message.id] }) })).ok, true);
+  assert.equal((await (await admin(`/responses/${ticket.id}`)).json()).messages.find(message => message.id === staffReply.message.id).readAt, null, 'retracted messages are not marked read');
+  await admin(`/responses/${ticket.id}/messages/${staffReply.message.id}/restore`, 'POST', {});
+  assert.ok((await view()).messages.some(message => message.id === staffReply.message.id));
+
+  // Read receipts: only staff messages that the page reports, with the time they were read.
+  const marked = await (await respondent('/read', { method: 'POST', body: JSON.stringify({ ids: [staffReply.message.id, typo.id, 'unknown'] }) })).json();
+  assert.equal(marked.marked, 1);
+  const receipts = (await (await admin(`/responses/${ticket.id}`)).json()).messages;
+  assert.ok(receipts.find(message => message.id === staffReply.message.id).readAt);
+  assert.equal(receipts.find(message => message.id === typo.id).readAt, null);
+
+  // Attachments: checked by content, fetched with the key, and switchable per conversation.
+  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64');
+  const upload = (files, text = '') => {
+    const body = new FormData();
+    body.set('body', text);
+    for (const [name, content, type] of files) body.append('files', new Blob([content], { type }), name);
+    return respondent('/messages', { method: 'POST', body });
+  };
+  let sent = await upload([['shot.png', png, 'image/png'], ['console.log', 'TypeError: x is undefined', 'text/plain']]);
+  assert.equal(sent.status, 201);
+  const withFiles = (await sent.json()).messages.at(-1);
+  assert.equal(withFiles.body, '');
+  assert.deepEqual(withFiles.attachments.map(file => [file.name, file.mime]), [['shot.png', 'image/png'], ['console.log', 'text/plain']]);
+  const image = await respondent(`/files/${withFiles.attachments[0].id}?inline=1`);
+  assert.equal(image.headers.get('content-type'), 'image/png');
+  assert.deepEqual(Buffer.from(await image.arrayBuffer()), png);
+  assert.equal((await fetch(`${base}/api/tickets/${ticket.id}/files/${withFiles.attachments[0].id}`, { headers: { 'X-Ticket-Key': 'wrong' } })).status, 404);
+  assert.equal((await admin(`/responses/${ticket.id}/conversation-files/${withFiles.attachments[1].id}`)).status, 200);
+  assert.equal((await upload([['fake.png', 'not an image', 'image/png']])).status, 400, 'content decides the type, not the name');
+  assert.ok((await (await admin('/system')).json()).files >= 2, 'conversation files count towards storage');
+
+  // Staff can stop this conversation from accepting files; the questionnaire can too.
+  assert.equal((await (await admin(`/responses/${ticket.id}`, 'PATCH', { filesDisabled: true })).json()).filesDisabled, true);
+  assert.equal((await view()).files.allowed, false);
+  sent = await upload([['shot.png', png, 'image/png']]);
+  assert.equal(sent.status, 403);
+  assert.equal((await sent.json()).code, 'errors.ticketFilesOff');
+  await admin(`/responses/${ticket.id}`, 'PATCH', { filesDisabled: false });
+  const current = await (await admin(`/forms/${form.id}`)).json();
+  await admin(`/forms/${form.id}`, 'PUT', { ...current, settings: { ...current.settings, ticketFiles: false } });
+  assert.equal((await view()).files.allowed, false);
+  assert.equal((await upload([['shot.png', png, 'image/png']])).status, 403);
+
+  // Staff attachments, and the storage quota covers conversations too.
+  const staffFiles = new FormData();
+  staffFiles.set('body', 'See the attached guide');
+  staffFiles.append('files', new Blob([png], { type: 'image/png' }), 'guide.png');
+  const staffAttached = await (await admin(`/responses/${ticket.id}/messages`, 'POST', staffFiles)).json();
+  assert.equal(staffAttached.message.attachments[0].name, 'guide.png');
+  await admin('/system/settings', 'PUT', { maxStorageMB: 1 });
+  const big = new FormData();
+  big.append('files', new Blob([Buffer.concat([png, Buffer.alloc(1024 * 1024 + 10)])], { type: 'image/png' }), 'huge.png');
+  assert.equal((await admin(`/responses/${ticket.id}/messages`, 'POST', big)).status, 507);
+
+  // Deleting the response for good removes conversation files from disk.
+  const stored = path.join(dataDir, 'uploads', withFiles.attachments[0].id);
+  assert.ok(fs.existsSync(stored));
+  await admin(`/forms/${form.id}/responses/batch`, 'POST', { ids: [ticket.id], action: 'trash' });
+  await admin(`/forms/${form.id}/responses/batch`, 'POST', { ids: [ticket.id], action: 'purge', confirmation: form.title });
+  assert.ok(!fs.existsSync(stored));
+});
+
+test('human verification before submitting', async t => {
+  const { createServer } = await import('node:http');
+  const { solveCap } = await import('./helpers/cap-solver.js');
+  // A stand-in for every provider's siteverify endpoint: "good-<provider>" tokens pass.
+  const calls = [];
+  const verifier = createServer((req, res) => {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', () => {
+      const fields = req.headers['content-type'].includes('json') ? JSON.parse(body) : Object.fromEntries(new URLSearchParams(body));
+      const provider = req.url.endsWith('/siteverify') ? 'cap' : req.url.slice(1);
+      calls.push({ provider, fields });
+      res.setHeader('Content-Type', 'application/json');
+      if (provider === 'recaptchaV3') return res.end(JSON.stringify({ success: true, action: fields.response.split(':')[1], score: Number(fields.response.split(':')[2]) }));
+      res.end(JSON.stringify({ success: fields.response === 'good-' + provider }));
+    });
+  });
+  await new Promise(resolve => verifier.listen(0, '127.0.0.1', resolve));
+  const at = path => `http://127.0.0.1:${verifier.address().port}/${path}`;
+  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'quesuwa-captcha-'));
+  const password = 'captcha-owner-password-1';
+  const instance = createApp({ dataDir, password, defaultLocale: 'en', captchaEndpoints: { turnstile: at('turnstile'), hcaptcha: at('hcaptcha'), recaptcha: ['http://127.0.0.1:9/unreachable', at('recaptcha')], recaptchaV3: at('recaptchaV3') } });
+  const server = instance.app.listen(0, '127.0.0.1');
+  await new Promise(resolve => server.once('listening', resolve));
+  t.after(async () => { await new Promise(resolve => server.close(resolve)); instance.close(); verifier.close(); fs.rmSync(dataDir, { recursive: true, force: true }); });
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const login = await fetch(base + '/api/admin/login', { method: 'POST', headers: { Origin: base, 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
+  const Cookie = login.headers.get('set-cookie').split(';')[0];
+  const admin = (url, method = 'GET', body) => fetch(base + '/api/admin' + url, { method, headers: { Origin: base, 'Content-Type': 'application/json', Cookie }, body: body && JSON.stringify(body) });
+  const configure = body => admin('/system/captcha', 'PUT', body);
+  const form = await (await admin('/forms', 'POST', { title: 'Guarded', slug: 'guarded', state: 'published', settings: { captcha: true }, fields: [{ id: 'q', type: 'short', label: 'Q' }] })).json();
+  const open = await (await admin('/forms', 'POST', { title: 'Open', slug: 'open-form', state: 'published', fields: [{ id: 'q', type: 'short', label: 'Q' }] })).json();
+  const submit = (slug, version, headers = {}) => {
+    const body = new FormData();
+    body.set('answers', JSON.stringify({ q: 'hello' }));
+    body.set('version', String(version));
+    return fetch(`${base}/api/forms/${slug}/responses`, { method: 'POST', headers, body });
+  };
+  const code = async response => (await response.json()).code;
+
+  // Switched on for a questionnaire but not configured anywhere: nothing is asked.
+  assert.equal((await (await fetch(base + '/api/forms/guarded')).json()).captcha, null);
+  assert.equal((await submit('guarded', form.version)).status, 201);
+
+  // Keys are required for hosted providers; secrets are write-only.
+  assert.equal(await code(await configure({ provider: 'turnstile', providers: { turnstile: { siteKey: 'site-t' } } })), 'errors.captchaKeys');
+  let saved = await (await configure({ provider: 'turnstile', fallback: 'cap', providers: { turnstile: { siteKey: 'site-t', secret: 'secret-t' }, cap: { mode: 'builtin', strength: 'low' } } })).json();
+  assert.equal(saved.config.providers.turnstile.secret, 'secret-t', 'owners can read their keys back');
+  assert.deepEqual(saved.accepted ?? saved.config.accepted, ['turnstile', 'cap']);
+  const view = await (await fetch(base + '/api/forms/guarded')).json();
+  assert.deepEqual(view.captcha.primary, { provider: 'turnstile', siteKey: 'site-t' });
+  assert.deepEqual(view.captcha.fallback, { provider: 'cap', siteKey: '', endpoint: '/api/captcha/cap/', workerCount: '2', timeout: 10 });
+  assert.equal((await (await fetch(base + '/api/forms/open-form')).json()).captcha, null, 'only questionnaires that opt in ask');
+  const policy = (await fetch(base + '/')).headers.get('content-security-policy');
+  assert.match(policy, /script-src 'self' https:\/\/challenges\.cloudflare\.com 'wasm-unsafe-eval'/);
+  assert.match(policy, /frame-src 'self' https:\/\/challenges\.cloudflare\.com/);
+  assert.match(policy, /worker-src 'self' blob:/);
+
+  // Submissions need a valid token from the primary or the backup channel.
+  assert.equal(await code(await submit('guarded', form.version)), 'errors.captchaRequired');
+  assert.equal(await code(await submit('guarded', form.version, { 'X-Captcha-Token': 'bad', 'X-Captcha-Provider': 'turnstile' })), 'errors.captchaFailed');
+  assert.equal(await code(await submit('guarded', form.version, { 'X-Captcha-Token': 'good-hcaptcha', 'X-Captcha-Provider': 'hcaptcha' })), 'errors.captchaFailed', 'channels that are not configured are refused');
+  assert.equal((await submit('guarded', form.version, { 'X-Captcha-Token': 'good-turnstile', 'X-Captcha-Provider': 'turnstile' })).status, 201);
+  assert.equal(calls.at(-1).fields.secret, 'secret-t');
+  assert.equal((await submit('open-form', open.version)).status, 201, 'other questionnaires are unaffected');
+
+  // The built-in Cap backup: challenge, solve, redeem, then a single-use token.
+  const challenge = await (await fetch(base + '/api/captcha/cap/challenge', { method: 'POST', headers: { Origin: base } })).json();
+  const redeemed = await (await fetch(base + '/api/captcha/cap/redeem', { method: 'POST', headers: { Origin: base, 'Content-Type': 'application/json' }, body: JSON.stringify(solveCap(challenge)) })).json();
+  assert.equal(redeemed.success, true);
+  const capHeaders = { 'X-Captcha-Token': redeemed.token, 'X-Captcha-Provider': 'cap' };
+  assert.equal((await submit('guarded', form.version, capHeaders)).status, 201);
+  assert.equal(await code(await submit('guarded', form.version, capHeaders)), 'errors.captchaFailed', 'tokens cannot be reused');
+  const wrong = await (await fetch(base + '/api/captcha/cap/redeem', { method: 'POST', headers: { Origin: base, 'Content-Type': 'application/json' }, body: JSON.stringify({ token: challenge.token, solutions: [1, 2, 3] }) })).json();
+  assert.equal(wrong.success, false);
+
+  // hCaptcha sends its site key; reCAPTCHA falls through to the mirror when the first origin is down.
+  await configure({ provider: 'hcaptcha', fallback: 'none', providers: { hcaptcha: { siteKey: 'site-h', secret: 'secret-h' } } });
+  assert.equal((await submit('guarded', form.version, { 'X-Captcha-Token': 'good-hcaptcha', 'X-Captcha-Provider': 'hcaptcha' })).status, 201);
+  assert.equal(calls.at(-1).fields.sitekey, 'site-h');
+  assert.equal((await (await fetch(base + '/api/captcha/cap/challenge', { method: 'POST', headers: { Origin: base } })).status), 404, 'built-in Cap only answers when it is in use');
+  await configure({ provider: 'recaptcha', providers: { recaptcha: { siteKey: 'site-r', secret: 'secret-r', endpoint: 'auto' } } });
+  assert.deepEqual((await (await fetch(base + '/api/captcha')).json()).primary.origins, ['https://www.google.com', 'https://www.recaptcha.net']);
+  assert.equal((await submit('guarded', form.version, { 'X-Captcha-Token': 'good-recaptcha', 'X-Captcha-Provider': 'recaptcha' })).status, 201);
+
+  // reCAPTCHA v3 decides on the score and the action.
+  await configure({ provider: 'recaptchaV3', providers: { recaptchaV3: { siteKey: 'site-3', secret: 'secret-3', threshold: 0.6 } } });
+  assert.equal((await submit('guarded', form.version, { 'X-Captcha-Token': 'v3:submit:0.9', 'X-Captcha-Provider': 'recaptchaV3' })).status, 201);
+  assert.equal(await code(await submit('guarded', form.version, { 'X-Captcha-Token': 'v3:submit:0.3', 'X-Captcha-Provider': 'recaptchaV3' })), 'errors.captchaFailed');
+  assert.equal(await code(await submit('guarded', form.version, { 'X-Captcha-Token': 'v3:login:0.9', 'X-Captcha-Provider': 'recaptchaV3' })), 'errors.captchaFailed');
+
+  // Switching channels keeps everyone's keys.
+  const kept = (await (await admin('/system/captcha')).json()).config.providers;
+  assert.equal(kept.turnstile.secret, 'secret-t');
+  assert.equal(kept.hcaptcha.siteKey, 'site-h');
+
+  // Cap failures route on their own: refusals fail outright, network trouble uses the general backup.
+  await configure({ provider: 'cap', fallback: 'turnstile', capBlockedFallback: 'none', capNetworkFallback: 'default', providers: { cap: { mode: 'builtin' } } });
+  let routes = (await (await fetch(base + '/api/captcha')).json());
+  assert.equal(routes.capFallbacks.blocked, null);
+  assert.equal(routes.capFallbacks.network.provider, 'turnstile');
+  await configure({ capBlockedFallback: 'hcaptcha', fallback: 'none' });
+  routes = (await (await fetch(base + '/api/captcha')).json());
+  assert.equal(routes.fallback, null);
+  assert.equal(routes.capFallbacks.blocked.provider, 'hcaptcha');
+  assert.equal(routes.capFallbacks.network, null, '"general backup" with no backup means no route');
+  assert.equal((await submit('guarded', form.version, { 'X-Captcha-Token': 'good-hcaptcha', 'X-Captcha-Provider': 'hcaptcha' })).status, 201, 'a Cap failure route is an accepted channel');
+  assert.equal(await code(await submit('guarded', form.version, { 'X-Captcha-Token': 'good-turnstile', 'X-Captcha-Provider': 'turnstile' })), 'errors.captchaFailed', 'channels no route reaches are refused');
+
+  // A self-hosted Cap server is called with JSON at <server>/<site key>/siteverify,
+  // optionally through a separate address for server-side checks.
+  assert.equal(await code(await configure({ provider: 'cap', fallback: 'none', providers: { cap: { mode: 'standalone', serverUrl: 'https://cap.example.test?x=1', siteKey: 'k', secret: 's' } } })), 'errors.captchaServerUrl');
+  await configure({ provider: 'cap', fallback: 'none', providers: { cap: { mode: 'standalone', serverUrl: 'https://cap.example.test/', verificationServerUrl: at('internal'), siteKey: 'abc', secret: 'cap-secret', timeout: '5' } } });
+  assert.equal((await (await fetch(base + '/api/captcha')).json()).primary.endpoint, 'https://cap.example.test/abc/');
+  assert.match((await fetch(base + '/')).headers.get('content-security-policy'), /connect-src 'self' https:\/\/cap\.example\.test/);
+  assert.equal((await submit('guarded', form.version, { 'X-Captcha-Token': 'good-cap', 'X-Captcha-Provider': 'cap' })).status, 201);
+  assert.deepEqual(calls.at(-1).fields, { secret: 'cap-secret', response: 'good-cap' });
+  assert.equal((await (await admin('/system/captcha')).json()).config.providers.cap.mode, 'standalone');
+
+  // When no verification server answers, visitors are told it is temporary.
+  const down = createApp({ dataDir: fs.mkdtempSync(path.join(os.tmpdir(), 'quesuwa-captcha-down-')), password, captchaEndpoints: { turnstile: 'http://127.0.0.1:9/unreachable' } });
+  t.after(() => down.close());
+  const downServer = down.app.listen(0, '127.0.0.1');
+  await new Promise(resolve => downServer.once('listening', resolve));
+  t.after(() => new Promise(resolve => downServer.close(resolve)));
+  const downBase = `http://127.0.0.1:${downServer.address().port}`;
+  const downCookie = (await fetch(downBase + '/api/admin/login', { method: 'POST', headers: { Origin: downBase, 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) })).headers.get('set-cookie').split(';')[0];
+  const downAdmin = (url, method, body) => fetch(downBase + '/api/admin' + url, { method, headers: { Origin: downBase, 'Content-Type': 'application/json', Cookie: downCookie }, body: JSON.stringify(body) });
+  await downAdmin('/system/captcha', 'PUT', { provider: 'turnstile', providers: { turnstile: { siteKey: 's', secret: 'x' } } });
+  const downForm = await (await downAdmin('/forms', 'POST', { title: 'G', slug: 'guarded', state: 'published', settings: { captcha: true }, fields: [{ id: 'q', type: 'short', label: 'Q' }] })).json();
+  const body = new FormData();
+  body.set('answers', JSON.stringify({ q: 'x' }));
+  body.set('version', String(downForm.version));
+  const unavailable = await fetch(downBase + '/api/forms/guarded/responses', { method: 'POST', headers: { 'X-Captcha-Token': 'anything', 'X-Captcha-Provider': 'turnstile' }, body });
+  assert.equal(unavailable.status, 503);
+  assert.equal((await unavailable.json()).code, 'errors.captchaUnavailable');
 });

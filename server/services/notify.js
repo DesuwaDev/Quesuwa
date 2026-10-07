@@ -7,6 +7,7 @@ import { statusKeys } from '../../shared/constants.js';
 import { fail } from '../errors.js';
 import { contactEmail } from './responses.js';
 import { environmentSummary } from '../../shared/environment.js';
+import { plainText } from '../../shared/markdown.js';
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const smtpDefaults = { enabled: false, host: '', port: 465, security: 'tls', user: '', pass: '', fromName: '', fromAddress: '' };
@@ -18,6 +19,9 @@ const defaults = () => ({
   mail: { ...smtpDefaults, replyTo: '' },
   digest: { enabled: false, hour: 9, onlyActive: true, toRecipients: false },
   appearance: { brandName: '', color: '#B0554D', logoUrl: '', signature: '', footer: '' },
+  // Back-and-forth messages are combined: an email goes out once the sender has been quiet
+  // for delayMinutes (every new message restarts the wait), but never later than maxMinutes.
+  conversation: { delayMinutes: 2, maxMinutes: 15, skipIfSeen: true },
   templates: []
 });
 // Retry schedule for queued notifications: 30 s, 2 min, 10 min, 1 h, then give up.
@@ -109,6 +113,15 @@ function digest(input, current) {
   return { enabled: bool(input.enabled, current.enabled), hour, onlyActive: bool(input.onlyActive, current.onlyActive), toRecipients: bool(input.toRecipients, current.toRecipients) };
 }
 
+function conversation(input, current) {
+  if (input === undefined) return current;
+  if (!input || typeof input !== 'object') throw invalid('errors.notifyInvalid');
+  const delayMinutes = input.delayMinutes === undefined ? current.delayMinutes : Number(input.delayMinutes);
+  const maxMinutes = input.maxMinutes === undefined ? current.maxMinutes : Number(input.maxMinutes);
+  if (!Number.isInteger(delayMinutes) || delayMinutes < 0 || delayMinutes > 60 || !Number.isInteger(maxMinutes) || maxMinutes < 1 || maxMinutes > 240 || (delayMinutes && maxMinutes < delayMinutes)) throw invalid('errors.conversationInvalid');
+  return { delayMinutes, maxMinutes, skipIfSeen: bool(input.skipIfSeen, current.skipIfSeen) };
+}
+
 export function appearanceOf(input, current = defaults().appearance) {
   if (input === undefined) return current;
   if (!input || typeof input !== 'object') throw invalid('errors.notifyInvalid');
@@ -125,14 +138,14 @@ export function appearanceOf(input, current = defaults().appearance) {
   };
 }
 
-export function createNotifier(db, { settings, tickets, publicOrigin = '' }) {
+export function createNotifier(db, { settings, tickets, forms, publicOrigin = '' }) {
   const read = () => {
     const stored = db.prepare("SELECT value FROM settings WHERE key='notifications'").get();
     const base = defaults();
     if (!stored) return base;
     const value = JSON.parse(stored.value);
     const merged = { ...base, ...value };
-    for (const key of ['events', 'alertMail', 'telegram', 'mail', 'digest', 'appearance']) merged[key] = { ...base[key], ...value[key] };
+    for (const key of ['events', 'alertMail', 'telegram', 'mail', 'digest', 'appearance', 'conversation']) merged[key] = { ...base[key], ...value[key] };
     return merged;
   };
   let config = read();
@@ -158,6 +171,7 @@ export function createNotifier(db, { settings, tickets, publicOrigin = '' }) {
     next.telegram = telegram(input.telegram, config.telegram);
     next.digest = digest(input.digest, config.digest);
     next.appearance = appearanceOf(input.appearance, config.appearance);
+    next.conversation = conversation(input.conversation, config.conversation);
     next.templates = templates(input.templates, config.templates);
     config = next;
     persist();
@@ -354,9 +368,10 @@ ${signatureText ? `<p style="margin:16px 0 0;font-size:14px;line-height:1.6;colo
 
   function ticketReplied({ form, row, message, origin }) {
     if (!config.events.ticketReply || !alertsReady()) return;
+    if (batching()) { queueConversation(row.id, 'staff', message.createdAt, origin); return; }
     const locale = adminLocale();
     const params = { title: form.title, id: shortId(row.id) };
-    alertAdmins('message.created', { formId: form.id, eventKey: 'ticketReply', title: form.title, id: row.id, subject: tr(locale, 'notify.replySubject', params), heading: tr(locale, 'notify.replyHeading'), intro: tr(locale, 'notify.replyIntro', params), quote: message.body, link: adminLink(origin, form.id, row.id) });
+    alertAdmins('message.created', { formId: form.id, eventKey: 'ticketReply', title: form.title, id: row.id, subject: tr(locale, 'notify.replySubject', params), heading: tr(locale, 'notify.replyHeading'), intro: tr(locale, 'notify.replyIntro', params), quote: messageText(locale, message), link: adminLink(origin, form.id, row.id) });
   }
 
   function respondentEmail({ form, row, origin, kind, message = null, status }) {
@@ -368,7 +383,7 @@ ${signatureText ? `<p style="margin:16px 0 0;font-size:14px;line-height:1.6;colo
     const content = renderEmail(locale, {
       heading: tr(locale, reply ? 'notify.staffHeading' : 'notify.statusHeading'),
       intro: tr(locale, reply ? 'notify.staffIntro' : 'notify.statusIntro', params),
-      quote: reply ? message.body + '\n\n' + tr(locale, 'notify.currentStatus', params) : '',
+      quote: reply ? messageText(locale, message) + '\n\n' + tr(locale, 'notify.currentStatus', params) : '',
       button: link ? { text: tr(locale, 'notify.openTicket'), url: link } : null,
       footer: tr(locale, 'notify.footerRespondent', { title: form.title }),
       signature: true
@@ -381,6 +396,90 @@ ${signatureText ? `<p style="margin:16px 0 0;font-size:14px;line-height:1.6;colo
     if (!to || !mailReady()) return { ok: false, error: 'unavailable' };
     const content = respondentEmail({ form, row, origin, kind, message, status });
     return deliver('mail', kind === 'message' ? 'message.staff' : 'status.changed', to, { kind: 'mail', profile: 'mail', message: { to, replyTo: config.mail.replyTo || undefined, ...content } });
+  }
+
+  // ---- Conversation batching ----
+  const batching = () => config.conversation.delayMinutes > 0;
+  const dueAt = batch => Math.min(batch.last_at + config.conversation.delayMinutes * 60_000, batch.first_at + config.conversation.maxMinutes * 60_000);
+
+  // Starts or extends the waiting period for one direction of a conversation; returns when it will send.
+  function queueConversation(responseId, audience, since, origin, now = Date.now()) {
+    db.prepare(`INSERT INTO conversation_batches(response_id, audience, since, first_at, last_at, origin) VALUES (?,?,?,?,?,?)
+      ON CONFLICT(response_id, audience) DO UPDATE SET last_at=excluded.last_at`).run(responseId, audience, since, now, now, origin || '');
+    return dueAt(db.prepare('SELECT first_at, last_at FROM conversation_batches WHERE response_id=? AND audience=?').get(responseId, audience));
+  }
+
+  const loadForm = id => forms?.get(id) || null;
+
+  // Emails carry Markdown as plain text and list attachments, which are viewed on the follow-up page.
+  function messageText(locale, message) {
+    const files = message.attachments || [];
+    const note = files.length ? tr(locale, 'notify.attachmentsLine', { count: files.length, names: files.map(file => file.name).join(tr(locale, 'common.listSeparator')) }) : '';
+    return [plainText(message.body), note].filter(Boolean).join('\n');
+  }
+
+  // Staff messages and status changes waiting for the respondent, sent as one email.
+  async function flushRespondent(batch) {
+    const row = db.prepare('SELECT * FROM responses WHERE id=?').get(batch.response_id);
+    const waiting = row ? tickets.messages(row.id).filter(message => message.delivery === 'queued') : [];
+    // Messages retracted while waiting are dropped from the email.
+    for (const message of waiting.filter(item => item.deletedAt)) tickets.setDelivery(message.id, '');
+    const queued = waiting.filter(message => !message.deletedAt);
+    if (!queued.length) return;
+    const mark = value => { for (const message of queued) tickets.setDelivery(message.id, value); };
+    const form = row.deleted_at ? null : loadForm(row.form_id);
+    const to = form && mailReady() ? recipientFor(form, row) : '';
+    if (!to) return mark('failed');
+    // The respondent already read every one of them on the follow-up page.
+    if (config.conversation.skipIfSeen && queued.every(message => message.readAt)) return mark('seen');
+    const locale = respondentLocale(row);
+    const replies = queued.filter(message => message.author === 'staff');
+    const statusLabel = tr(locale, statusKeys[row.status] || 'status.pending');
+    const params = { title: form.title, id: shortId(row.id), status: statusLabel, name: replies[0]?.authorName || '', count: replies.length };
+    const authors = new Set(replies.map(message => message.authorName));
+    const lines = queued.map(message => message.author === 'system'
+      ? tr(locale, 'notify.statusLine', { status: tr(locale, statusKeys[message.body.replace(/^status:/, '')] || 'status.pending') })
+      : (authors.size > 1 ? message.authorName + ': ' : '') + messageText(locale, message));
+    const link = followUpLink(batch.origin, row, form);
+    const content = renderEmail(locale, {
+      heading: tr(locale, replies.length ? 'notify.staffHeading' : 'notify.statusHeading'),
+      intro: tr(locale, replies.length > 1 ? 'notify.staffIntroMany' : replies.length ? 'notify.staffIntro' : 'notify.statusIntro', params),
+      quote: lines.join('\n\n') + '\n\n' + tr(locale, 'notify.currentStatus', params),
+      button: link ? { text: tr(locale, 'notify.openTicket'), url: link } : null,
+      footer: tr(locale, 'notify.footerRespondent', { title: form.title }),
+      signature: true
+    });
+    const result = await deliver('mail', replies.length ? 'message.staff' : 'status.changed', to, { kind: 'mail', profile: 'mail', message: { to, replyTo: config.mail.replyTo || undefined, subject: tr(locale, replies.length ? 'notify.staffSubject' : 'notify.statusSubject', params), ...content } });
+    mark(result.ok ? 'sent' : 'failed');
+  }
+
+  // Respondent replies waiting for the team, sent as one alert unless someone already read them.
+  function flushStaff(batch) {
+    const row = db.prepare('SELECT * FROM responses WHERE id=?').get(batch.response_id);
+    if (!row || row.deleted_at || !config.events.ticketReply || !alertsReady()) return;
+    if (config.conversation.skipIfSeen && !row.unread) return;
+    const form = loadForm(row.form_id);
+    const replies = tickets.messages(row.id).filter(message => message.author === 'respondent' && !message.deletedAt && message.createdAt >= batch.since);
+    if (!form || !replies.length) return;
+    const locale = adminLocale();
+    const params = { title: form.title, id: shortId(row.id), count: replies.length };
+    alertAdmins('message.created', { formId: form.id, eventKey: 'ticketReply', title: form.title, id: row.id, subject: tr(locale, 'notify.replySubject', params), heading: tr(locale, 'notify.replyHeading'), intro: tr(locale, replies.length > 1 ? 'notify.replyIntroMany' : 'notify.replyIntro', params), quote: replies.map(message => messageText(locale, message)).join('\n\n'), link: adminLink(batch.origin, form.id, row.id) });
+  }
+
+  let flushing = false;
+  async function conversationTick(now = Date.now()) {
+    if (flushing || closed) return;
+    flushing = true;
+    try {
+      for (const batch of safe(() => db.prepare('SELECT * FROM conversation_batches').all()) || []) {
+        if (dueAt(batch) > now) continue;
+        db.prepare('DELETE FROM conversation_batches WHERE response_id=? AND audience=?').run(batch.response_id, batch.audience);
+        try {
+          if (batch.audience === 'respondent') await flushRespondent(batch);
+          else flushStaff(batch);
+        } catch (error) { console.error(error); }
+      }
+    } finally { flushing = false; }
   }
 
   // ---- Daily digest ----
@@ -468,7 +567,7 @@ ${signatureText ? `<p style="margin:16px 0 0;font-size:14px;line-height:1.6;colo
   kick();
 
   return {
-    masked, update, history, retry, test, preview, work, digestTick, templates: () => config.templates,
+    masked, update, history, retry, test, preview, work, digestTick, conversationTick, batching, queueConversation, templates: () => config.templates,
     status: () => ({ alerts: alertsReady(), mail: mailReady(), alertMail: config.alertMail.enabled }),
     recipientFor, followUpLink, responseCreated, ticketReplied, emailRespondent,
     close() { closed = true; }

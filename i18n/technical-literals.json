@@ -1573,6 +1573,11 @@
       },
       {
         "kind": "literal",
+        "value": "system",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "DELETE",
         "reason": "SQLite statement, clause or column definition; values are bound separately."
       },
@@ -1614,11 +1619,6 @@
       {
         "kind": "literal",
         "value": "muted",
-        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
-      },
-      {
-        "kind": "literal",
-        "value": "system",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
       {
@@ -1665,6 +1665,10 @@
     "dynamicKeys": [
       {
         "expression": "statusKeys[statusOf(message)] || 'status.pending'",
+        "reason": "Key resolved from a fixed translation-key map, a reviewed key prefix or a validated API error code."
+      },
+      {
+        "expression": "statusKeys[statusOf({ body: message.originalBody || '' })] || 'status.pending'",
         "reason": "Key resolved from a fixed translation-key map, a reviewed key prefix or a validated API error code."
       },
       {
@@ -3907,6 +3911,16 @@
     "literals": [
       {
         "kind": "literal",
+        "value": "undefined",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "20px \"Quesuwa Reactions\"",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "toggle",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
@@ -4032,6 +4046,60 @@
       {
         "expression": "label",
         "reason": "Key resolved from a fixed translation-key map, a reviewed key prefix or a validated API error code."
+      }
+    ]
+  },
+  "src/components/PrivateFiles.vue": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "hidden",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "0px",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "image",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "play",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "file",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "pointerdown",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "scroll",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "resize",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "${}px",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "private-file-tip",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       }
     ]
   },
@@ -7644,6 +7712,11 @@
       },
       {
         "kind": "literal",
+        "value": "statusEventChanged",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "messageEdited",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
@@ -9809,7 +9882,22 @@
       },
       {
         "kind": "literal",
+        "value": "SELECT id FROM messages WHERE response_id=? AND author='system' AND deleted_at IS NULL ORDER BY created_at DESC, rowid DESC LIMIT 1",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "status:",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
         "value": "UPDATE messages SET body=?, edited_at=?, edited_by=?, original_body=COALESCE(original_body, body) WHERE id=?",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "UPDATE responses SET status=? WHERE id=?",
         "reason": "SQLite statement, clause or column definition; values are bound separately."
       },
       {

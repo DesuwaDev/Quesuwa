@@ -1581,5 +1581,12 @@
   "backups.snapshots": "备份快照",
   "captcha.appearance": "外观",
   "captcha.capRouteBadge": "Cap 失败时使用",
-  "responses.applyStatus": "确认更改"
+  "responses.applyStatus": "确认更改",
+  "ticket.retractEventConfirm": "撤回后填写者将看不到这条状态更新（不会有任何提示）。当前处理状态不会改变，管理员仍可查看和恢复。",
+  "ticket.changeStatusTo": "改为「{status}」",
+  "ticket.statusEventChanged": "状态更新已修改，当前处理状态已同步",
+  "ticket.statusEventWas": "原为「{status}」，{name} 修改",
+  "errors.statusEventLocked": "只能修改最新一条未撤回的状态更新。",
+  "audit.statusEventChanged": "修改状态更新",
+  "ticket.privateFile": "为保护隐私，上传的文件仅工作人员可查看。"
 }

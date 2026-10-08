@@ -90,7 +90,8 @@ async function patch(body, messageKey) {
   try {
     const { event, delivery, ...updated } = await api('/admin/responses/' + response.value.id, { method: 'PATCH', body });
     Object.assign(response.value, updated);
-    if (event) response.value.messages.push(event);
+    // Live sync may already have delivered this status update.
+    if (event && !response.value.messages.some(message => message.id === event.id)) response.value.messages.push(event);
     note.value = updated.note;
     emit('updated', updated);
     if (delivery?.queued) notify('ticket.statusQueued', { type: 'info', timeout: 6000 });

@@ -249,6 +249,9 @@ button.ranking-item:hover:not(:disabled) { border-color: var(--primary); }
 button.bubble-tag { cursor: pointer; }
 .bubble-tag.danger { background: var(--danger-soft); color: var(--danger); }
 .bubble.retracted { opacity: 0.6; outline: 1px dashed var(--border-strong); }
+.timeline-event.retracted { opacity: 0.6; outline: 1px dashed var(--border-strong); }
+.timeline-event.retracted > span:first-child { text-decoration: line-through; }
+.timeline-event .event-menu { margin: -4px -8px -4px -4px; }
 .bubble.retracted .rich-text { text-decoration: line-through; text-decoration-color: var(--text-3); }
 .bubble-edit { display: flex; flex-direction: column; gap: 6px; min-width: min(420px, 70vw); }
 .bubble-edit-actions { display: flex; justify-content: flex-end; gap: 6px; }
@@ -315,3 +318,15 @@ button.bubble-tag { cursor: pointer; }
 .captcha-test { display: flex; flex-direction: column; gap: var(--space-3); padding-top: var(--space-3); border-top: 1px solid var(--border); }
 .captcha-test .captcha-box { align-items: flex-start; }
 .badge.warning { background: var(--warning-soft); color: var(--warning); }
+
+/* Files uploaded with the answers, listed on the follow-up page without being openable */
+.private-files { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.private-files li { min-width: 0; max-width: 100%; }
+.private-file { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; min-height: 36px; padding: 6px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface-2); color: var(--text); font-size: 0.86rem; text-align: left; cursor: help; transition: border-color var(--fast); }
+.private-file:hover, .private-file[aria-describedby] { border-color: var(--border-strong); }
+.private-file-icon { flex: none; color: var(--text-3); }
+.private-file-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.private-file small { flex: none; color: var(--text-3); font-size: 0.76rem; }
+.private-file-lock { flex: none; color: var(--text-3); }
+.private-file-tip { position: fixed; z-index: 150; display: inline-flex; align-items: flex-start; gap: 6px; max-width: min(360px, calc(100vw - 16px)); padding: 8px 12px; border-radius: var(--radius-sm); background: var(--text); color: var(--surface); font-size: 0.8rem; line-height: 1.45; box-shadow: var(--shadow-md); pointer-events: none; }
+.private-file-tip .icon { flex: none; margin-top: 2px; }

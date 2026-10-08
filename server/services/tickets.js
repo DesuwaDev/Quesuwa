@@ -112,11 +112,31 @@ export function createTickets(db) {
     return message;
   }
 
-  const editable = (responseId, messageId) => {
+  const findMessage = (responseId, messageId) => {
     const row = db.prepare('SELECT * FROM messages WHERE id=? AND response_id=?').get(messageId, responseId);
-    if (!row || row.author === 'system') throw fail(404, 'errors.messageNotFound');
+    if (!row) throw fail(404, 'errors.messageNotFound');
     return row;
   };
+  const editable = (responseId, messageId) => {
+    const row = findMessage(responseId, messageId);
+    if (row.author === 'system') throw fail(404, 'errors.messageNotFound');
+    return row;
+  };
+
+  // The newest visible status update can be switched to another status. It stands for the
+  // current status, so the response follows; the first version is kept for staff.
+  function restatus(responseId, messageId, status, editor) {
+    const row = findMessage(responseId, messageId);
+    const latest = db.prepare("SELECT id FROM messages WHERE response_id=? AND author='system' AND deleted_at IS NULL ORDER BY created_at DESC, rowid DESC LIMIT 1").get(responseId);
+    if (row.author !== 'system' || row.deleted_at || latest?.id !== row.id) throw fail(409, 'errors.statusEventLocked');
+    const body = 'status:' + status;
+    if (body !== row.body) {
+      db.prepare('UPDATE messages SET body=?, edited_at=?, edited_by=?, original_body=COALESCE(original_body, body) WHERE id=?').run(body, new Date().toISOString(), editor, messageId);
+      db.prepare('UPDATE responses SET status=? WHERE id=?').run(status, responseId);
+      live.changed(responseId);
+    }
+    return find(responseId, messageId);
+  }
 
   // Staff corrections keep the first version so the team can still see what was originally said.
   function edit(responseId, messageId, body, editor) {
@@ -131,8 +151,9 @@ export function createTickets(db) {
   }
 
   // Retracted messages disappear for the respondent but stay visible, marked, for staff.
+  // Status updates can be retracted too; the current status stays as it is.
   function retract(responseId, messageId, editor, retracted = true) {
-    editable(responseId, messageId);
+    findMessage(responseId, messageId);
     db.prepare('UPDATE messages SET deleted_at=?, deleted_by=? WHERE id=?').run(retracted ? new Date().toISOString() : null, retracted ? editor : '', messageId);
     live.changed(responseId);
     return find(responseId, messageId);
@@ -203,5 +224,5 @@ export function createTickets(db) {
     }
   };
 
-  return { issueKey, linkKey, revokeLink, reissueLink, assertRespondentQuota, open, messages, publicMessages, react, add, edit, retract, markRead, fileOf, setDelivery, find, removeFor, revision, recall, remember, changed: live.changed, wait: live.wait, release: live.release };
+  return { issueKey, linkKey, revokeLink, reissueLink, assertRespondentQuota, open, messages, publicMessages, react, add, edit, restatus, retract, markRead, fileOf, setDelivery, find, removeFor, revision, recall, remember, changed: live.changed, wait: live.wait, release: live.release };
 }

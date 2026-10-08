@@ -736,6 +736,25 @@ test('conversation editing, read receipts and attachments', async t => {
   const systemEvent = (await (await admin(`/responses/${ticket.id}`, 'PATCH', { status: 'inProgress' })).json()).event;
   assert.equal((await admin(`/responses/${ticket.id}/messages/${systemEvent.id}`, 'PATCH', { body: 'x' })).status, 404);
 
+  // Status updates: older ones can only be retracted; the newest can be switched, and the
+  // current status follows without adding another entry.
+  const second = (await (await admin(`/responses/${ticket.id}`, 'PATCH', { status: 'needsInfo' })).json()).event;
+  assert.equal((await admin(`/responses/${ticket.id}/messages/${systemEvent.id}`, 'PATCH', { status: 'resolved' })).status, 409, 'only the newest status update can change');
+  const switched = await (await admin(`/responses/${ticket.id}/messages/${second.id}`, 'PATCH', { status: 'resolved' })).json();
+  assert.equal(switched.message.body, 'status:resolved');
+  assert.equal(switched.message.originalBody, 'status:needsInfo');
+  assert.equal(switched.response.status, 'resolved');
+  assert.equal((await admin(`/responses/${ticket.id}/messages/${second.id}`, 'PATCH', { status: 'nonsense' })).status, 400);
+  let events = (await view()).messages.filter(message => message.author === 'system');
+  assert.deepEqual(events.map(message => message.body), ['status:inProgress', 'status:resolved'], 'the respondent sees the corrected status, no extra entry');
+  assert.equal((await admin(`/responses/${ticket.id}/messages/${systemEvent.id}`, 'DELETE')).status, 200);
+  events = (await view()).messages.filter(message => message.author === 'system');
+  assert.deepEqual(events.map(message => message.body), ['status:resolved'], 'a retracted status update disappears for the respondent');
+  assert.equal((await (await admin(`/responses/${ticket.id}`)).json()).status, 'resolved', 'retracting does not change the current status');
+  await admin(`/responses/${ticket.id}/messages/${systemEvent.id}/restore`, 'POST', {});
+  // Back to "in progress" so later replies do not reopen the ticket and add their own entry.
+  await admin(`/responses/${ticket.id}/messages/${second.id}`, 'PATCH', { status: 'inProgress' });
+
   // Retracting hides a message from the respondent only; restoring brings it back.
   assert.equal((await admin(`/responses/${ticket.id}/messages/${staffReply.message.id}`, 'DELETE')).status, 200);
   assert.ok(!(await view()).messages.some(message => message.id === staffReply.message.id));

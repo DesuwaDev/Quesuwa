@@ -107,7 +107,15 @@ export function responseRoutes({ db, forms, storage, audit, auth, tickets, notif
   // Staff may correct or retract any message; the respondent sees only the result, with no marker.
   router.patch('/responses/:id/messages/:messageId', write, (req, res) => {
     const row = findResponse(req.params.id);
-    const message = tickets.edit(row.id, req.params.messageId, req.body?.body, req.user.displayName || req.user.username);
+    const editor = req.user.displayName || req.user.username;
+    // { status } switches the newest status update; { body } edits a message's text.
+    if (req.body?.status !== undefined) {
+      if (!statuses.includes(req.body.status)) throw fail(400, 'errors.statusInvalid');
+      const message = tickets.restatus(row.id, req.params.messageId, req.body.status, editor);
+      audit(req, 'statusEventChanged', row.id, req.body.status);
+      return res.json({ message, response: parseResponse(findResponse(row.id)) });
+    }
+    const message = tickets.edit(row.id, req.params.messageId, req.body?.body, editor);
     audit(req, 'messageEdited', row.id, message.author);
     res.json({ message });
   });

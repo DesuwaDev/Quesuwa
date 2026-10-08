@@ -104,7 +104,8 @@ async function saveEdit(message) {
   finally { savingEdit.value = false; }
 }
 async function retract(message) {
-  if (!(await confirmDialog({ titleKey: 'ticket.retract', messageKey: 'ticket.retractConfirm', confirmKey: 'ticket.retract', danger: true }))) return;
+  const messageKey = message.author === 'system' ? 'ticket.retractEventConfirm' : 'ticket.retractConfirm';
+  if (!(await confirmDialog({ titleKey: 'ticket.retract', messageKey, confirmKey: 'ticket.retract', danger: true }))) return;
   try { Object.assign(message, (await api(`/admin/responses/${props.response.id}/messages/${message.id}`, { method: 'DELETE' })).message); notify('ticket.retracted'); }
   catch (reason) { notifyError(reason); }
 }
@@ -112,6 +113,18 @@ async function restore(message) {
   try { Object.assign(message, (await api(`/admin/responses/${props.response.id}/messages/${message.id}/restore`, { method: 'POST', body: {} })).message); notify('ticket.restored'); }
   catch (reason) { notifyError(reason); }
 }
+// Only the newest visible status update stands for the current status, so only it can be switched.
+const latestEvent = computed(() => [...props.response.messages].reverse().find(message => message.author === 'system' && !message.deletedAt)?.id);
+async function restatus(message, status) {
+  try {
+    const data = await api(`/admin/responses/${props.response.id}/messages/${message.id}`, { method: 'PATCH', body: { status } });
+    Object.assign(message, data.message);
+    props.response.status = data.response.status;
+    emit('updated', { id: props.response.id, status: data.response.status });
+    notify('ticket.statusEventChanged');
+  } catch (reason) { notifyError(reason); }
+}
+
 const toggleOriginal = message => { originals.value = { ...originals.value, [message.id]: !originals.value[message.id] }; };
 
 // Respondent uploads can be switched off for this conversation only.
@@ -183,11 +196,22 @@ defineExpose({ scrollToEnd });
     <div ref="thread" class="ticket-thread compact" @scroll.passive="trackScroll">
       <p v-if="!response.messages.length" class="muted small">{{ t('ticket.adminEmpty') }}</p>
       <template v-for="message in response.messages" :key="message.id">
-        <div v-if="message.author === 'system'" class="timeline-event">
+        <div v-if="message.author === 'system'" class="timeline-event" :class="{ retracted: message.deletedAt }">
           <span>{{ t('ticket.statusEvent', { status: t(statusKeys[statusOf(message)] || 'status.pending') }) }}</span>
+          <span v-if="message.deletedAt" class="bubble-tag danger" :title="t('ticket.retractedBy', { name: message.deletedBy, time: formatDate(message.deletedAt, { seconds: true }) })">{{ t('ticket.retractedTag') }}</span>
+          <span v-else-if="message.editedAt" class="bubble-tag" :title="t('ticket.statusEventWas', { status: t(statusKeys[statusOf({ body: message.originalBody || '' })] || 'status.pending'), name: message.editedBy })">{{ t('ticket.editedTag') }}</span>
           <time :datetime="message.createdAt" :title="formatDate(message.createdAt, { seconds: true })">{{ formatMessageTime(message.createdAt) }}</time>
           <span v-if="message.delivery" class="delivery" :class="message.delivery">{{ t('ticket.delivery.' + message.delivery) }}</span>
           <button v-if="message.delivery === 'failed' && writable" type="button" class="text-button small" @click="resend(message)">{{ t('ticket.resend') }}</button>
+          <MenuButton v-if="writable" class="event-menu" :label="t('ticket.messageActions')" icon="more" button-class="icon-button ghost small">
+            <template v-if="!message.deletedAt">
+              <template v-if="message.id === latestEvent">
+                <button v-for="status in statuses.filter(item => item !== statusOf(message))" :key="status" type="button" class="menu-item" @click="restatus(message, status)"><AppIcon name="edit" :size="16" />{{ t('ticket.changeStatusTo', { status: t(statusKeys[status]) }) }}</button>
+              </template>
+              <button type="button" class="menu-item danger" @click="retract(message)"><AppIcon name="trash" :size="16" />{{ t('ticket.retract') }}</button>
+            </template>
+            <button v-else type="button" class="menu-item" @click="restore(message)"><AppIcon name="restore" :size="16" />{{ t('ticket.restore') }}</button>
+          </MenuButton>
         </div>
         <div v-else class="bubble" :class="[message.author === 'staff' ? 'from-me' : 'from-staff', { retracted: message.deletedAt }]">
           <span class="bubble-head">

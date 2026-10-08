@@ -1581,5 +1581,12 @@
   "backups.snapshots": "Snapshots",
   "captcha.appearance": "Appearance",
   "captcha.capRouteBadge": "Used when Cap fails",
-  "responses.applyStatus": "Apply"
+  "responses.applyStatus": "Apply",
+  "ticket.retractEventConfirm": "The respondent will no longer see this status update (without any notice). The current status does not change; staff can still see and restore it.",
+  "ticket.changeStatusTo": "Change to “{status}”",
+  "ticket.statusEventChanged": "Status update changed; the current status follows",
+  "ticket.statusEventWas": "Was “{status}”, changed by {name}",
+  "errors.statusEventLocked": "Only the newest status update that has not been retracted can be changed.",
+  "audit.statusEventChanged": "Changed a status update",
+  "ticket.privateFile": "To protect your privacy, uploaded files can only be viewed by staff."
 }

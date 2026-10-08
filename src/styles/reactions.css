@@ -3,7 +3,8 @@
 @font-face {
   font-family: "Quesuwa Reactions";
   src: url("../assets/fonts/reactions.woff2") format("woff2");
-  font-display: swap;
+  /* A brief blank beats a flash of the system's own emoji; the file is tiny and loaded early. */
+  font-display: block;
   unicode-range: U+2764, U+FE0F, U+1F38A, U+1F44D, U+1F44F, U+1F606, U+1F62E, U+1F917, U+1FAEA;
 }
 .reaction-emoji { font-family: "Quesuwa Reactions", var(--font-sans); font-style: normal; line-height: 1; }

@@ -4,6 +4,10 @@ import { t, locale } from '../i18n.js';
 import { REACTIONS } from '../../shared/reactions.js';
 import AppIcon from './AppIcon.vue';
 
+// Start fetching the bundled emoji font with the first conversation, before anyone opens the
+// palette, so the emoji never appear in the system font first.
+if (typeof document !== 'undefined') document.fonts?.load('20px "Quesuwa Reactions"', REACTIONS.join('')).catch(() => {});
+
 // Reactions under a message (emoji, count, who) and a small palette to add or remove one.
 // Each reaction is { emoji, count, mine, names }.
 const props = defineProps({ reactions: { type: Array, default: () => [] }, canReact: Boolean });

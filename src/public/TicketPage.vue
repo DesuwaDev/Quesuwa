@@ -16,6 +16,7 @@ import RichText from '../components/RichText.vue';
 import MessageAttachments from '../components/MessageAttachments.vue';
 import ComposerFiles from '../components/ComposerFiles.vue';
 import MessageReactions from '../components/MessageReactions.vue';
+import PrivateFiles from '../components/PrivateFiles.vue';
 
 const props = defineProps({ id: { type: String, required: true } });
 const key = ref(keyFromLocation() || savedTickets().find(item => item.id === props.id)?.key || '');
@@ -221,7 +222,8 @@ const answerOf = field => field.type === 'file'
         <dl class="answer-list">
           <div v-for="(field, index) in ticket.fields" :key="field.id" class="answer-item">
             <dt><span class="answer-number">{{ index + 1 }}</span>{{ field.label }}</dt>
-            <dd class="preserve" :class="{ muted: !answerOf(field) }">{{ answerOf(field) || t('responses.unanswered') }}</dd>
+            <dd v-if="field.type === 'file' && field.value?.length"><PrivateFiles :files="field.value" /></dd>
+            <dd v-else class="preserve" :class="{ muted: !answerOf(field) }">{{ answerOf(field) || t('responses.unanswered') }}</dd>
           </div>
         </dl>
       </details>

@@ -279,6 +279,10 @@ onBeforeUnmount(() => { stopLive?.(); window.removeEventListener('keydown', keys
         </details>
       </section>
 
+      <details v-if="response.snapshot.pledge" class="consent-record">
+        <summary><AppIcon name="checkCircle" :size="14" />{{ t('responses.pledgeAccepted') }}</summary>
+        <p class="preserve">{{ response.snapshot.pledge.text }}</p>
+      </details>
       <details v-if="response.snapshot.consent" class="consent-record">
         <summary><AppIcon name="shield" :size="14" />{{ t('responses.consentAccepted') }}</summary>
         <p class="preserve">{{ response.snapshot.consent.text }}</p>

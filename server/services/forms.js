@@ -70,6 +70,7 @@ export function createFormStore(db) {
         onePerDevice: settings.onePerDevice,
         submitLabel: settings.submitLabel,
         consentText: settings.consentText,
+        pledgeText: settings.pledgeText,
         accent: settings.accent,
         endsAt: settings.endsAt,
         collectEnvironment: settings.collectEnvironment,

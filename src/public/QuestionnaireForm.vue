@@ -23,7 +23,7 @@ const settings = computed(() => props.form.settings || {});
 const draftKey = computed(() => 'quesuwa.draft.' + props.form.id);
 const canSaveDraft = computed(() => !props.preview && settings.value.saveProgress !== false);
 const state = reactive({ answers: {}, others: {}, uploads: {}, errors: {}, prefilled: {} });
-const pageIndex = ref(0), busy = ref(false), formError = ref(null), consent = ref(false), website = ref(''), restored = ref(false);
+const pageIndex = ref(0), busy = ref(false), formError = ref(null), consent = ref(false), pledge = ref(false), website = ref(''), restored = ref(false);
 const progress = ref(0);
 const root = ref(null), captchaRef = ref(null);
 // Human verification is asked for on the last page, right before sending.
@@ -40,6 +40,7 @@ function reset() {
   state.others = Object.fromEntries(props.form.fields.filter(field => field.allowOther).map(field => [field.id, { selected: false, text: '' }]));
   pageIndex.value = 0;
   consent.value = false;
+  pledge.value = false;
   formError.value = null;
   progress.value = 0;
 }
@@ -217,6 +218,7 @@ async function submit() {
     formError.value = { code: 'errors.requiredRemaining', params: {} };
     return focusField(invalid);
   }
+  if (settings.value.pledgeText && !pledge.value) { formError.value = { code: 'errors.pledge', params: {} }; return; }
   if (settings.value.consentText && !consent.value) { formError.value = { code: 'errors.consent', params: {} }; return; }
   if (props.preview) { notify('form.previewValid', { type: 'info' }); return; }
   let verification = null;
@@ -231,6 +233,7 @@ async function submit() {
     body.append('answers', JSON.stringify(answers));
     body.append('version', String(props.form.version));
     body.append('consent', String(consent.value));
+    if (settings.value.pledgeText) body.append('pledge', String(pledge.value));
     body.append('website', website.value);
     body.append('duration', String(Date.now() - started));
     body.append('locale', locale.value);
@@ -316,6 +319,9 @@ const outdated = computed(() => ['errors.versionConflict', 'errors.formChanged']
       </section>
     </Transition>
 
+    <div v-if="isLast && settings.pledgeText" class="consent-card pledge-card">
+      <label class="check-row"><input v-model="pledge" type="checkbox" :disabled="busy" /><span class="preserve">{{ settings.pledgeText }}</span></label>
+    </div>
     <div v-if="isLast && settings.consentText" class="consent-card">
       <p class="preserve consent-text" tabindex="0">{{ settings.consentText }}</p>
       <label class="check-row"><input v-model="consent" type="checkbox" :disabled="busy" />{{ t('form.consentAccept') }}</label>

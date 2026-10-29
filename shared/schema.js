@@ -29,6 +29,7 @@ export const defaultSettings = Object.freeze({
   responseLimit: 0,
   submitLabel: '',
   consentText: '',
+  pledgeText: '',
   closedMessage: '',
   accessCode: '',
   accent: 'coral',
@@ -86,6 +87,7 @@ export function normalizeSettings(value = {}) {
   result.autoCloseDays = integer(value.autoCloseDays, 0, 365, 0, code);
   result.submitLabel = text(value.submitLabel, 60, code);
   result.consentText = text(value.consentText, LIMITS.consent, code);
+  result.pledgeText = text(value.pledgeText, 500, code);
   result.closedMessage = text(value.closedMessage, 1000, code);
   result.accessCode = text(value.accessCode, 64, 'errors.accessCodeInvalid');
   if (value.accent !== undefined && !accents.includes(value.accent)) throw failure(code);

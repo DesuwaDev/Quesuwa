@@ -78,7 +78,7 @@ export function publicRoutes({ db, forms, storage, webhooks, tickets, notifier, 
     res.once('close', release);
     next();
   };
-  const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: LIMITS.fileMB * 1024 * 1024, files: LIMITS.fileFields * LIMITS.filesPerField, fields: 11, fieldSize: 2 * 1024 * 1024, parts: 21 } }).any();
+  const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: LIMITS.fileMB * 1024 * 1024, files: LIMITS.fileFields * LIMITS.filesPerField, fields: 12, fieldSize: 2 * 1024 * 1024, parts: 22 } }).any();
 
   router.post('/:slug/responses', limiter(60 * 60_000, 20), uploadSlots, async (req, res, next) => {
     if (!req.is('multipart/form-data')) return next(fail(415, 'errors.multipart'));
@@ -109,6 +109,7 @@ export function publicRoutes({ db, forms, storage, webhooks, tickets, notifier, 
     const check = settings.linkSecret ? checkLink(settings.linkSecret, req.body.link) : null;
     const discordUser = discord.read(req.headers.cookie);
     if (!discordUser && discordRequired(settings, check)) throw fail(403, 'errors.discordRequired');
+    if (settings.pledgeText && req.body.pledge !== 'true') throw fail(400, 'errors.pledge');
     if (settings.consentText && req.body.consent !== 'true') throw fail(400, 'errors.consent');
     const files = req.files || [];
     // File presence drives conditions, so count real uploads instead of trusting the client.
@@ -153,7 +154,7 @@ export function publicRoutes({ db, forms, storage, webhooks, tickets, notifier, 
     const rollback = storage.write(attachments, files.map(file => file.buffer));
     try {
       db.prepare('INSERT INTO responses (id, form_id, snapshot, answers, attachments, created_at, status, duration_ms, locale, access_hash, last_activity_at, environment, ip, link_check, discord_user) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').run(
-        response.id, form.id, JSON.stringify({ id: form.id, slug: form.slug, title: form.title, version: form.version, fields: form.fields, ...(settings.consentText ? { consent: { text: settings.consentText } } : {}) }), JSON.stringify(answers), JSON.stringify(attachments), response.createdAt, 'pending',
+        response.id, form.id, JSON.stringify({ id: form.id, slug: form.slug, title: form.title, version: form.version, fields: form.fields, ...(settings.pledgeText ? { pledge: { text: settings.pledgeText } } : {}), ...(settings.consentText ? { consent: { text: settings.consentText } } : {}) }), JSON.stringify(answers), JSON.stringify(attachments), response.createdAt, 'pending',
         Number.isInteger(duration) && duration > 0 && duration < 7 * 24 * 3600_000 ? duration : null,
         normalizeLocale(req.body.locale) || '', ticket?.hash ?? null, response.createdAt, environment, ip, linkCheck, discordUser ? JSON.stringify(discordUser) : '');
     } catch (error) { rollback(); throw error; }

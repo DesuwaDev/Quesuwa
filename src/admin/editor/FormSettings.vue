@@ -169,6 +169,11 @@ onMounted(() => { loadDeliveries(); loadMessaging(); });
         <input v-model="settings.submitLabel" class="input" maxlength="60" :disabled="readonly" :placeholder="t('form.submit')" />
       </label>
       <label class="field">
+        <span class="field-label">{{ t('settings.pledge') }}</span>
+        <textarea v-model="settings.pledgeText" class="input textarea autosize" rows="2" maxlength="500" :disabled="readonly" :placeholder="t('settings.pledgePlaceholder')"></textarea>
+        <small class="hint">{{ t('settings.pledgeHint') }}</small>
+      </label>
+      <label class="field">
         <span class="field-label">{{ t('settings.consent') }}</span>
         <textarea v-model="settings.consentText" class="input textarea autosize" rows="3" maxlength="50000" :disabled="readonly" :placeholder="t('settings.consentHint')"></textarea>
       </label>

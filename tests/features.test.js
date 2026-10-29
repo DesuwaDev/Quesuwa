@@ -678,6 +678,42 @@ test('without a Discord application nobody is asked to sign in', async t => {
   assert.equal((await fetch(base + '/api/forms/report/responses', { method: 'POST', body })).status, 201);
 });
 
+test('a submission pledge must be ticked and is kept with the response', async t => {
+  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'quesuwa-pledge-'));
+  const password = 'pledge-owner-password-1';
+  const instance = createApp({ dataDir, password, defaultLocale: 'en' });
+  const server = instance.app.listen(0, '127.0.0.1');
+  await new Promise(resolve => server.once('listening', resolve));
+  t.after(async () => { await new Promise(resolve => server.close(resolve)); instance.close(); fs.rmSync(dataDir, { recursive: true, force: true }); });
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const login = await fetch(base + '/api/admin/login', { method: 'POST', headers: { Origin: base, 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
+  const Cookie = login.headers.get('set-cookie').split(';')[0];
+  const admin = (url, method = 'GET', body) => fetch(base + '/api/admin' + url, { method, headers: { Origin: base, 'Content-Type': 'application/json', Cookie }, body: body && JSON.stringify(body) });
+  const fields = [{ id: 'what', type: 'long', label: 'What happened' }];
+  assert.equal((await admin('/forms', 'POST', { title: 'Bad', state: 'draft', settings: { pledgeText: 'x'.repeat(501) }, fields })).status, 400);
+  const pledgeText = 'I confirm this report is truthful and accept the consequences of abuse.';
+  const form = await (await admin('/forms', 'POST', { title: 'Report', slug: 'report', state: 'published', settings: { pledgeText, consentText: 'Terms' }, fields })).json();
+  assert.equal((await (await fetch(base + '/api/forms/report')).json()).settings.pledgeText, pledgeText);
+  const submit = pledge => {
+    const body = new FormData();
+    body.set('answers', JSON.stringify({ what: 'Broken' }));
+    body.set('version', String(form.version));
+    body.set('consent', 'true');
+    if (pledge !== undefined) body.set('pledge', pledge);
+    return fetch(base + '/api/forms/report/responses', { method: 'POST', body });
+  };
+  for (const missing of [undefined, 'false']) {
+    const refused = await submit(missing);
+    assert.equal(refused.status, 400);
+    assert.equal((await refused.json()).code, 'errors.pledge');
+  }
+  const accepted = await submit('true');
+  assert.equal(accepted.status, 201);
+  const detail = await (await admin('/responses/' + (await accepted.json()).id)).json();
+  assert.deepEqual(detail.snapshot.pledge, { text: pledgeText });
+  assert.deepEqual(detail.snapshot.consent, { text: 'Terms' });
+});
+
 test('closed tickets stop replies and resolved tickets auto-close', async t => {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'quesuwa-close-'));
   const password = 'closing-owner-password-1';

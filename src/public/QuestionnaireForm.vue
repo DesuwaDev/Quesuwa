@@ -9,15 +9,15 @@ import { visibleFields, paginate, checkAnswer, estimateSeconds, isAnswered } fro
 import { answerable } from '../../shared/schema.js';
 import { parseAgent } from '../../shared/environment.js';
 import { route } from '../lib/router.js';
-import { readPrefill } from '../lib/prefill.js';
+import { readPrefill } from '../../shared/prefill.js';
 import { collectEnvironment } from '../lib/environment.js';
 import { addFiles, namePasted } from './fields/files.js';
 import AppIcon from '../components/AppIcon.vue';
 import QuestionField from './QuestionField.vue';
 import CaptchaWidget from '../components/CaptchaWidget.vue';
 
-const props = defineProps({ form: { type: Object, required: true }, preview: Boolean, accessCode: String });
-const emit = defineEmits(['submitted', 'expired']);
+const props = defineProps({ form: { type: Object, required: true }, preview: Boolean, accessCode: String, discordUser: Object });
+const emit = defineEmits(['submitted', 'expired', 'switchDiscord']);
 
 const settings = computed(() => props.form.settings || {});
 const draftKey = computed(() => 'quesuwa.draft.' + props.form.id);
@@ -68,15 +68,19 @@ applyPrefill();
 
 // Diagnostics shown to the respondent before they are sent.
 const environmentPreview = computed(() => {
-  if (!settings.value.collectEnvironment) return [];
-  const env = collectEnvironment();
-  const { browser, system } = parseAgent(env.userAgent);
-  return [
-    ['environment.browser', [browser, system].filter(Boolean).join(' · ') || env.userAgent],
-    ['environment.screen', `${env.screen.replace('x', '×')} · ${env.viewport.replace('x', '×')}`],
-    ['environment.locale', [env.language, env.timeZone].filter(Boolean).join(' · ')],
-    ['environment.referrer', env.referrer]
-  ].filter(([, value]) => value);
+  const rows = [];
+  if (settings.value.collectEnvironment) {
+    const env = collectEnvironment();
+    const { browser, system } = parseAgent(env.userAgent);
+    rows.push(
+      ['environment.browser', [browser, system].filter(Boolean).join(' · ') || env.userAgent],
+      ['environment.screen', `${env.screen.replace('x', '×')} · ${env.viewport.replace('x', '×')}`],
+      ['environment.locale', [env.language, env.timeZone].filter(Boolean).join(' · ')],
+      ['environment.referrer', env.referrer]
+    );
+  }
+  if (settings.value.collectIp) rows.push(['environment.ipAddress', t('environment.ipNotice')]);
+  return rows.filter(([, value]) => value);
 });
 
 // Pasting an image anywhere on the page attaches it to the file question being answered.
@@ -231,6 +235,8 @@ async function submit() {
     body.append('duration', String(Date.now() - started));
     body.append('locale', locale.value);
     if (settings.value.collectEnvironment) body.append('environment', JSON.stringify(collectEnvironment()));
+    // The link exactly as opened, so the server can check the site's signature on it.
+    if (settings.value.signedLinks) body.append('link', window.location.search);
     if (props.accessCode) body.append('accessCode', props.accessCode);
     for (const field of questions.value) {
       if (field.type !== 'file') continue;
@@ -275,7 +281,8 @@ const outdated = computed(() => ['errors.versionConflict', 'errors.formChanged']
           <span v-if="!branching"><AppIcon name="forms" :size="14" />{{ t('common.questions', { count: questions.length }) }}</span>
           <span><AppIcon name="clock" :size="14" />{{ t('form.estimate', { minutes }) }}</span>
           <span v-if="settings.endsAt"><AppIcon name="calendar" :size="14" />{{ t('portal.endsAt', { date: formatDate(settings.endsAt) }) }}</span>
-          <span><AppIcon name="shield" :size="14" />{{ t('form.anonymous') }}</span>
+          <span v-if="discordUser" class="discord-signed-in"><AppIcon name="user" :size="14" />{{ t('discord.signedInAs', { name: discordUser.name || discordUser.username }) }}<button type="button" class="text-button small" @click="emit('switchDiscord')">{{ t('discord.switch') }}</button></span>
+          <span v-else><AppIcon name="shield" :size="14" />{{ t('form.anonymous') }}</span>
         </div>
         <p class="required-legend"><span class="required-mark">*</span>{{ t('form.requiredLegend') }}</p>
       </div>

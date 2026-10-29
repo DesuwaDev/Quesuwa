@@ -17,6 +17,8 @@ export const defaultSettings = Object.freeze({
   mailExcerpts: true,
   collectEnvironment: false,
   environmentNotice: true,
+  collectIp: false,
+  discordLogin: 'off',
   ticketFiles: true,
   captcha: false,
   contactField: '',
@@ -31,8 +33,12 @@ export const defaultSettings = Object.freeze({
   accessCode: '',
   accent: 'coral',
   webhookUrl: '',
-  webhookSecret: ''
+  webhookSecret: '',
+  linkSecret: ''
 });
+
+// When respondents must sign in with Discord first: never, when the link is not validly signed, or always.
+export const discordLoginModes = ['off', 'unsigned', 'always'];
 
 export const failure = (code, params = {}) => Object.assign(new Error(code), { status: 400, code, params });
 
@@ -71,7 +77,7 @@ export function normalizeSettings(value = {}) {
   if (value === undefined || value === null) value = {};
   if (typeof value !== 'object' || Array.isArray(value)) throw failure(code);
   const result = { ...defaultSettings };
-  for (const key of ['listed', 'showProgress', 'showNumbers', 'saveProgress', 'onePerDevice', 'ticketMode', 'notifyAdmins', 'sendReceipt', 'mailExcerpts', 'collectEnvironment', 'environmentNotice', 'ticketFiles', 'captcha']) result[key] = bool(value[key], defaultSettings[key], code);
+  for (const key of ['listed', 'showProgress', 'showNumbers', 'saveProgress', 'onePerDevice', 'ticketMode', 'notifyAdmins', 'sendReceipt', 'mailExcerpts', 'collectEnvironment', 'environmentNotice', 'collectIp', 'ticketFiles', 'captcha']) result[key] = bool(value[key], defaultSettings[key], code);
   result.startsAt = dateTime(value.startsAt, code);
   result.endsAt = dateTime(value.endsAt, code);
   if (result.startsAt && result.endsAt && result.startsAt >= result.endsAt) throw failure('errors.scheduleInvalid');
@@ -87,6 +93,10 @@ export function normalizeSettings(value = {}) {
   result.webhookUrl = text(value.webhookUrl, 500, 'errors.webhookUrl');
   if (result.webhookUrl && !isHttpUrl(result.webhookUrl)) throw failure('errors.webhookUrl');
   result.webhookSecret = text(value.webhookSecret, 128, code);
+  if (value.discordLogin !== undefined && !discordLoginModes.includes(value.discordLogin)) throw failure(code);
+  result.discordLogin = value.discordLogin || defaultSettings.discordLogin;
+  result.linkSecret = text(value.linkSecret, 128, 'errors.linkSecret');
+  if (result.linkSecret && result.linkSecret.length < 16) throw failure('errors.linkSecret');
   result.contactField = text(value.contactField, 64, code);
   return result;
 }

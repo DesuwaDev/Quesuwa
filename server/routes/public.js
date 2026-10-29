@@ -5,6 +5,8 @@ import { normalizeSettings, answerable } from '../../shared/schema.js';
 import { visibleFields, checkAnswer } from '../../shared/answers.js';
 import { LIMITS } from '../../shared/constants.js';
 import { cleanEnvironment } from '../../shared/environment.js';
+import { readPrefill } from '../../shared/prefill.js';
+import { checkLink } from '../lib/link-signature.js';
 import { normalizeLocale } from '../../i18n/core.js';
 import { fail } from '../errors.js';
 import { t } from '../i18n.js';
@@ -13,7 +15,7 @@ const digest = value => createHash('sha256').update(String(value)).digest();
 const codeMatches = (expected, given) => typeof given === 'string' && given.length <= 64 && timingSafeEqual(digest(expected), digest(given));
 const deviceCookie = formId => 'quesuwa_done_' + formId.replaceAll('-', '').slice(0, 16);
 
-export function publicRoutes({ db, forms, storage, webhooks, tickets, notifier, limiter, secureCookie, captcha }) {
+export function publicRoutes({ db, forms, storage, webhooks, tickets, notifier, limiter, secureCookie, captcha, discord }) {
   const router = Router();
   const alreadySubmitted = (req, form) => normalizeSettings(form.settings).onePerDevice && new RegExp(`(?:^|;\\s*)${deviceCookie(form.id)}=1(?:;|$)`).test(req.headers.cookie || '');
 
@@ -22,6 +24,9 @@ export function publicRoutes({ db, forms, storage, webhooks, tickets, notifier, 
     if (!settings.accessCode) return;
     if (!codeMatches(settings.accessCode, req.body?.accessCode)) throw fail(403, 'errors.accessCode', { protected: true, title: form.title });
   }
+
+  // Respondents sign in with Discord first when the form asks for it and the link is not validly signed.
+  const discordRequired = (settings, check) => discord.configured() && (settings.discordLogin === 'always' || (settings.discordLogin === 'unsigned' && check?.state !== 'verified'));
 
   // Forms that ask for human verification carry the widget configuration.
   const view = form => ({ ...forms.publicView(form), captcha: normalizeSettings(form.settings).captcha ? captcha.publicConfig() : null });
@@ -49,6 +54,13 @@ export function publicRoutes({ db, forms, storage, webhooks, tickets, notifier, 
     res.json(view(form));
   });
 
+  // Whether this visit (with the link it was opened from) must sign in with Discord, and who is signed in.
+  router.get('/:slug/identity', (req, res) => {
+    const settings = normalizeSettings(load(req.params.slug).settings);
+    const check = settings.linkSecret ? checkLink(settings.linkSecret, req.query.link) : null;
+    res.json({ required: discordRequired(settings, check), user: discord.read(req.headers.cookie) });
+  });
+
   // Separate endpoint so wrong access codes are rate limited.
   router.post('/:slug/access', limiter(15 * 60_000, 30), (req, res) => {
     const form = load(req.params.slug);
@@ -66,7 +78,7 @@ export function publicRoutes({ db, forms, storage, webhooks, tickets, notifier, 
     res.once('close', release);
     next();
   };
-  const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: LIMITS.fileMB * 1024 * 1024, files: LIMITS.fileFields * LIMITS.filesPerField, fields: 10, fieldSize: 2 * 1024 * 1024, parts: 20 } }).any();
+  const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: LIMITS.fileMB * 1024 * 1024, files: LIMITS.fileFields * LIMITS.filesPerField, fields: 11, fieldSize: 2 * 1024 * 1024, parts: 21 } }).any();
 
   router.post('/:slug/responses', limiter(60 * 60_000, 20), uploadSlots, async (req, res, next) => {
     if (!req.is('multipart/form-data')) return next(fail(415, 'errors.multipart'));
@@ -94,6 +106,9 @@ export function publicRoutes({ db, forms, storage, webhooks, tickets, notifier, 
     try { incoming = JSON.parse(req.body.answers); } catch { throw fail(400, 'errors.answersInvalid'); }
     if (!incoming || typeof incoming !== 'object' || Array.isArray(incoming)) throw fail(400, 'errors.answersInvalid');
     const settings = normalizeSettings(form.settings);
+    const check = settings.linkSecret ? checkLink(settings.linkSecret, req.body.link) : null;
+    const discordUser = discord.read(req.headers.cookie);
+    if (!discordUser && discordRequired(settings, check)) throw fail(403, 'errors.discordRequired');
     if (settings.consentText && req.body.consent !== 'true') throw fail(400, 'errors.consent');
     const files = req.files || [];
     // File presence drives conditions, so count real uploads instead of trusting the client.
@@ -125,14 +140,22 @@ export function publicRoutes({ db, forms, storage, webhooks, tickets, notifier, 
     storage.ensureCapacity(files.reduce((sum, file) => sum + file.size, 0));
     const duration = Number.parseInt(req.body.duration, 10);
     const environment = settings.collectEnvironment ? JSON.stringify(cleanEnvironment(req.body.environment, req.get('user-agent'))) : '';
+    // Behind a reverse proxy this is only the visitor's address once "trust proxy" is set up.
+    const ip = settings.collectIp ? String(req.ip || '').replace(/^::ffff:/, '') : '';
+    let linkCheck = '';
+    if (check) {
+      // For each question the signed link prefilled: was the signed value kept or changed?
+      if (check.values) check.fields = Object.fromEntries(Object.entries(readPrefill(active, check.values)).map(([id, value]) => [id, JSON.stringify(answers[id]) === JSON.stringify(value) ? 'kept' : 'changed']));
+      linkCheck = JSON.stringify(check);
+    }
     const response = { id: randomUUID(), createdAt: new Date().toISOString(), answers, attachments, environment: environment ? JSON.parse(environment) : null };
     const ticket = settings.ticketMode ? tickets.issueKey(response.id) : null;
     const rollback = storage.write(attachments, files.map(file => file.buffer));
     try {
-      db.prepare('INSERT INTO responses (id, form_id, snapshot, answers, attachments, created_at, status, duration_ms, locale, access_hash, last_activity_at, environment) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)').run(
+      db.prepare('INSERT INTO responses (id, form_id, snapshot, answers, attachments, created_at, status, duration_ms, locale, access_hash, last_activity_at, environment, ip, link_check, discord_user) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').run(
         response.id, form.id, JSON.stringify({ id: form.id, slug: form.slug, title: form.title, version: form.version, fields: form.fields, ...(settings.consentText ? { consent: { text: settings.consentText } } : {}) }), JSON.stringify(answers), JSON.stringify(attachments), response.createdAt, 'pending',
         Number.isInteger(duration) && duration > 0 && duration < 7 * 24 * 3600_000 ? duration : null,
-        normalizeLocale(req.body.locale) || '', ticket?.hash ?? null, response.createdAt, environment);
+        normalizeLocale(req.body.locale) || '', ticket?.hash ?? null, response.createdAt, environment, ip, linkCheck, discordUser ? JSON.stringify(discordUser) : '');
     } catch (error) { rollback(); throw error; }
     if (settings.onePerDevice) res.cookie(deviceCookie(form.id), '1', { httpOnly: true, sameSite: 'lax', secure: secureCookie(req), path: '/api/forms', maxAge: 365 * 24 * 3600_000 });
     webhooks.responseCreated(form, response);

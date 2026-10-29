@@ -21,7 +21,9 @@ const instance = createApp({
   publicOrigin,
   trustProxyHops: integer('TRUST_PROXY_HOPS'),
   maxStorageMB: integer('MAX_STORAGE_MB'),
-  defaultLocale: env('DEFAULT_LOCALE')
+  defaultLocale: env('DEFAULT_LOCALE'),
+  // Discord sign-in for respondents (optional): an application from discord.com/developers.
+  discord: { clientId: env('DISCORD_CLIENT_ID'), clientSecret: env('DISCORD_CLIENT_SECRET') }
 });
 const server = instance.app.listen(port, host, () => console.log(t('cli.listening', { url: publicOrigin || `http://${host}:${port}`, version: appVersion })));
 server.requestTimeout = 120000;

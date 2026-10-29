@@ -1,9 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
 import { createApp } from '../server/app.js';
+import { signLink } from '../server/lib/link-signature.js';
 
 test('roles, protected forms, logic pages and exports', async t => {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'quesuwa-features-'));
@@ -485,6 +487,195 @@ test('link prefill parameters and environment diagnostics', async t => {
   body.set('environment', JSON.stringify({ userAgent: 'x' }));
   const third = await (await fetch(base + '/api/forms/bug/responses', { method: 'POST', body })).json();
   assert.equal((await (await admin('/responses/' + third.id)).json()).environment, null);
+});
+
+test('signed links mark verified prefills and the submitter IP is recorded', async t => {
+  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'quesuwa-signed-'));
+  const password = 'signed-link-owner-password-1';
+  const instance = createApp({ dataDir, password, defaultLocale: 'en' });
+  const server = instance.app.listen(0, '127.0.0.1');
+  await new Promise(resolve => server.once('listening', resolve));
+  t.after(async () => { await new Promise(resolve => server.close(resolve)); instance.close(); fs.rmSync(dataDir, { recursive: true, force: true }); });
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const login = await fetch(base + '/api/admin/login', { method: 'POST', headers: { Origin: base, 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
+  const Cookie = login.headers.get('set-cookie').split(';')[0];
+  const admin = (url, method = 'GET', body) => fetch(base + '/api/admin' + url, { method, headers: { Origin: base, 'Content-Type': 'application/json', Cookie }, body: body && JSON.stringify(body) });
+  const fields = [
+    { id: 'site', type: 'single', label: 'Site', options: ['Main', 'Mirror'], prefillKey: 'site' },
+    { id: 'user', type: 'short', label: 'User name', prefillKey: 'user' },
+    { id: 'what', type: 'long', label: 'What happened' }
+  ];
+  const secret = 'link-secret-for-tests-0123456789';
+  assert.equal((await admin('/forms', 'POST', { title: 'Bad', state: 'draft', settings: { linkSecret: 'too-short' }, fields })).status, 400);
+  let form = await (await admin('/forms', 'POST', { title: 'Report', slug: 'report', state: 'published', settings: { collectIp: true, linkSecret: secret }, fields })).json();
+
+  // The questionnaire page learns that links are checked, never the secret.
+  const view = await (await fetch(base + '/api/forms/report')).json();
+  assert.equal(view.settings.signedLinks, true);
+  assert.equal(view.settings.collectIp, true);
+  assert.ok(!JSON.stringify(view).includes(secret));
+  assert.equal((await (await admin(`/forms/${form.id}/definition`)).json()).settings.linkSecret, '');
+
+  const exp = Math.floor(Date.now() / 1000) + 3600;
+  const sign = params => { const query = new URLSearchParams(params); query.set('sig', signLink(secret, query)); return '?' + query; };
+  const submit = async (answers, link) => {
+    const body = new FormData();
+    body.set('answers', JSON.stringify({ what: 'Something broke', ...answers }));
+    body.set('version', String(form.version));
+    if (link !== undefined) body.set('link', link);
+    const created = await fetch(base + '/api/forms/report/responses', { method: 'POST', body });
+    assert.equal(created.status, 201);
+    return (await admin('/responses/' + (await created.json()).id)).json();
+  };
+
+  const good = await submit({ site: 'Mirror', user: 'alice' }, sign({ site: 'Mirror', user: 'alice', exp: String(exp) }));
+  assert.equal(good.ip, '127.0.0.1');
+  assert.deepEqual(good.linkCheck, { state: 'verified', values: { site: 'Mirror', user: 'alice' }, expiresAt: new Date(exp * 1000).toISOString(), fields: { site: 'kept', user: 'kept' } });
+  // Editing a prefilled answer keeps the link verified but flags that question.
+  const edited = await submit({ site: 'Mirror', user: 'mallory' }, sign({ site: 'Mirror', user: 'alice', exp: String(exp) }));
+  assert.equal(edited.linkCheck.state, 'verified');
+  assert.deepEqual(edited.linkCheck.fields, { site: 'kept', user: 'changed' });
+  // Parameter order does not matter; editing the link does.
+  const reordered = new URLSearchParams({ user: 'alice', exp: String(exp), site: 'Main' });
+  reordered.set('sig', signLink(secret, new URLSearchParams({ site: 'Main', exp: String(exp), user: 'alice' })));
+  assert.equal((await submit({ site: 'Main', user: 'alice' }, '?' + reordered)).linkCheck.state, 'verified');
+  const tampered = sign({ site: 'Mirror', user: 'alice', exp: String(exp) }).replace('user=alice', 'user=mallory');
+  assert.deepEqual((await submit({ user: 'mallory' }, tampered)).linkCheck, { state: 'invalid' });
+  assert.deepEqual((await submit({ user: 'mallory' }, sign({ user: 'mallory' }))).linkCheck, { state: 'invalid' }, 'a signature without exp is refused');
+  assert.deepEqual((await submit({ user: 'mallory' }, '?user=mallory')).linkCheck, { state: 'missing' });
+  assert.deepEqual((await submit({ user: 'mallory' })).linkCheck, { state: 'missing' });
+  const stale = await submit({ user: 'alice' }, sign({ user: 'alice', exp: String(Math.floor(Date.now() / 1000) - 60) }));
+  assert.equal(stale.linkCheck.state, 'expired');
+  assert.deepEqual(stale.linkCheck.values, { user: 'alice' });
+
+  // Without the settings nothing is stored.
+  await admin(`/forms/${form.id}`, 'PUT', { ...form, settings: { ...form.settings, collectIp: false, linkSecret: '' } });
+  form = await (await admin(`/forms/${form.id}`)).json();
+  const plain = await submit({ user: 'alice' }, sign({ user: 'alice', exp: String(exp) }));
+  assert.equal(plain.ip, '');
+  assert.equal(plain.linkCheck, null);
+});
+
+test('respondents sign in with Discord when the link is not signed', async t => {
+  // A stand-in for Discord's OAuth endpoints.
+  const mock = http.createServer(async (req, res) => {
+    let body = '';
+    for await (const chunk of req) body += chunk;
+    res.setHeader('Content-Type', 'application/json');
+    if (req.url === '/api/oauth2/token') {
+      const params = new URLSearchParams(body);
+      const ok = params.get('code') === 'good-code' && params.get('client_secret') === 'discord-secret' && params.get('grant_type') === 'authorization_code';
+      res.statusCode = ok ? 200 : 400;
+      return res.end(JSON.stringify(ok ? { access_token: 'token-1', token_type: 'Bearer' } : {}));
+    }
+    if (req.url === '/api/users/@me' && req.headers.authorization === 'Bearer token-1') return res.end(JSON.stringify({ id: '722065612460785674', username: 'alice_dc', global_name: 'Alice' }));
+    res.statusCode = 404;
+    res.end('{}');
+  });
+  mock.listen(0, '127.0.0.1');
+  await new Promise(resolve => mock.once('listening', resolve));
+  const discordBase = `http://127.0.0.1:${mock.address().port}`;
+  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'quesuwa-discord-'));
+  const password = 'discord-owner-password-1';
+  const instance = createApp({ dataDir, password, defaultLocale: 'en', discord: { clientId: 'discord-client', clientSecret: 'discord-secret', apiBase: discordBase + '/api', authorizeUrl: discordBase + '/oauth2/authorize' } });
+  const server = instance.app.listen(0, '127.0.0.1');
+  await new Promise(resolve => server.once('listening', resolve));
+  t.after(async () => {
+    await new Promise(resolve => server.close(resolve));
+    await new Promise(resolve => mock.close(resolve));
+    instance.close();
+    fs.rmSync(dataDir, { recursive: true, force: true });
+  });
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const adminLogin = await fetch(base + '/api/admin/login', { method: 'POST', headers: { Origin: base, 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
+  const Cookie = adminLogin.headers.get('set-cookie').split(';')[0];
+  const admin = (url, method = 'GET', body) => fetch(base + '/api/admin' + url, { method, headers: { Origin: base, 'Content-Type': 'application/json', Cookie }, body: body && JSON.stringify(body) });
+  const secret = 'discord-test-link-secret-0123456789';
+  const fields = [{ id: 'user', type: 'short', label: 'User name', prefillKey: 'user' }, { id: 'what', type: 'long', label: 'What happened' }];
+  assert.equal((await admin('/forms', 'POST', { title: 'Bad', state: 'draft', settings: { discordLogin: 'sometimes' }, fields })).status, 400);
+  const form = await (await admin('/forms', 'POST', { title: 'Report', slug: 'report', state: 'published', settings: { discordLogin: 'unsigned', linkSecret: secret }, fields })).json();
+  assert.equal((await (await fetch(base + '/api/forms/report')).json()).settings.discordLogin, 'unsigned');
+  assert.deepEqual(await (await fetch(base + '/api/discord')).json(), { configured: true });
+
+  const exp = String(Math.floor(Date.now() / 1000) + 3600);
+  const signed = new URLSearchParams({ user: 'alice', exp });
+  signed.set('sig', signLink(secret, signed));
+  const identity = async (link, cookie) => (await fetch(base + '/api/forms/report/identity?' + new URLSearchParams({ link }), { headers: cookie ? { Cookie: cookie } : {} })).json();
+  assert.deepEqual(await identity('?user=alice'), { required: true, user: null });
+  assert.deepEqual(await identity('?' + signed), { required: false, user: null });
+
+  // Signing in: only the identify scope, never the email.
+  const begin = async returnTo => {
+    const response = await fetch(base + '/api/discord/login?' + new URLSearchParams({ return: returnTo }), { redirect: 'manual' });
+    assert.equal(response.status, 302);
+    const authorize = new URL(response.headers.get('location'));
+    return { authorize, state: authorize.searchParams.get('state'), cookie: response.headers.get('set-cookie').split(';')[0] };
+  };
+  const { authorize, state, cookie: stateCookie } = await begin('/f/report?user=alice');
+  assert.equal(authorize.origin + authorize.pathname, discordBase + '/oauth2/authorize');
+  assert.equal(authorize.searchParams.get('scope'), 'identify');
+  assert.equal(authorize.searchParams.get('client_id'), 'discord-client');
+  assert.equal(authorize.searchParams.get('redirect_uri'), base + '/api/discord/callback');
+  const callback = (query, cookie) => fetch(base + '/api/discord/callback?' + new URLSearchParams(query), { redirect: 'manual', headers: cookie ? { Cookie: cookie } : {} });
+  // Without this browser's state cookie, or with another state, nobody is signed in.
+  for (const attempt of [await callback({ code: 'good-code', state }), await callback({ code: 'good-code', state: 'other' }, stateCookie)]) {
+    assert.match(attempt.headers.get('location'), /#discord-failed$/);
+    assert.ok(!attempt.headers.getSetCookie().some(value => value.startsWith('quesuwa_discord=')));
+  }
+  const fresh = await begin('/f/report?user=alice');
+  assert.match((await callback({ code: 'bad-code', state: fresh.state }, fresh.cookie)).headers.get('location'), /^\/f\/report\?user=alice#discord-failed$/);
+  const done = await begin('/f/report?user=alice');
+  const signedIn = await callback({ code: 'good-code', state: done.state }, done.cookie);
+  assert.equal(signedIn.headers.get('location'), '/f/report?user=alice');
+  const session = signedIn.headers.getSetCookie().find(value => value.startsWith('quesuwa_discord=')).split(';')[0];
+  assert.deepEqual(await identity('?user=alice', session), { required: true, user: { id: '722065612460785674', username: 'alice_dc', name: 'Alice' } });
+  // A session someone wrote themselves is ignored.
+  const forged = Buffer.from(JSON.stringify({ id: '1', username: 'mallory', name: 'Mallory', exp: Date.now() + 3600_000 })).toString('base64url');
+  assert.equal((await identity('?', `quesuwa_discord=${forged}.${session.split('.').pop()}`)).user, null);
+  // Only questionnaire pages are valid places to return to.
+  const offsite = await begin('//evil.example/steal');
+  assert.equal((await callback({ code: 'good-code', state: offsite.state }, offsite.cookie)).headers.get('location'), '/');
+
+  const submit = (link, cookie) => {
+    const body = new FormData();
+    body.set('answers', JSON.stringify({ user: 'alice', what: 'Spam?' }));
+    body.set('version', String(form.version));
+    body.set('link', link);
+    return fetch(base + '/api/forms/report/responses', { method: 'POST', body, headers: cookie ? { Cookie: cookie } : {} });
+  };
+  const refused = await submit('?user=alice');
+  assert.equal(refused.status, 403);
+  assert.equal((await refused.json()).code, 'errors.discordRequired');
+  const accepted = await submit('?user=alice', session);
+  assert.equal(accepted.status, 201);
+  assert.deepEqual((await (await admin('/responses/' + (await accepted.json()).id)).json()).discordUser, { id: '722065612460785674', username: 'alice_dc', name: 'Alice' });
+  // A validly signed link needs no Discord account.
+  const fromSite = await submit('?' + signed);
+  assert.equal(fromSite.status, 201);
+  assert.equal((await (await admin('/responses/' + (await fromSite.json()).id)).json()).discordUser, null);
+  // Signing out ends the session cookie.
+  const out = await fetch(base + '/api/discord/logout', { method: 'POST', headers: { Origin: base, Cookie: session } });
+  assert.ok(out.headers.getSetCookie().some(value => /^quesuwa_discord=;/.test(value)));
+});
+
+test('without a Discord application nobody is asked to sign in', async t => {
+  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'quesuwa-nodiscord-'));
+  const password = 'no-discord-owner-password-1';
+  const instance = createApp({ dataDir, password, defaultLocale: 'en' });
+  const server = instance.app.listen(0, '127.0.0.1');
+  await new Promise(resolve => server.once('listening', resolve));
+  t.after(async () => { await new Promise(resolve => server.close(resolve)); instance.close(); fs.rmSync(dataDir, { recursive: true, force: true }); });
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const login = await fetch(base + '/api/admin/login', { method: 'POST', headers: { Origin: base, 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
+  const Cookie = login.headers.get('set-cookie').split(';')[0];
+  const form = await (await fetch(base + '/api/admin/forms', { method: 'POST', headers: { Origin: base, 'Content-Type': 'application/json', Cookie }, body: JSON.stringify({ title: 'Report', slug: 'report', state: 'published', settings: { discordLogin: 'always' }, fields: [{ id: 'what', type: 'long', label: 'What happened' }] }) })).json();
+  assert.deepEqual(await (await fetch(base + '/api/discord')).json(), { configured: false });
+  assert.equal((await fetch(base + '/api/discord/login?return=/f/report', { redirect: 'manual' })).status, 404);
+  assert.deepEqual(await (await fetch(base + '/api/forms/report/identity')).json(), { required: false, user: null });
+  const body = new FormData();
+  body.set('answers', JSON.stringify({ what: 'x' }));
+  body.set('version', String(form.version));
+  assert.equal((await fetch(base + '/api/forms/report/responses', { method: 'POST', body })).status, 201);
 });
 
 test('closed tickets stop replies and resolved tickets auto-close', async t => {

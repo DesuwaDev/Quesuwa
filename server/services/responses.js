@@ -19,6 +19,9 @@ export const parseResponse = row => ({
   unread: Boolean(row.unread),
   lastActivityAt: row.last_activity_at || row.created_at,
   environment: row.environment ? JSON.parse(row.environment) : null,
+  ip: row.ip || '',
+  linkCheck: row.link_check ? JSON.parse(row.link_check) : null,
+  discordUser: row.discord_user ? JSON.parse(row.discord_user) : null,
   ...(row.message_count !== undefined ? { messageCount: row.message_count } : {})
 });
 

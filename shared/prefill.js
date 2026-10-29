@@ -1,7 +1,7 @@
 // Answers supplied through the questionnaire link, e.g. /f/bug-report?site=Main%20site.
 // Only questions with a link parameter accept them, and only values that pass validation.
-import { checkAnswer } from '../../shared/answers.js';
-import { prefillTypes } from '../../shared/constants.js';
+import { checkAnswer } from './answers.js';
+import { prefillTypes } from './constants.js';
 
 const same = (a, b) => a.trim().toLocaleLowerCase() === b.trim().toLocaleLowerCase();
 const matchOption = (field, value) => field.options.find(option => same(option, value));

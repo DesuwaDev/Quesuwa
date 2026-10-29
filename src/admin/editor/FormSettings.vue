@@ -20,6 +20,9 @@ const deliveries = ref([]), testing = ref(false), testResult = ref(null);
 const captchaChannel = ref(undefined);
 const captchaNames = { cap: 'Cap', turnstile: 'Cloudflare Turnstile', hcaptcha: 'hCaptcha', recaptcha: 'reCAPTCHA v2', recaptchaV3: 'reCAPTCHA v3' };
 api('/captcha').then(config => { captchaChannel.value = config?.primary.provider || null; }).catch(() => { captchaChannel.value = null; });
+// Discord sign-in needs DISCORD_CLIENT_ID / DISCORD_CLIENT_SECRET on the server.
+const discordConfigured = ref(true);
+api('/discord').then(config => { discordConfigured.value = Boolean(config?.configured); }).catch(() => { discordConfigured.value = false; });
 const webhookSaved = computed(() => Boolean(props.form.settings?.webhookUrl) && props.form.settings.webhookUrl === settings.value.webhookUrl);
 const scheduleInvalid = computed(() => settings.value.startsAt && settings.value.endsAt && settings.value.startsAt >= settings.value.endsAt);
 
@@ -30,6 +33,7 @@ const randomToken = length => {
 };
 const generateCode = () => { settings.value.accessCode = randomToken(6); };
 const generateSecret = () => { settings.value.webhookSecret = randomToken(32).toLowerCase(); };
+const generateLinkSecret = () => { settings.value.linkSecret = randomToken(40).toLowerCase(); };
 const normalizeSlug = () => { props.draft.slug = props.draft.slug.toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+/, '').slice(0, 64); };
 
 async function loadDeliveries() {
@@ -138,6 +142,25 @@ onMounted(() => { loadDeliveries(); loadMessaging(); });
       </label>
       <ToggleSwitch v-model="settings.collectEnvironment" :label="t('settings.collectEnvironment')" :hint="t('settings.collectEnvironmentHint')" :disabled="readonly" />
       <ToggleSwitch v-if="settings.collectEnvironment" v-model="settings.environmentNotice" :label="t('settings.environmentNotice')" :hint="t('settings.environmentNoticeHint')" :disabled="readonly" />
+      <ToggleSwitch v-model="settings.collectIp" :label="t('settings.collectIp')" :hint="t('settings.collectIpHint')" :disabled="readonly" />
+      <label class="field">
+        <span class="field-label">{{ t('settings.linkSecret') }}</span>
+        <span class="input-affix">
+          <input v-model="settings.linkSecret" class="input mono" maxlength="128" autocomplete="off" :disabled="readonly" :placeholder="t('settings.linkSecretPlaceholder')" />
+          <button v-if="!readonly" type="button" class="button ghost small" @click="generateLinkSecret"><AppIcon name="key" :size="14" />{{ t('settings.generate') }}</button>
+        </span>
+        <small class="hint">{{ t('settings.linkSecretHint') }}</small>
+      </label>
+      <label class="field">
+        <span class="field-label">{{ t('settings.discordLogin') }}</span>
+        <select v-model="settings.discordLogin" class="input select" :disabled="readonly">
+          <option value="off">{{ t('settings.discordLoginOff') }}</option>
+          <option value="unsigned">{{ t('settings.discordLoginUnsigned') }}</option>
+          <option value="always">{{ t('settings.discordLoginAlways') }}</option>
+        </select>
+        <small class="hint">{{ t('settings.discordLoginHint') }}</small>
+        <small v-if="settings.discordLogin !== 'off' && !discordConfigured" class="hint warning-text"><AppIcon name="alert" :size="14" />{{ t('settings.discordNotConfigured') }}</small>
+      </label>
       <ToggleSwitch v-model="settings.showProgress" :label="t('settings.showProgress')" :disabled="readonly" />
       <ToggleSwitch v-model="settings.showNumbers" :label="t('settings.showNumbers')" :disabled="readonly" />
       <ToggleSwitch v-model="settings.saveProgress" :label="t('settings.saveProgress')" :hint="t('settings.saveProgressHint')" :disabled="readonly" />

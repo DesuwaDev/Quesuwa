@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { t, displayError } from '../i18n.js';
-import { api } from '../lib/api.js';
+import { api, query } from '../lib/api.js';
 import { linkHandler } from '../lib/router.js';
 import { formatDate, shortId } from '../lib/format.js';
 import { copyText } from '../lib/clipboard.js';
@@ -13,6 +13,21 @@ import { rememberTicket, ticketLink } from '../lib/tickets.js';
 const props = defineProps({ slug: { type: String, required: true } });
 const state = ref('loading'), form = ref(null), locked = ref(null), error = ref(null), success = ref(null);
 const accessCode = ref(''), accessError = ref(null), unlocking = ref(false), attempt = ref(0);
+// Discord sign-in: whether this visit needs it (the server also checks the link signature) and who is signed in.
+const discord = ref({ required: false, user: null });
+const discordFailed = window.location.hash === '#discord-failed';
+const discordLogin = computed(() => '/api/discord/login' + query({ return: window.location.pathname + window.location.search }));
+
+async function loadIdentity(data) {
+  if (!data.settings?.discordLogin || data.settings.discordLogin === 'off') return;
+  try { discord.value = await api('/forms/' + encodeURIComponent(props.slug) + '/identity' + query({ link: window.location.search })); }
+  catch { discord.value = { required: false, user: null }; }
+}
+
+async function switchDiscord() {
+  try { await api('/discord/logout', { method: 'POST', body: {} }); } catch { /* Signing in again replaces the session anyway. */ }
+  window.location.assign(discordLogin.value);
+}
 
 const accent = computed(() => form.value?.settings?.accent || locked.value?.settings?.accent || 'coral');
 const errorIcon = computed(() => ({ 'errors.alreadySubmitted': 'checkCircle', 'errors.notStarted': 'clock', 'errors.formClosed': 'archive', 'errors.outsideSchedule': 'clock', 'errors.responseLimit': 'archive' })[error.value?.code] || 'alert');
@@ -22,7 +37,7 @@ async function load() {
   try {
     const data = await api('/forms/' + encodeURIComponent(props.slug));
     if (data.locked) { locked.value = data; state.value = 'locked'; }
-    else { form.value = data; state.value = 'form'; }
+    else { await loadIdentity(data); form.value = data; state.value = 'form'; }
     document.title = (data.title || t('common.untitled')) + ' · ' + t('app.brand');
   } catch (reason) {
     error.value = reason;
@@ -35,7 +50,9 @@ async function unlock() {
   unlocking.value = true;
   accessError.value = null;
   try {
-    form.value = await api('/forms/' + encodeURIComponent(props.slug) + '/access', { method: 'POST', body: { accessCode: accessCode.value.trim() } });
+    const data = await api('/forms/' + encodeURIComponent(props.slug) + '/access', { method: 'POST', body: { accessCode: accessCode.value.trim() } });
+    await loadIdentity(data);
+    form.value = data;
     state.value = 'form';
   } catch (reason) {
     if (reason.code === 'errors.accessCode' || reason.code === 'errors.rateLimit') accessError.value = reason;
@@ -126,6 +143,15 @@ onMounted(load);
       </div>
     </div>
 
-    <QuestionnaireForm v-else :key="attempt" :form="form" :access-code="accessCode.trim()" @submitted="submitted" @expired="load" />
+    <div v-else-if="discord.required && !discord.user" class="state-panel discord-gate">
+      <span class="state-icon"><AppIcon name="user" :size="28" /></span>
+      <h1>{{ form.title || t('common.untitled') }}</h1>
+      <p>{{ t('discord.gateIntro') }}</p>
+      <p v-if="discordFailed" class="field-error" role="alert">{{ t('discord.failed') }}</p>
+      <a class="button primary block" :href="discordLogin">{{ t('discord.signIn') }}</a>
+      <small class="muted">{{ t('discord.privacy') }}</small>
+    </div>
+
+    <QuestionnaireForm v-else :key="attempt" :form="form" :access-code="accessCode.trim()" :discord-user="discord.user" @submitted="submitted" @expired="load" @switch-discord="switchDiscord" />
   </div>
 </template>

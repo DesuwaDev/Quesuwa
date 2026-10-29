@@ -41,6 +41,8 @@
 .custom-message { padding: 12px 14px; border-radius: var(--radius); background: var(--surface-2); color: var(--text); text-align: left; width: 100%; }
 .access-gate { align-items: stretch; text-align: left; }
 .access-gate .state-icon, .access-gate h1, .access-gate > p { align-self: center; text-align: center; }
+.discord-gate .button { align-self: stretch; }
+.discord-signed-in .text-button { margin-left: 6px; }
 .receipt { display: inline-flex; align-items: center; gap: 10px; padding: 8px 8px 8px 16px; border-radius: var(--radius-full); background: var(--surface-2); border: 1px dashed var(--border-strong); }
 .receipt span { color: var(--text-2); font-size: 0.86rem; }
 .receipt strong { font-size: 1.05rem; letter-spacing: 0.08em; }

@@ -636,6 +636,16 @@
         "kind": "literal",
         "value": "danger",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/discord",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "off",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       }
     ],
     "dynamicKeys": [
@@ -1935,6 +1945,26 @@
       {
         "kind": "literal",
         "value": "responses.write",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "changed",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "verified",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "expired",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "invalid",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       }
     ],
@@ -4830,30 +4860,6 @@
       }
     ]
   },
-  "src/lib/prefill.js": {
-    "literals": [
-      {
-        "kind": "literal",
-        "value": "string",
-        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
-      },
-      {
-        "kind": "literal",
-        "value": "single",
-        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
-      },
-      {
-        "kind": "literal",
-        "value": "select",
-        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
-      },
-      {
-        "kind": "literal",
-        "value": "multi",
-        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
-      }
-    ]
-  },
   "src/lib/read-receipts.js": {
     "literals": [
       {
@@ -5543,6 +5549,31 @@
         "kind": "literal",
         "value": "accent-",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "#discord-failed",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/discord/login",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "off",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/identity",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "/discord/logout",
+        "reason": "Route, URL, file path or query string fragment."
       }
     ],
     "dynamicKeys": [
@@ -5845,6 +5876,16 @@
       {
         "kind": "literal",
         "value": "POST",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "link",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "switchDiscord",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       }
     ],
@@ -6261,6 +6302,11 @@
         "kind": "template",
         "value": "${}<meta name=\"cap-nonce\" content=\"${}\">",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/discord",
+        "reason": "Route, URL, file path or query string fragment."
       }
     ]
   },
@@ -6764,6 +6810,21 @@
         "kind": "literal",
         "value": "UPDATE responses SET status=? WHERE status=?",
         "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "ip",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "link_check",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "discord_user",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       }
     ]
   },
@@ -6908,6 +6969,16 @@
         "kind": "literal",
         "value": "SIGINT",
         "reason": "Internal field/type, protocol, encoding, DOM event or storage identifier; not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "DISCORD_CLIENT_ID",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "DISCORD_CLIENT_SECRET",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       }
     ]
   },
@@ -7537,11 +7608,6 @@
       },
       {
         "kind": "literal",
-        "value": "INSERT INTO responses (id, form_id, snapshot, answers, attachments, created_at, status, duration_ms, locale, access_hash, last_activity_at, environment) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-        "reason": "SQLite statement, clause or column definition; values are bound separately."
-      },
-      {
-        "kind": "literal",
         "value": "pending",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       },
@@ -7564,6 +7630,41 @@
         "kind": "literal",
         "value": "host",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "kept",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "changed",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "always",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "unsigned",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "verified",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/:slug/identity",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "INSERT INTO responses (id, form_id, snapshot, answers, attachments, created_at, status, duration_ms, locale, access_hash, last_activity_at, environment, ip, link_check, discord_user) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
       }
     ],
     "dynamicKeys": [
@@ -10922,6 +11023,26 @@
         "kind": "literal",
         "value": "none",
         "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "collectIp",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "off",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "unsigned",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "always",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
       }
     ]
   },
@@ -11098,6 +11219,252 @@
         "kind": "literal",
         "value": "http://127.0.0.1:3100",
         "reason": "Build-time HTML placeholder, plugin identifier or development proxy address."
+      }
+    ]
+  },
+  "shared/prefill.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "string",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "single",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "select",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "multi",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      }
+    ]
+  },
+  "server/lib/link-signature.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "sig",
+        "reason": "Signed-link query parameter or HMAC/encoding name; part of the documented link format, not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "exp",
+        "reason": "Signed-link query parameter or HMAC/encoding name; part of the documented link format, not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "sha256",
+        "reason": "Signed-link query parameter or HMAC/encoding name; part of the documented link format, not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "base64url",
+        "reason": "Signed-link query parameter or HMAC/encoding name; part of the documented link format, not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "string",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "missing",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "invalid",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "expired",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "verified",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      }
+    ]
+  },
+  "server/routes/discord.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "string",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "${}/api/discord/callback",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "host",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "lax",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/login",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "base64url",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/api/discord",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "/callback",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "utf8",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "#discord-failed",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "/api",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "/logout",
+        "reason": "Route, URL, file path or query string fragment."
+      }
+    ]
+  },
+  "server/services/discord.js": {
+    "literals": [
+      {
+        "kind": "literal",
+        "value": "quesuwa_discord",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "quesuwa_discord_state",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "template",
+        "value": "(?:^|;\\s*)${}=([^;]*)",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "https://discord.com/api",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "https://discord.com/oauth2/authorize",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "SELECT value FROM settings WHERE key='discordSessionSecret'",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "hex",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "INSERT INTO settings(key, value) VALUES ('discordSessionSecret', ?)",
+        "reason": "SQLite statement, clause or column definition; values are bound separately."
+      },
+      {
+        "kind": "literal",
+        "value": "sha256",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "base64url",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "utf8",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "string",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "code",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "identify",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "none",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/oauth2/token",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "literal",
+        "value": "POST",
+        "reason": "HTTP header name, MIME type or protocol value."
+      },
+      {
+        "kind": "literal",
+        "value": "application/x-www-form-urlencoded",
+        "reason": "HTTP header name, MIME type or protocol value."
+      },
+      {
+        "kind": "literal",
+        "value": "authorization_code",
+        "reason": "Internal identifier (field type, state, role, event, icon, CSS class, storage key or protocol token); not user-facing copy."
+      },
+      {
+        "kind": "literal",
+        "value": "/users/@me",
+        "reason": "Route, URL, file path or query string fragment."
+      },
+      {
+        "kind": "template",
+        "value": "Bearer ${}",
+        "reason": "HTTP header name, MIME type or protocol value."
       }
     ]
   }

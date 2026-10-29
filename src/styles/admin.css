@@ -308,6 +308,10 @@
 .consent-record p { margin: 0; padding: 0 14px 12px; max-height: 24rem; overflow-y: auto; }
 .environment-panel details summary { cursor: pointer; color: var(--text-3); font-size: 0.82rem; }
 .environment-panel details code { display: block; margin-top: 6px; font-size: 0.78rem; overflow-wrap: anywhere; color: var(--text-2); }
+.source-panel .link-state { display: flex; align-items: center; gap: 6px; margin: 0; }
+.source-panel .link-state.verified { color: var(--success); }
+.source-panel .link-state.unverified { color: var(--warning); }
+.hint.warning-text { display: flex; align-items: center; gap: 6px; color: var(--warning); }
 
 /* Analytics */
 .analytics-view.refreshing .analytics-grid, .analytics-view.refreshing .question-stats-grid, .analytics-view.refreshing .tile-grid { opacity: 0.6; transition: opacity var(--fast); }

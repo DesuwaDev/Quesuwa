@@ -4,7 +4,7 @@ import { normalizeDefinition } from '../../shared/schema.js';
 import { fail } from '../errors.js';
 import { transaction } from '../db.js';
 
-const hideSecrets = (form, role) => role === 'viewer' && form?.settings ? { ...form, settings: { ...form.settings, webhookSecret: '' } } : form;
+const hideSecrets = (form, role) => role === 'viewer' && form?.settings ? { ...form, settings: { ...form.settings, webhookSecret: '', linkSecret: '' } } : form;
 
 export function formRoutes({ db, forms, storage, audit, auth, webhooks, tickets }) {
   const router = Router();
@@ -103,7 +103,7 @@ export function formRoutes({ db, forms, storage, audit, auth, webhooks, tickets 
   router.get('/:id/definition', (req, res) => {
     const form = forms.require(req.params.id);
     const { slug: _slug, state: _state, ...definition } = normalizeDefinition({ ...form, state: 'draft' });
-    definition.settings = { ...definition.settings, webhookSecret: '' };
+    definition.settings = { ...definition.settings, webhookSecret: '', linkSecret: '' };
     res.attachment('questionnaire.json').json({ format: 'quesuwa.form', formatVersion: 2, ...definition });
   });
 

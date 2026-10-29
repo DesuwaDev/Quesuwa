@@ -74,6 +74,9 @@ export function createFormStore(db) {
         endsAt: settings.endsAt,
         collectEnvironment: settings.collectEnvironment,
         environmentNotice: settings.environmentNotice,
+        collectIp: settings.collectIp,
+        discordLogin: settings.discordLogin,
+        signedLinks: Boolean(settings.linkSecret),
         protected: Boolean(settings.accessCode)
       }
     };

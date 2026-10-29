@@ -105,7 +105,13 @@ const migrations = [
   // Emoji reactions on conversation messages; actor is 'respondent' or 'staff:<user id>'.
   db => db.exec(`CREATE TABLE IF NOT EXISTS reactions (message_id TEXT NOT NULL, response_id TEXT NOT NULL, actor TEXT NOT NULL,
       actor_name TEXT NOT NULL DEFAULT '', emoji TEXT NOT NULL, created_at TEXT NOT NULL, PRIMARY KEY (message_id, actor, emoji));
-    CREATE INDEX IF NOT EXISTS reactions_response ON reactions(response_id);`)
+    CREATE INDEX IF NOT EXISTS reactions_response ON reactions(response_id);`),
+  db => {
+    // Where a response came from, when the form asks: the submitter's IP, the link-signature check and the Discord account (JSON).
+    addColumn(db, 'responses', 'ip', "TEXT NOT NULL DEFAULT ''");
+    addColumn(db, 'responses', 'link_check', "TEXT NOT NULL DEFAULT ''");
+    addColumn(db, 'responses', 'discord_user', "TEXT NOT NULL DEFAULT ''");
+  }
 ];
 
 export function openDatabase(dataDir) {

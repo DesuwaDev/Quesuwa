@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { normalizeDefinition, normalizeSettings } from '../shared/schema.js';
-import { readPrefill } from '../src/lib/prefill.js';
+import { readPrefill } from '../shared/prefill.js';
 import { estimateSeconds } from '../shared/answers.js';
 
 const define = (slug, fields) => normalizeDefinition({ title: slug, slug, state: 'draft', fields }).fields;

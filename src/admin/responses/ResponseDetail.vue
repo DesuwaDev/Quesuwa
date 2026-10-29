@@ -55,6 +55,12 @@ async function copyEnvironment() {
   if (await copyText(lines.join('\n'))) notify('share.copied');
 }
 const languageKey = code => ({ 'zh-CN': 'language.zhCN', en: 'language.en' })[code];
+// Where the response came from: the submitter's IP and the check of a signed link.
+const linkCheck = computed(() => response.value?.linkCheck || null);
+const signedValues = computed(() => Object.entries(linkCheck.value?.values || {}));
+const changedFields = computed(() => Object.entries(linkCheck.value?.fields || {})
+  .filter(([, outcome]) => outcome === 'changed')
+  .map(([id]) => response.value.snapshot.fields.find(field => field.id === id)?.label || id));
 
 async function markRead() {
   if (!response.value?.unread) return;
@@ -234,6 +240,26 @@ onBeforeUnmount(() => { stopLive?.(); window.removeEventListener('keydown', keys
           <dd v-else class="preserve">{{ answerText(field, response.answers[field.id]) }}<small v-if="isOtherValue(field, response.answers[field.id])" class="answer-chip-tag">{{ t('form.other') }}</small></dd>
         </div>
       </dl>
+
+      <section v-if="response.ip || linkCheck || response.discordUser" class="environment-panel source-panel">
+        <header><h3><AppIcon name="shield" :size="16" />{{ t('source.title') }}</h3></header>
+        <dl>
+          <div v-if="response.ip"><dt>{{ t('source.ip') }}</dt><dd class="mono">{{ response.ip }}</dd></div>
+          <div v-if="response.discordUser">
+            <dt>{{ t('source.discord') }}</dt>
+            <dd>{{ response.discordUser.name }}<span v-if="response.discordUser.username && response.discordUser.username !== response.discordUser.name" class="muted"> @{{ response.discordUser.username }}</span><br /><small class="mono muted">{{ response.discordUser.id }}</small></dd>
+          </div>
+          <div v-if="linkCheck">
+            <dt>{{ t('source.link') }}</dt>
+            <dd v-if="linkCheck.state === 'verified'" class="link-state verified"><AppIcon name="checkCircle" :size="14" />{{ t('source.verified') }}</dd>
+            <dd v-else-if="linkCheck.state === 'expired'" class="link-state unverified"><AppIcon name="alert" :size="14" />{{ t('source.expired', { time: formatDate(linkCheck.expiresAt) }) }}</dd>
+            <dd v-else-if="linkCheck.state === 'invalid'" class="link-state unverified"><AppIcon name="alert" :size="14" />{{ t('source.invalid') }}</dd>
+            <dd v-else class="link-state unverified"><AppIcon name="alert" :size="14" />{{ t('source.missing') }}</dd>
+          </div>
+          <div v-for="[key, value] in signedValues" :key="key"><dt>{{ t('source.signedValue', { key }) }}</dt><dd>{{ value }}</dd></div>
+        </dl>
+        <p v-for="label in changedFields" :key="label" class="link-state unverified small"><AppIcon name="alert" :size="14" />{{ t('source.changed', { label }) }}</p>
+      </section>
 
       <section v-if="response.environment" class="environment-panel">
         <header>

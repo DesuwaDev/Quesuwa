@@ -19,7 +19,9 @@ import { formRoutes } from './routes/forms.js';
 import { responseRoutes } from './routes/responses.js';
 import { publicRoutes } from './routes/public.js';
 import { captchaRoutes } from './routes/captcha.js';
+import { discordRoutes } from './routes/discord.js';
 import { createCaptcha } from './services/captcha.js';
+import { createDiscord } from './services/discord.js';
 import { overviewRoutes, systemRoutes } from './routes/system.js';
 import { createSettings } from './services/settings.js';
 import { createTickets } from './services/tickets.js';
@@ -32,7 +34,7 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 
 // Options left undefined are configured in the web UI (System → Settings);
 // defined options come from the environment and lock the matching setting.
-export function createApp({ dataDir, password, username = 'admin', production = false, publicOrigin = '', trustProxyHops, maxStorageMB, defaultLocale, captchaEndpoints }) {
+export function createApp({ dataDir, password, username = 'admin', production = false, publicOrigin = '', trustProxyHops, maxStorageMB, defaultLocale, captchaEndpoints, discord: discordOptions }) {
   if (password && password.length < 16) throw new Error(t('cli.passwordRequired'));
   if (publicOrigin) {
     let origin;
@@ -45,6 +47,7 @@ export function createApp({ dataDir, password, username = 'admin', production = 
   const db = openDatabase(dataDir);
   const settings = createSettings(db, { maxStorageMB, trustProxyHops, defaultLocale: defaultLocale || undefined });
   const captcha = createCaptcha(db, { endpoints: captchaEndpoints });
+  const discord = createDiscord(db, discordOptions);
   // Verification widgets need their provider's origins; only the enabled ones are allowed.
   const captchaSources = kind => () => captcha.sources(kind) || "'self'";
   const scriptSources = (_req, res) => [captcha.sources('script'), res.locals.cspNonce ? `'nonce-${res.locals.cspNonce}' 'unsafe-eval'` : ''].filter(Boolean).join(' ') || "'self'";
@@ -99,11 +102,12 @@ export function createApp({ dataDir, password, username = 'admin', production = 
   const autoClose = createAutoClose(db, { tickets, audit });
   const stopJobs = startJobs([() => notifier.work(), () => notifier.conversationTick(), () => notifier.digestTick(), () => backups.tick(), () => retention.tick(), () => autoClose.tick()]);
   const cookieOptions = req => ({ httpOnly: true, sameSite: 'strict', secure: secureCookie(req), path: '/api/admin' });
-  const context = { db, auth, audit, storage, forms, webhooks, tickets, notifier, backups, retention, captcha, limiter, cookieOptions, originAllowed, secureCookie, settings, publicOrigin };
+  const context = { db, auth, audit, storage, forms, webhooks, tickets, notifier, backups, retention, captcha, discord, limiter, cookieOptions, originAllowed, secureCookie, settings, publicOrigin };
   if (auth.setupNeeded()) console.log(t('cli.setupCode', { code: auth.setupCode() }));
 
   app.use('/api/forms', publicRoutes(context));
   app.use('/api/captcha', captchaRoutes(context));
+  app.use('/api/discord', discordRoutes(context));
   app.use('/api/tickets', ticketRoutes(context));
   app.use('/api/admin', publicAccountRoutes(context));
   app.use('/api/admin', auth.requireUser, (req, _res, next) => {
